@@ -8,7 +8,7 @@ DETILE = "dungeon_detile"
 
 class Masmorra:
     def __init__(self, gamer):
-        self.gamer = gamer(800, 600, gamer.AUTO, 'flying-circus')
+        self.gamer = gamer(800, 600, gamer.AUTO, 'eica')
         self.gamer.subscribe(self)
         self.game = self.gamer.game
         self.ph = self.gamer.PHASER
