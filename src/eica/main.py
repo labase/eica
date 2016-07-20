@@ -1,15 +1,20 @@
 from braser.vitollino import Vitollino, Actor
 from .mundo import Mundo
+from .roda import Roda
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 
 class Jogo(Vitollino):
+    JOGO = None
     """Essa  é a classe Jogo que recebe os poderes da classe Circus de poder criar um jogo"""
     def __init__(self):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.ladrilho_homem = "homem"
         self.homem = Homem(self.ladrilho_homem, 2, 250, 300)
         self.mundo = Mundo()
+        self.roda = Roda()
+        self.mundo.roda = self.roda
+        self.mundo.chaves = self.roda
 
     def preload(self):
         """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
@@ -35,10 +40,16 @@ class Homem(Actor):
         homem = self.homem = self.sprite(self.nome, self.x, self.y)
         homem.frame = self.frame
         homem.scale.setTo(0.4, 0.4)
+        homem.events.onInputDown.add(self._click, self)
+
+    def _click(self, _=None, __=None):
+        """Ativa o jogo da Roda"""
+        print("homem action")
+        Jogo.JOGO.roda.ativa()
 
 
 def main(_=None):
-    Jogo()
+    Jogo.JOGO = Jogo()
 
 if __name__ == "__main__":
     main()
