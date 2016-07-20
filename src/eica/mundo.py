@@ -74,12 +74,12 @@ class Take(Actor):
     def treme(self):
         if self.play:
             self.play -= 1
-            self.coisa.position.x += 3 - 6 *random()
+            self.coisa.position.x += 5*(-1)**self.play
 
     def rola(self):
         if self.play:
             self.play -= 1
-            self.coisa.position.x -= 5
+            self.coisa.position.x -= 2
             self.coisa.angle -= 30
 
     def pega(self):
