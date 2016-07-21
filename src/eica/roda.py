@@ -21,6 +21,7 @@ class Roda(Actor):
     def ativa(self):
         """Abre o balão de conversa"""
         self.jogo.visible = self.ativo
+        #self.tween(self.fala, 2000, repeat=0, alpha=1)
         self.ativo = not self.ativo
 
 
@@ -37,9 +38,9 @@ class Roda(Actor):
 
     def create(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        self.fala = self.sprite(self.ladrilho_fala, self.x, self.y)
         self.jogo = self.group()
         self.nome.jogo = self.verbo.jogo = self.alvo.jogo = self.jogo
-        self.fala = self.sprite(self.ladrilho_fala, self.x, self.y)
         self.fala.scale.setTo(0.7, 0.7)
         self.pensa = self.sprite(self.ladrilho_fala, self.x+FALAX+FALASEPARA*4, self.y)
         self.pensa.scale.setTo(0.5, 0.5)
@@ -49,6 +50,7 @@ class Roda(Actor):
         self.falou.scale.setTo(0.7, 0.7)
         self.falou.events.onInputDown.add(self._click, self)
         self.jogo.add(self.fala)
+        #self.fala.alpha = 0
         self.jogo.add(self.pensa)
         self.jogo.add(self.falou)
         self.jogo.visible = False

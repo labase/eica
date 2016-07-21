@@ -28,6 +28,9 @@ class Vitollino:
     def group(self):
         return self.game.add.group()
 
+    def tween(self, sprite, time, function="Linear", autostart=True, delay=0, repeat=-1, yoyo=False, **kwd):
+        return self.game.add.tween(sprite).to(dict(kwd), time, function, autostart, delay, repeat, yoyo);
+
     def enable(self, item):
         self.game.physics.arcade.enable(item)
 
