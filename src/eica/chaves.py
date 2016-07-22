@@ -4,7 +4,30 @@ from random import random
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 BALONX, BALONY = 0, 70
 TABUAX, TABUAY, TABUAS = 400, 120, 90
-FALAX, FALAY, FALASEPARA = 70,40, 100
+FALAX, FALAY, FALASEPARA = 100,550, 100
+ABAS = 80
+
+
+class Aba(Actor):
+    def __init__(self,chave,  tab, x=BALONX, y=BALONY):
+        super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
+        self.aba = tab
+        self.celula = None
+        self.chave, self.x, self.y = chave, x, y
+
+    def create(self):
+        self.celula = self.sprite(self.chave.ladrilho_coisa, self.x, self.y)
+        self.celula.scale.setTo(2.5, 2.5)
+        self.celula.inputEnabled = True
+        self.celula.frame = 0 #160
+        self.celula.events.onInputDown.add(lambda _=0, __=0: self.mostra_abas(self.chave, self.aba), self)
+
+    def mostra_abas(self, chave, proxima):
+        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        print("mostra_abas", proxima.nome, chave.aba_corrente.nome)
+        chave.aba_corrente.mostra(False)
+        proxima.mostra(True)
+        chave.aba_corrente = proxima
 
 
 class Celula(Actor):
@@ -31,7 +54,7 @@ class Chaves(Actor):
     def __init__(self, x= BALONX, y= BALONY):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.aba_corrente = self.aba = None
-        self.abas = "fruta objeto animal arma"
+        #self.abas = "fruta objeto animal arma"
         self.ladrilho_coisa = "objeto"
         self.ladrilho_fruta = "fruta"
         self.ladrilho_animal = "animal"
@@ -44,6 +67,8 @@ class Chaves(Actor):
         self.jogo = None
         self.cria_tabuleiro()
         self.take_propils()
+        self.abas = [self.fruta, self.animal, self.comida, self.arma, self.objeto,
+                     self.fruta, self.animal, self.comida,  self.arma, self.objeto]
         self.ativo = True
 
     def ativa(self):
@@ -70,6 +95,17 @@ class Chaves(Actor):
         self.arma = Take(self.ladrilho_coisa, 16*4, self.x+FALAX+FALASEPARA*3, self.y+FALAY)
         self.objeto = Take(self.ladrilho_coisa, 16+7, self.x+FALAX+FALASEPARA*4, self.y+FALAY)
         self.aba_corrente = self.fruta
+
+    def mostra_abas(self, corrente, proxima):
+        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        print("mostra_abas", proxima.nome)
+        corrente.mostra(False)
+        proxima.mostra(True)
+        self.aba_corrente = proxima
+    def cria_abas(self):
+        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        for x in range(10):
+            Aba(self,self.abas[x], FALAX-ABAS + x * ABAS, FALAY -50)
 
     def cria_tabuleiro(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
@@ -105,6 +141,7 @@ class Chaves(Actor):
         desce.events.onInputDown.add(down, dict(b=1))
         self.jogo.add(sobe)
         self.jogo.add(desce)
+        self.cria_abas()
         #self.jogo.visible = False
 
 
@@ -118,6 +155,10 @@ class Take(Actor):
         self.nome, self.frame, self.x, self.y = nome, frame, x, y
         self.aba = self.coisas = self.fala = self.jogo = None
         self.seleto = None
+
+    def mostra(self, muda):
+        """Aqui rolamos o conjunto de sprites mudando o frame de cada sprite"""
+        self.aba.visible = muda
 
     def rola(self, desloca):
         """Aqui rolamos o conjunto de sprites mudando o frame de cada sprite"""
@@ -146,15 +187,19 @@ class Take(Actor):
 
     def _create(self, frame):
         """Aqui colocamos o sprite do icon e selecionamos o frame que o representa"""
-        coisa = self.sprite(self.nome, self.x, self.y+50*frame)
+        coisa = self._copy(frame)
+        self.aba.add(coisa)
+        return coisa
+
+    def _copy(self, frame):
+        """Aqui colocamos o sprite do icon e selecionamos o frame que o representa"""
+        coisa = self.sprite(self.nome, self.x+50*frame, self.y)
         coisa.frame = self.frame+frame
         #return coisa
         coisa.inputEnabled = True
         coisa.input.useHandCursor = True
         coisa.events.onInputDown.add(lambda a=None, b=frame, c=frame: self._click(b, c), dict(b=frame))
         coisa.anchor.setTo(0.5, 0.5)
-        #self.jogo.add(coisa)
-        #self.aba.add(coisa)
         return coisa
 
     def falou(self, fez_sentido=False):
@@ -171,7 +216,7 @@ class Take(Actor):
 
     def _click(self, c=None, d=None):
         print("action", c, d)
-        self.seleto = self._create(d-1)
+        self.seleto = self._copy(d-1)
 
     def update(self):
         pass
