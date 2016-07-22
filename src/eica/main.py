@@ -1,6 +1,7 @@
 from braser.vitollino import Vitollino, Actor
 from .mundo import Mundo
 from .roda import Roda
+from .chaves import Chaves
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 
@@ -13,8 +14,9 @@ class Jogo(Vitollino):
         self.homem = Homem(self.ladrilho_homem, 2, 250, 300)
         self.mundo = Mundo()
         self.roda = Roda()
+        self.chaves = Chaves()
         self.mundo.roda = self.roda
-        self.mundo.chaves = self.roda
+        self.mundo.chaves = self.chaves
 
     def preload(self):
         """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
