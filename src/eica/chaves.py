@@ -89,11 +89,11 @@ class Chaves(Actor):
     def take_propils(self):
         """Jogador escreve: hominídeo comer fruta_vermelha."""
         self.fruta = Take(self.ladrilho_fruta, 0, self.x+FALAX, self.y+FALAY)
-        self.animal = Take(self.ladrilho_animal, 4*14+7, self.x+FALAX+FALASEPARA, self.y+FALAY)
-        self.comida = Take(self.ladrilho_coisa, 5*16+6, self.x+FALAX+FALASEPARA*2, self.y+FALAY)
+        self.animal = Take(self.ladrilho_animal, 4*14+7, self.x+FALAX, self.y+FALAY)
+        self.comida = Take(self.ladrilho_coisa, 5*16+6, self.x+FALAX, self.y+FALAY)
         #self.arvore = Take(self.ladrilho_arvore, 0, self.x+FALAX+FALASEPARA*2, self.y+FALAY)
-        self.arma = Take(self.ladrilho_coisa, 16*4, self.x+FALAX+FALASEPARA*3, self.y+FALAY)
-        self.objeto = Take(self.ladrilho_coisa, 16+7, self.x+FALAX+FALASEPARA*4, self.y+FALAY)
+        self.arma = Take(self.ladrilho_coisa, 16*4, self.x+FALAX, self.y+FALAY)
+        self.objeto = Take(self.ladrilho_coisa, 16+7, self.x+FALAX, self.y+FALAY)
         self.aba_corrente = self.fruta
 
     def mostra_abas(self, corrente, proxima):
@@ -131,9 +131,9 @@ class Chaves(Actor):
 
         self.aba = self.group()
         self.aba.visible = False
-        sobe = self.sprite(self.ladrilho_animal, self.x, self.y + 50 * 0)
+        sobe = self.sprite(self.ladrilho_animal, self.x, self.y+FALAY-20)
         sobe.inputEnabled = True
-        desce = self.sprite(self.ladrilho_animal, self.x, self.y + 50 * 4)
+        desce = self.sprite(self.ladrilho_animal, self.x+750, self.y+FALAY-20)
         sobe.frame = 14 * 9 - 4
         desce.inputEnabled = True
         desce.frame = 14 * 9 - 5
@@ -182,7 +182,7 @@ class Take(Actor):
                 coiso.frame = self.frame + frame
         self.aba = self.group()
         self.aba.visible = False
-        self.coisas = [self._create(coisa) for coisa in range(1,4)]
+        self.coisas = [self._create(coisa) for coisa in range(1,8)]
         #self.jogo.visible = False
 
     def _create(self, frame):
@@ -195,7 +195,6 @@ class Take(Actor):
         """Aqui colocamos o sprite do icon e selecionamos o frame que o representa"""
         coisa = self.sprite(self.nome, self.x+50*frame, self.y)
         coisa.frame = self.frame+frame
-        #return coisa
         coisa.inputEnabled = True
         coisa.input.useHandCursor = True
         coisa.events.onInputDown.add(lambda a=None, b=frame, c=frame: self._click(b, c), dict(b=frame))
