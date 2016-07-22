@@ -3,7 +3,7 @@ from random import random
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 BALONX, BALONY = 20, 70
-FALAX, FALAY, FALASEPARA = 70,40, 100
+FALAX, FALAY, FALASEPARA = 100, 40, 100
 
 class Roda(Actor):
     """Essa  é a classe Roda que recebe os poderes da classe Circus de poder criar um jogo"""
@@ -21,7 +21,7 @@ class Roda(Actor):
     def ativa(self):
         """Abre o balão de conversa"""
         self.jogo.visible = self.ativo
-        #self.tween(self.fala, 2000, repeat=0, alpha=1)
+        self.tween(self.jogo, 1000, repeat=0, alpha=1)
         self.ativo = not self.ativo
 
 
@@ -37,23 +37,30 @@ class Roda(Actor):
         self.alvo = Take(self.ladrilho_coisa, 14*5, self.x+FALAX+FALASEPARA*2, self.y+FALAY)
 
     def create(self):
-        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        """Aqui colocamos os sprites da fala"""
+        """Balao de fala"""
         self.fala = self.sprite(self.ladrilho_fala, self.x, self.y)
+        self.fala.scale.setTo(0.7, 0.7)
+
         self.jogo = self.group()
         self.nome.jogo = self.verbo.jogo = self.alvo.jogo = self.jogo
-        self.fala.scale.setTo(0.7, 0.7)
-        self.pensa = self.sprite(self.ladrilho_fala, self.x+FALAX+FALASEPARA*4, self.y)
+
+        """Balao de pensamento"""
+        self.pensa = self.sprite(self.ladrilho_fala, self.x+FALAX+FALASEPARA*3.7, self.y)
         self.pensa.scale.setTo(0.5, 0.5)
-        self.falou = self.sprite(self.ladrilho_coisa, self.x+FALAX+FALASEPARA*3, self.y+FALAY+FALASEPARA)
+
+        """Botao de falar"""
+        self.falou = self.sprite(self.ladrilho_coisa, self.x+FALAX+FALASEPARA*2.5, self.y+FALAY+FALASEPARA)
         self.falou.frame = 14*3
         self.falou.inputEnabled = True
         self.falou.scale.setTo(0.7, 0.7)
         self.falou.events.onInputDown.add(self._click, self)
+
         self.jogo.add(self.fala)
-        #self.fala.alpha = 0
         self.jogo.add(self.pensa)
         self.jogo.add(self.falou)
-        self.jogo.visible = False
+        self.jogo.alpha = 0
+        #self.jogo.visible = False
 
     def _click(self, c=None, d=None):
         """Copia fala para pensamento do interlocutor"""
@@ -65,17 +72,19 @@ class Roda(Actor):
 
 
 class Take(Actor):
-    """Essa  é a classe Take que controla os personagens do jogo"""
+    """Essa  é a classe Take que controla os itens do jogo"""
+    """Takes com retorno positivo"""
     faz_sentido = [14*2+0, 14*2+1, 14*2+4, 14*2+5, 14*2+8,
                    14+0,  14+1, 14+2, 14+3, 14+4, 14+5, 14+6, 14+7, 14+8, 14+9,
                    70+0,70+1,70+2,70+3,70+4,70+5,70+6]
+
     def __init__(self, nome, frame, x, y):
         super().__init__()
         self.nome, self.frame, self.x, self.y = nome, frame, x, y
         self.coisa = self.coisas = self.fala = self.jogo = None
 
     def create(self):
-        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        """Aqui criamos as funçoes para subir ou descer a roda"""
         def up(c=None, d=None):
             self.frame += 1
             print("up",self.frame)
@@ -87,19 +96,22 @@ class Take(Actor):
             print("down",self.frame)
             for frame, coisa in enumerate(self.coisas):
                 coisa.frame = self.frame + frame
-        self.coisas = [self._create(coisa) for coisa in range(1,4)]
 
-        self.fala = self.sprite(self.nome, self.x+FALAX//2+FALASEPARA*4, self.y+FALAY)
+        self.coisas = [self._create(coisa) for coisa in range(1,4)]
+        self.fala = self.sprite(self.nome, self.x+FALAX//2+FALASEPARA*3.5, self.y+FALAY)
         self.jogo.add(self.fala)
         self.fala.frame = self.frame + 2
-        sobe = self.sprite(self.nome, self.x, self.y + 50 * 0)
+
+        """Coloca os sprites dos botoes de subir e descer"""
+        sobe = self.sprite(self.nome, self.x-25, self.y + 50 * 0)
         sobe.inputEnabled = True
-        desce = self.sprite(self.nome, self.x, self.y + 50 * 4)
+        desce = self.sprite(self.nome, self.x-25, self.y + 50 * 3.5)
         sobe.frame = 14 * 9 - 4
         desce.inputEnabled = True
         desce.frame = 14 * 9 - 5
         sobe.events.onInputDown.add(up, self)
         desce.events.onInputDown.add(down, dict(b=1))
+
         self.jogo.add(sobe)
         self.jogo.add(desce)
         self.jogo.visible = False
