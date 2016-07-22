@@ -21,6 +21,7 @@ class Aba(Actor):
         self.celula.inputEnabled = True
         self.celula.frame = 0 #160
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.mostra_abas(self.chave, self.aba), self)
+        self.chave.jogo.add(self.celula)
 
     def mostra_abas(self, chave, proxima):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
@@ -75,6 +76,9 @@ class Chaves(Actor):
         """Abre o balão de conversa"""
         self.jogo.visible = self.ativo
         #self.tween(self.fala, 2000, repeat=0, alpha=1)
+        for aba in self.abas:
+            aba.mostra(False)
+        self.aba_corrente.mostra(self.ativo)
         self.ativo = not self.ativo
 
 
@@ -88,12 +92,12 @@ class Chaves(Actor):
 
     def take_propils(self):
         """Jogador escreve: hominídeo comer fruta_vermelha."""
-        self.fruta = Take(self.ladrilho_fruta, 0, self.x+FALAX, self.y+FALAY)
-        self.animal = Take(self.ladrilho_animal, 4*14+7, self.x+FALAX, self.y+FALAY)
-        self.comida = Take(self.ladrilho_coisa, 5*16+6, self.x+FALAX, self.y+FALAY)
-        #self.arvore = Take(self.ladrilho_arvore, 0, self.x+FALAX+FALASEPARA*2, self.y+FALAY)
-        self.arma = Take(self.ladrilho_coisa, 16*4, self.x+FALAX, self.y+FALAY)
-        self.objeto = Take(self.ladrilho_coisa, 16+7, self.x+FALAX, self.y+FALAY)
+        self.fruta = Take(self, self.ladrilho_fruta, 0, self.x+FALAX, self.y+FALAY)
+        self.animal = Take(self, self.ladrilho_animal, 4*14+7, self.x+FALAX, self.y+FALAY)
+        self.comida = Take(self, self.ladrilho_coisa, 5*16+6, self.x+FALAX, self.y+FALAY)
+        #self.arvore = Take(self, self.ladrilho_arvore, 0, self.x+FALAX+FALASEPARA*2, self.y+FALAY)
+        self.arma = Take(self, self.ladrilho_coisa, 16*4, self.x+FALAX, self.y+FALAY)
+        self.objeto = Take(self, self.ladrilho_coisa, 16+7, self.x+FALAX, self.y+FALAY)
         self.aba_corrente = self.fruta
 
     def mostra_abas(self, corrente, proxima):
@@ -102,6 +106,7 @@ class Chaves(Actor):
         corrente.mostra(False)
         proxima.mostra(True)
         self.aba_corrente = proxima
+
     def cria_abas(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         for x in range(10):
@@ -120,8 +125,8 @@ class Chaves(Actor):
         self.fala = self.sprite(self.ladrilho_fala, self.x, self.y)
         self.jogo = self.group()
         self.fala.scale.setTo(2, 2)
-        #self.fala.visible = False
         self.jogo.add(self.fala)
+        self.jogo.visible = False
 
         def up(c=None, d=None):
             self.aba_corrente.rola(-1)
@@ -142,53 +147,43 @@ class Chaves(Actor):
         self.jogo.add(sobe)
         self.jogo.add(desce)
         self.cria_abas()
-        #self.jogo.visible = False
+        self.jogo.visible = False
 
 
 class Take(Actor):
     """Essa  é a classe Take que controla os personagens do jogo"""
-    faz_sentido = [14*2+0, 14*2+1, 14*2+4, 14*2+5, 14*2+8,
-                   14+0,  14+1, 14+2, 14+3, 14+4, 14+5, 14+6, 14+7, 14+8, 14+9,
-                   70+0,70+1,70+2,70+3,70+4,70+5,70+6]
-    def __init__(self, nome, frame, x, y):
+    def __init__(self, chaves, nome, frame, x, y):
         super().__init__()
-        self.nome, self.frame, self.x, self.y = nome, frame, x, y
+        self.chaves, self.nome, self.frame, self.x, self.y = chaves, nome, frame, x, y
         self.aba = self.coisas = self.fala = self.jogo = None
         self.seleto = None
 
     def mostra(self, muda):
-        """Aqui rolamos o conjunto de sprites mudando o frame de cada sprite"""
+        """ Mostra esta aba
+
+        :param muda: booleano que diz se é para mostar ou ocultar a aba
+        :return: None
+        """
         self.aba.visible = muda
 
     def rola(self, desloca):
         """Aqui rolamos o conjunto de sprites mudando o frame de cada sprite"""
-        self.frame += desloca
+        self.frame = self.frame + desloca if self.frame + desloca > 0 else 0
         for frame, coisa in enumerate(self.coisas):
             print(frame, coisa.frame)
             coisa.frame = self.frame + frame
 
     def create(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
-        def up(c=None, d=None):
-            self.frame += 1
-            print("up",self.frame)
-            for frame, coiso in enumerate(self.coisas):
-                print(frame, coiso.frame)
-                coiso.frame = self.frame + frame
-        def down(c=None, d=None):
-            self.frame -= 1
-            print("down",self.frame)
-            for frame, coiso in enumerate(self.coisas):
-                coiso.frame = self.frame + frame
         self.aba = self.group()
         self.aba.visible = False
-        self.coisas = [self._create(coisa) for coisa in range(1,8)]
-        #self.jogo.visible = False
+        self.coisas = [self._create(coisa) for coisa in range(0,8)]
 
     def _create(self, frame):
-        """Aqui colocamos o sprite do icon e selecionamos o frame que o representa"""
+        """Aqui colocamos o sprite do icon e adicionamos no seletor de aba"""
         coisa = self._copy(frame)
         self.aba.add(coisa)
+        #self.chaves.jogo.add(coisa)
         return coisa
 
     def _copy(self, frame):
@@ -201,21 +196,20 @@ class Take(Actor):
         coisa.anchor.setTo(0.5, 0.5)
         return coisa
 
-    def falou(self, fez_sentido=False):
-        falou = self.frame + 1
-        if fez_sentido:
-            self.fala.frame = self.frame + 1
-        else:
-            self.fala.frame = 4*14+6
-        return falou in self.faz_sentido
-
 
     def activate(self):
         self.aba.visible = True
 
-    def _click(self, c=None, d=None):
+    def _click(self, _=None, d=None):
+        """ Seleciona o ícone que vai mover
+
+        :param c:
+        :param d:
+        :return:
+        """
         print("action", c, d)
-        self.seleto = self._copy(d-1)
+        self.seleto = self._copy(d)
+        self.chaves.jogo.add(self.seleto)
 
     def update(self):
         pass
