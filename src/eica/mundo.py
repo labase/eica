@@ -68,27 +68,25 @@ class Take(Actor):
 
     def _click(self, _=None, __=None):
         print("action", _, __)
-        self.play = 30
+        self.play = 1
         self.effect()
 
     def treme(self):
         if self.play:
-            self.play -= 1
-            self.coisa.position.x += 5*(-1)**self.play
+            self.tween(self.coisa, 100, repeat=4, yoyo=True, x=self.coisa.x+10)
+            self.play -=1
 
     def rola(self):
         if self.play:
+            self.tween(self.coisa, 500, repeat=0, angle=self.coisa.angle-720, x=self.coisa.x-40)
             self.play -= 1
-            self.coisa.position.x -= 2
-            self.coisa.angle -= 30
+            """self.coisa.position.x -= 2
+            self.coisa.angle -= 30"""
 
     def pega(self):
-        deltax = (self.homemx - self.coisa.position.x) / 10
-        deltay = (self.homemy - self.coisa.position.y) / 10
         if self.play:
+            self.tween(self.coisa, 800, repeat=0, x=self.homemx+2, y=self.homemy+20, angle=self.coisa.angle+90)
             self.play -= 1
-            self.coisa.position.x += deltax
-            self.coisa.position.y += deltay
 
     def update(self):
         self.act()
