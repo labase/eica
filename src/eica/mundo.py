@@ -13,7 +13,7 @@ class Mundo(Actor):
         self.take_propics()
 
     def preload(self):
-        """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
+        """Aqui no preload carregamos as imagens de ladrilhos dos items usados no jogo"""
         self.spritesheet(self.ladrilho_coisa, IMG + "cacarecos.png", 32, 32, 16*16)
         self.spritesheet(self.ladrilho_icon, IMG + "largeemoji.png", 47.5, 47, 16*16)
 
@@ -54,7 +54,7 @@ class Take(Actor):
         self.effect = effect
 
     def create(self):
-        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        """Aqui selecionamos o frame das coisas criadas pela função Take"""
         coisa = self.coisa = self.sprite(self.nome, self.x, self.y)
         coisa.inputEnabled = True
         coisa.input.useHandCursor = True
@@ -68,28 +68,24 @@ class Take(Actor):
 
     def _click(self, _=None, __=None):
         print("action", _, __)
-        self.play = 30
+        self.play = 1
         self.effect()
 
+    """Aqui estão as ações disponíveis para as coisas dos Takes"""
     def treme(self):
         if self.play:
-            self.play -= 1
-            self.coisa.position.x += 3 - 6 *random()
+            self.tween(self.coisa, 100, repeat=4, yoyo=True, x=self.coisa.x+10)
+            self.play -=1
 
     def rola(self):
         if self.play:
+            self.tween(self.coisa, 500, repeat=0, angle=self.coisa.angle-720, x=self.coisa.x-40)
             self.play -= 1
-            self.coisa.position.x -= 5
-            self.coisa.angle -= 30
 
     def pega(self):
-        deltax = (self.homemx - self.coisa.position.x) / 10
-        deltay = (self.homemy - self.coisa.position.y) / 10
         if self.play:
+            self.tween(self.coisa, 800, repeat=0, x=self.homemx+2, y=self.homemy+20, angle=self.coisa.angle+90)
             self.play -= 1
-            self.coisa.position.x += deltax
-            self.coisa.position.y += deltay
 
     def update(self):
         self.act()
-
