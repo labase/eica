@@ -67,8 +67,9 @@ class Roda(Actor):
     def _click(self, c=None, d=None):
         """Copia fala para pensamento do interlocutor"""
         faz_sentido = self.nome.falou() and self.verbo.falou() and self.alvo.falou()
-        print("falou", [self.nome.frame, self.verbo.frame, self.alvo.frame], faz_sentido)
-        self.score(evento=Ponto(x=0, y=0), carta="%s %s %s" % [self.nome.frame, self.verbo.frame, self.alvo.frame], ponto="_FALA_", valor=faz_sentido)
+        carta = [self.nome.frame, self.verbo.frame, self.alvo.frame]
+        print("falou", carta, faz_sentido)
+        self.score(evento=Ponto(x=0, y=0), carta=["%s" % c for c in carta], ponto="_FALA_", valor=faz_sentido)
 
         self.nome.falou(faz_sentido)
         self.verbo.falou(faz_sentido)

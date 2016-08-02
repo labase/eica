@@ -8,9 +8,10 @@ IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 class Jogo(Vitollino):
     JOGO = None
     """Essa  é a classe Jogo que recebe os poderes da classe Circus de poder criar um jogo"""
-    def __init__(self):
+    def __init__(self, gid):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.ladrilho_homem = "homem"
+        self.set_id(gid)
         self.homem = Homem(self.ladrilho_homem, 2, 250, 300)
         self.mundo = Mundo()
         self.roda = Roda()
@@ -50,8 +51,8 @@ class Homem(Actor):
         Jogo.JOGO.roda.ativa()
 
 
-def main(_=None):
-    Jogo.JOGO = Jogo()
+def main(gid=None):
+    Jogo.JOGO = Jogo(gid)
 
 if __name__ == "__main__":
     main()

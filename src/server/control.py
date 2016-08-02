@@ -10,7 +10,7 @@ DIR = os.path.dirname(__file__)  # + '/view'
 INDEX = os.path.dirname(__file__) + '/../'
 LAST = None
 PEC = "jogada"
-HEAD = "carta casa move tempo ponto valor".split()
+HEAD = "carta casa move tempo ponto value".split()
 FAKE = [{k: 10 * i + j for j, k in enumerate(HEAD)} for i in range(4)]
 
 
@@ -42,32 +42,42 @@ def go_eica():
     redirect('/eica/test.html')
 
 
-@route('/ei')
-def go_eica():
-    # redirect('/carinhas/carinhas.html')
-    # redirect('/tuple/index.html')
-    redirect('/eica/test.html')
-
-
-@get('/static/<filename:re:.*\.css>')
+@get('/static/<filename:re:.*\.(html|css)>')
 def stylecss(filename):
     # print('/static/<filename:re:.*\.css>', filename, INDEX)
     return static_file(filename, root=DIR + "/views")
 
 
-@get('/static/<filename:re:.*\.(html|py)>')
+@get('/static/<filename:re:.*\.py>')
 def code(filename):
     # print('/static/<filename:re:.*\.css>', filename, INDEX)
     return static_file(filename, root=INDEX)
 
 
+@get('/static/register')
+@view('eica')
+def register_user():
+    global LAST
+    jsondata = retrieve_params(request.params)
+    jsondata = jsondata.values()[0]
+    jsondata.update({PEC: []})
+    gid = database.DRECORD.save(jsondata)
+    print('/record/register', jsondata)
+    LAST = gid
+    return dict(doc_id=gid)
+
+
 @get('/record/getid')
 def get_user_id_():
     global LAST
-    gid = database.DRECORD.save({PEC: []})
-    print('/record/getid', gid)
-    LAST = gid
-    return gid
+    # gid = database.DRECORD.save({PEC: []})
+    # print('/record/getid', gid)
+    # LAST = gid
+    # record = database.DRECORD[LAST]
+    # record.update({PEC: []})
+    # database.DRECORD[LAST] = record
+
+    return LAST
 
 
 @get('/pontos')
@@ -79,9 +89,15 @@ def score():
             raise Exception()
         # print('resultado', record_id)
         record = database.DRECORD[record_id]
-        record = record[PEC]
-        # print('record resultado:', record)
-        return dict(user=record_id, result=record)
+        # record = record[PEC]
+        print('record resultado:', record)
+        user = record["user"]
+        idade = int(record["idade"][4:])+5
+        ano = record["ano"][3:]
+        sexo = record["sexo"]
+        print("score:", dict(user=user, idade=idade, ano=ano, sexo=sexo))
+
+        return dict(user=user, idade=idade, ano=ano, sexo=sexo, result=record["jogada"])
     except Exception:
         # return dict(user="FAKE", result=FAKE)
         fake = dict(user="FAKE", result=FAKE)

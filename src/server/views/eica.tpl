@@ -14,7 +14,7 @@
         <script type="text/python">
             from eica.main import main
             from braser import Braser
-            main(Braser)
+            main("{{ doc_id }}")
         </script>
     </head>
     <body onLoad="brython(1, {static_stdlib_import: true})" class="main">

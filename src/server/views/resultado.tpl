@@ -6,8 +6,9 @@
     <link rel="stylesheet" href="/static/tablestyle.css" type="text/css" />
 </head>
 <body>
-    <h1>Resultado do Jogo Cartas Voadoras</h1>
+    <h1>Resultado do Jogo do EICA</h1>
     <h2>Usuário: {{user}}</h2>
+    <h3>Idade: {{ idade }} Genero: {{ sexo }} Ano Escolar: {{ ano  }}</h3>
     <table id="box-table-a" >
 
         <thead>
