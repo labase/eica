@@ -5,16 +5,23 @@ from browser import doc
 class Vitollino:
     _instance = None
     BRASER = None
+    GID = "00000000000000000000"
 
     def __init__(self):
         self._init()
         self.gamer = Vitollino.BRASER
         self.gamer.subscribe(self)
         self.game = self.gamer.game
+        self.gid = "00000000000000000000"
+
+    def set_id(self, gid):
+        Vitollino.GID = gid
+        print(gid)
 
     def _init(self):
         doc["pydiv"].html = ""
         Vitollino.BRASER = Braser(800, 800)
+        Vitollino.BRASER.send('getid', {}, self.set_id, "GET")
 
     def preload(self):
         pass
@@ -29,7 +36,7 @@ class Vitollino:
         return self.game.add.group()
 
     def tween(self, sprite, time, function="Linear", autostart=True, delay=0, repeat=-1, yoyo=False, **kwd):
-        return self.game.add.tween(sprite).to(dict(kwd), time, function, autostart, delay, repeat, yoyo);
+        return self.game.add.tween(sprite).to(dict(kwd), time, function, autostart, delay, repeat, yoyo)
 
     def enable(self, item):
         self.game.physics.arcade.enable(item)
@@ -45,6 +52,12 @@ class Vitollino:
 
     def update(self):
         pass
+
+    def score(self, evento, carta, ponto, valor):
+        carta = '_'.join(carta)
+        casa = '_'.join([str(evento.x), str(evento.y)])
+        data = dict(doc_id=Vitollino.GID, carta=carta, casa=casa, move="ok", ponto=ponto, valor=valor)
+        self.gamer.send('store', data)
 
 
 class Actor(Vitollino):

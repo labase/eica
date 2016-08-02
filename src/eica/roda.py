@@ -1,4 +1,5 @@
 from braser.vitollino import Actor
+from . import Ponto
 from random import random
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
@@ -22,6 +23,7 @@ class Roda(Actor):
         """Abre o balão de conversa"""
         self.jogo.visible = self.ativo
         self.tween(self.jogo, 1000, repeat=0, alpha=1)
+        self.score(evento=Ponto(x=0, y=0), carta="0", ponto="_LINGUA_", valor=self.ativo)
         self.ativo = not self.ativo
 
 
@@ -64,8 +66,10 @@ class Roda(Actor):
 
     def _click(self, c=None, d=None):
         """Copia fala para pensamento do interlocutor"""
-        print("falou", c, d)
         faz_sentido = self.nome.falou() and self.verbo.falou() and self.alvo.falou()
+        print("falou", [self.nome.frame, self.verbo.frame, self.alvo.frame], faz_sentido)
+        self.score(evento=Ponto(x=0, y=0), carta="%s %s %s" % [self.nome.frame, self.verbo.frame, self.alvo.frame], ponto="_FALA_", valor=faz_sentido)
+
         self.nome.falou(faz_sentido)
         self.verbo.falou(faz_sentido)
         self.alvo.falou(faz_sentido)

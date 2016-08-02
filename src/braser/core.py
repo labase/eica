@@ -1,4 +1,5 @@
 from braser import JsPhaser
+from browser.ajax import ajax
 
 
 class Braser:
@@ -53,3 +54,21 @@ class Braser:
         """
         for subscriber in self.subscribers:
             subscriber.update()
+
+    def send(self, operation, data, action=lambda t: None, method="POST"):
+        def on_complete(request):
+            if int(request.status) == 200 or request.status == 0:
+                # print("req = ajax()== 200", request.text)
+                action(request.text)
+            else:
+                print("error " + request.text)
+
+        req = ajax()
+        req.bind('complete', on_complete)
+        # req.on_complete = on_complete
+        url = "/record/" + operation
+        req.open(method, url, True)
+        # req.set_header('content-type', 'application/x-www-form-urlencoded')
+        req.set_header("Content-Type", "application/json; charset=utf-8")
+        # print("def send", data)
+        req.send(data)
