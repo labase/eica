@@ -7,9 +7,9 @@
 import bottle
 import os
 import sys
-
+here = os.path.dirname(__file__)
 # add your project directory to the sys.path
-project_home = u'/home/labase/eica/src/'
+project_home = os.path.join(here, "src/")
 if project_home not in sys.path:
     sys.path = [project_home] + sys.path
 
@@ -19,3 +19,6 @@ if templates_dir not in bottle.TEMPLATE_PATH:
     bottle.TEMPLATE_PATH.insert(0, templates_dir)
 
 from server.control import application
+
+if __name__ == "__main__":
+    bottle.run(host='localhost', port=8080)
