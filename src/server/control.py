@@ -1,11 +1,10 @@
 # -*- coding: UTF8 -*-
-__author__ = 'carlo'
 from datetime import datetime
 from bottle import default_app, route, view, get, post, static_file, request, redirect, run, TEMPLATE_PATH
 import os
 import modelo as database
 import json
-
+__author__ = 'carlo'
 DIR = os.path.dirname(__file__)  # + '/view'
 INDEX = os.path.dirname(__file__) + '/../'
 LAST = None
@@ -42,7 +41,7 @@ def go_eica():
     redirect('/eica/test.html')
 
 
-@get('/static/<filename:re:.*\.(html|css)>')
+@get('/static/<filename:re:.*\.(html|css|ico)>')
 def stylecss(filename):
     # print('/static/<filename:re:.*\.css>', filename, INDEX)
     return static_file(filename, root=DIR + "/views")
