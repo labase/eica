@@ -58,7 +58,7 @@ def code(filename):
 def register_user():
     global LAST
     jsondata = retrieve_params(request.params)
-    jsondata = jsondata.values()[0]
+    jsondata = list(jsondata.values())[0]
     jsondata.update({PEC: []})
     gid = database.DRECORD.save(jsondata)
     print('/record/register', jsondata)
@@ -108,7 +108,7 @@ def score():
 def store():
     try:
         jsondata = retrieve_params(request.params)
-        record_id = jsondata.keys()[0]
+        record_id = list(jsondata.keys())[0]
         record = database.DRECORD[record_id]
         score = jsondata[record_id]
         # print('record/store:', score, record)
