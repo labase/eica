@@ -1,6 +1,5 @@
 from braser.vitollino import Actor
 from . import Ponto
-from random import random
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 BALONX, BALONY = 0, 70
@@ -51,7 +50,6 @@ class Celula(Actor):
             return
         item.x, item.y = self.x + 40, self.y + 40
         self.score(evento=Ponto(x=item.x, y=item.y), carta="0", ponto="_CHAVE_", valor=item.frame)
-
 
 
 class Chaves(Actor):
@@ -124,7 +122,7 @@ class Chaves(Actor):
             for y in range(4):
                 pass
                 tab = None  # self.sprite(self.ladrilho_coisa, TABUAX + x * TABUAS * 1.1, TABUAY + y * TABUAS)
-                tab = Celula(self, tab, TABUAX + x * TABUAS * 1.1, TABUAY + y * TABUAS)
+                Celula(self, tab, TABUAX + x * TABUAS * 1.1, TABUAY + y * TABUAS)
 
     def create(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
@@ -134,10 +132,10 @@ class Chaves(Actor):
         self.jogo.add(self.fala)
         self.jogo.visible = False
 
-        def up(c=None, d=None):
+        def up(_=None, __=None):
             self.aba_corrente.rola(-1)
 
-        def down(c=None, d=None):
+        def down(_=None, __=None):
             self.aba_corrente.rola(1)
 
         self.aba = self.group()
@@ -215,7 +213,6 @@ class Take(Actor):
         print("action", d)
         self.seleto = self._copy(d)
         self.chaves.jogo.add(self.seleto)
-
 
     def update(self):
         pass
