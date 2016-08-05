@@ -3,35 +3,17 @@ import imp
 import os
 import sys
 
-PYCART_DIR = ''.join(['python-', '.'.join(map(str, sys.version_info[:2]))])
-
+virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
+virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
 try:
-    zvirtenv = os.path.join(os.environ['OPENSHIFT_HOMEDIR'], PYCART_DIR,
-                            'virtenv', 'bin', 'activate_this.py')
-    exec(compile(open(zvirtenv).read(), zvirtenv, 'exec'),
-         dict(__file__=zvirtenv))
+    # See: http://stackoverflow.com/questions/23418735/using-python-3-3-in-openshifts-book-example?noredirect=1#comment35908657_23418735
+    # execfile(virtualenv, dict(__file__=virtualenv)) # for Python v2.7
+    # exec(compile(open(virtualenv, 'rb').read(), virtualenv, 'exec'), dict(__file__=virtualenv)) # for Python v3.3
+    # Multi-Line for Python v3.3:
+    exec_namespace = dict(__file__=virtualenv)
+    with open(virtualenv, 'rb') as exec_file:
+        file_contents = exec_file.read()
+    compiled_code = compile(file_contents, virtualenv, 'exec')
+    exec(compiled_code, exec_namespace)
 except IOError:
     pass
-
-
-def run_simple_httpd_server(app, ip, port=8080):
-    from wsgiref.simple_server import make_server
-    make_server(ip, port, app).serve_forever()
-
-
-#
-# IMPORTANT: Put any additional includes below this line.  If placed above this
-# line, it's possible required libraries won't be in your searchable path
-#
-
-
-#
-#  main():
-#
-if __name__ == '__main__':
-    ip = os.environ['OPENSHIFT_PYTHON_IP']
-    port = 8080
-    zapp = imp.load_source('application', 'wsgi/application')
-
-    print('Starting WSGIServer on %s:%d ... ' % (ip, port))
-    run_simple_httpd_server(zapp.application, ip, port)
