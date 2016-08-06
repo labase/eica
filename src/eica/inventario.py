@@ -124,14 +124,15 @@ class Inventario(Actor):
 
 
 class Item(Actor):
-    """Essa  é a classe Take que controla os personagens do jogo"""
+    """Essa  é a classe Item que seve tanto como ítem como coleção de itens"""
 
-    def __init__(self, recebe, nome, frame, x, y):
+    def __init__(self, recebe, nome, frame, x, y, stepx=50, janela=8):
         super().__init__()
-        self.recebe, self.nome, self.frame, self.x, self.y = recebe, nome, frame, x, y
+        self.recebe, self.nome, self.frame, self.x, self.y,\
+            self.stepx, self.janela = recebe, nome, frame, x, y, stepx, janela
         self.aba = self.coisas = self.fala = self.jogo = None
         self.seleto = None
-        self.range = range(0, 8)
+        self.range = list(range(0, self.janela))
 
     def mostra(self, muda):
         """ Mostra esta aba
@@ -140,18 +141,22 @@ class Item(Actor):
         :return: None
         """
         self.aba.visible = muda
-        shuffle(self.coisas)
+        shuffle(self.range)
         self.rola(0)
 
     def rola(self, desloca):
         """Aqui rolamos o conjunto de sprites mudando o frame de cada sprite"""
-        self.frame = self.frame + desloca if self.frame + desloca > 0 else 0
-        for frame, coisa in enumerate(self.coisas):
+        # self.frame = self.frame + desloca if self.frame + desloca > 0 else 0
+        self.range = (self.range + self.range + self.range)[self.janela+desloca: 2*self.janela+desloca]
+        for coisa in self.coisas:
+            coisa.visible = False
+        for frame, coisa in list(zip(self.range, self.coisas))[:6]:
             print(frame, coisa.frame)
             coisa.frame = self.frame + frame
+            coisa.visible = True
 
     def create(self):
-        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        """Cria coleção de coisas, a aba como um grupo de sprites e faz a aba ficar invisível"""
         self.aba = self.group()
         self.aba.visible = False
         self.coisas = [self._create(coisa) for coisa in self.range]
@@ -160,31 +165,27 @@ class Item(Actor):
         """Aqui colocamos o sprite do icon e adicionamos no seletor de aba"""
         coisa = self._copy(frame)
         self.aba.add(coisa)
-        # self.chaves.jogo.add(coisa)
         return coisa
 
     def _copy(self, frame):
         """Aqui colocamos o sprite do icon e selecionamos o frame que o representa"""
-        coisa = self.sprite(self.nome, self.x + 50 * frame, self.y)
+        coisa = self.sprite(self.nome, self.x + self.stepx * frame, self.y)
         coisa.frame = self.frame + frame
         coisa.inputEnabled = True
         coisa.input.useHandCursor = True
-        coisa.events.onInputDown.add(lambda a=None, b=frame, c=frame: self._click(b, c), dict(b=frame))
+        coisa.events.onInputDown.add(lambda a=None, b=coisa, c=coisa: self._click(b, c), dict(b=coisa))
         coisa.anchor.setTo(0.5, 0.5)
         return coisa
 
-    def activate(self):
-        self.aba.visible = True
-        shuffle(self.coisas)
-
-    def _click(self, _=None, d=None):
+    def _click(self, _=None, item=None):
         """ Seleciona o ícone que vai mover
 
-        :param d:
+        :param item:
         :return:
         """
-        print("action", d)
-        self.seleto = self._copy(d)
+        print("action", item.frame)
+        self.seleto = self.sprite(self.nome, 0, -1000)
+        self.seleto.frame = item.frame
         self.recebe(self.seleto)
 
     def update(self):
