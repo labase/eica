@@ -7,6 +7,51 @@ BALONX, BALONY = 0, 70
 TABUAX, TABUAY, TABUAS = 400, 120, 90
 FALAX, FALAY, FALASEPARA = 100, 550, 100
 ABAS = 80
+DIMENSAO = Ponto(4, 4)
+POSICAO = Ponto(400, 120)
+QUADRICULA = Ponto(100, 90)
+
+
+class Celula(Actor):
+    def __init__(self, recurso, tabuleiro=None, x=BALONX, y=BALONY):
+        super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
+        self.celula = recurso
+        self.x, self.y, self.tabuleiro = x, y, tabuleiro
+
+    def create(self):
+        self.celula = self.sprite(self.celula, self.x, self.y)
+        # self.celula.scale.setTo(2.5, 2.5)
+        self.celula.inputEnabled = True
+        self.celula.frame = 160
+        self.celula.width, self.celula.height = self.tabuleiro.quadro.x, self.tabuleiro.quadro.y
+        self.celula.events.onInputDown.add(lambda _=0, __=0: self.recebe(self.tabuleiro), self)
+        self.tabuleiro.tabuleiro.add(self.celula)
+
+    def recebe(self, tabuleiro):
+        item = tabuleiro.seleto
+        if not item:
+            return
+        item.x, item.y = self.x + 20, self.y + 20
+        self.score(evento=Ponto(x=item.x, y=item.y), carta="0", ponto="_CHAVE_", valor=item.frame)
+
+
+class Tabuleiro(Celula):
+
+    def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA):
+        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        super().__init__(tab)  # super é invocado aqui para preservar os poderes recebidos do Circus
+        self.seleto = self.tabuleiro = None
+        self.quadro = quadro
+        for x in range(dimensao.x):
+            for y in range(dimensao.y):
+                Celula(tab, self, posicao.x + x * quadro.x, posicao.y + y * quadro.y)
+
+    def create(self):
+        self.tabuleiro = self.group()
+
+    def ativa(self, ativa):
+        """Abre o balão de conversa"""
+        self.tabuleiro.visible = ativa
 
 
 class Aba(Actor):
@@ -54,6 +99,7 @@ class Inventario(Actor):
         self.monta_abas()
         self.abas = [self.fruta, self.animal, self.comida, self.arma, self.objeto,
                      self.fruta, self.animal, self.comida, self.arma, self.objeto]
+        self.cria_abas()
         self.ativo = True
 
     def ativa(self, ativa):
@@ -71,7 +117,6 @@ class Inventario(Actor):
         self.spritesheet(self.ladrilho_animal, IMG + "largeemoji.png", 47.5, 47, 14 * 9)
         self.spritesheet(self.ladrilho_coisa, IMG + "cacarecos.png", 32, 32, 16 * 16)
         self.spritesheet(self.ladrilho_arvore, IMG + "treesprites1.png", 123.5, 111, 4 * 3)
-        self.image(self.ladrilho_fala, IMG + "jogo_chaves.jpg")
 
     def monta_abas(self):
         """Jogador escreve: hominídeo comer fruta_vermelha."""
@@ -119,7 +164,7 @@ class Inventario(Actor):
         desce.events.onInputDown.add(down, dict(b=1))
         self.jogo.add(sobe)
         self.jogo.add(desce)
-        self.cria_abas()
+        # self.cria_abas()
         self.jogo.visible = False
 
 
