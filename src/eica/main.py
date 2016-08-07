@@ -15,12 +15,12 @@ class JogoEica(Vitollino):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.ladrilho_homem = "homem"
         self.set_id(gid)
-        self.homem = Homem()
         self.mundo = Mundo()
-        self.roda = Roda()
-        self.chaves = Chaves()
-        self.mundo.roda = self.roda
-        self.mundo.chaves = self.chaves
+        self.homem = Homem()
+        # self.roda = Roda()
+        # self.chaves = Chaves()
+        # self.mundo.roda = self.roda
+        # self.mundo.chaves = self.chaves
 
     def preload(self):
         """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
@@ -52,10 +52,10 @@ class Homem(Jogo):
 
     def create(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
-        pensa = self.pensa = self.sprite("pensa", 200, -10)
-        pensa.scale.setTo(2.1, 1.4)
+        # pensa = self.pensa = self.sprite("pensa", 200, -10)
+        # pensa.scale.setTo(2.1, 1.4)
         self.grupo_de_elementos = self.group()
-        self.grupo_de_elementos.add(pensa)
+        # self.grupo_de_elementos.add(pensa)
         self.grupo_de_elementos.visible = False
 
         print(" Homem(Jogo):", self.ladrilho, self.x, self.y)

@@ -1,6 +1,7 @@
 from braser.vitollino import Actor
 from random import random
-from .inventario import MonoInventario
+from .inventario import MonoInventario, Tabuleiro
+from . import Ponto
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 
@@ -13,14 +14,18 @@ class Mundo(Actor):
         self.ladrilho_coisa = "coisa"
         self.ladrilho_icon = "icon"
         self.roda = self.chaves = None
+        self.tabuleiro = Tabuleiro(self.ladrilho_coisa, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64))
         self.inventario = MonoInventario(self.recebe, 300, 60)
         # self.take_propics()
 
     def ativa(self, item):
         self.inventario.ativa(item)
+        self.tabuleiro.ativa(item)
 
     def recebe(self, item):
         pass
+        self.tabuleiro.seleto = item
+        # self.jogo.add(item)
 
     def preload(self):
         """Aqui no preload carregamos as imagens de ladrilhos dos items usados no jogo"""

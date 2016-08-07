@@ -48,6 +48,7 @@ class Tabuleiro(Celula):
 
     def create(self):
         self.tabuleiro = self.group()
+        self.tabuleiro.visible = False
 
     def ativa(self, ativa):
         """Abre o balão de conversa"""
@@ -80,12 +81,13 @@ class Aba(Actor):
 
 class Inventario(Actor):
     """Essa  é a classe Chaves que recebe os poderes da classe Circus de poder criar um jogo"""
+    preloader = None
 
     def __init__(self, recebe, x=BALONX, y=BALONY+FALAY, delta=Ponto(750, 0)):
+        Inventario.preloader = Inventario.preloader or self._preload
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.aba_corrente = self.aba = None
         self.recebe = recebe
-        # self.abas = "fruta objeto animal arma"
         self.ladrilho_coisa = "objeto"
         self.ladrilho_fruta = "fruta"
         self.ladrilho_animal = "animal"
@@ -113,10 +115,16 @@ class Inventario(Actor):
 
     def preload(self):
         """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
+        # Inventario.preloader()
+        self._preload()
+
+    def _preload(self):
+        """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
         self.spritesheet(self.ladrilho_fruta, IMG + "fruit.png", 65, 65, 8 * 8)
         self.spritesheet(self.ladrilho_animal, IMG + "largeemoji.png", 47.5, 47, 14 * 9)
         self.spritesheet(self.ladrilho_coisa, IMG + "cacarecos.png", 32, 32, 16 * 16)
         self.spritesheet(self.ladrilho_arvore, IMG + "treesprites1.png", 123.5, 111, 4 * 3)
+        Inventario.preloader = lambda _=0: None
 
     def monta_abas(self):
         """Jogador escreve: hominídeo comer fruta_vermelha."""
@@ -130,7 +138,7 @@ class Inventario(Actor):
 
     def mostra_abas(self, corrente, proxima):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
-        print("mostra_abas", proxima.nome)
+        # print("mostra_abas", proxima.nome)
         corrente.mostra(False)
         proxima.mostra(True)
 
@@ -149,7 +157,7 @@ class Inventario(Actor):
 
     def create(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
-        self.jogo = self.group()
+        self.jogo = self.jogo or self.group()
         self.jogo.visible = False
 
         self.aba = self.group()
@@ -177,7 +185,17 @@ class MonoInventario(Inventario):
 
     def preload(self):
         """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
-        pass
+        super().preload()
+        self.image("pensa", IMG + "thought.png")
+
+    def create(self):
+        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        pensa = self.pensa = self.sprite("pensa", 200, -10)
+        pensa.scale.setTo(2.1, 1.4)
+        self.jogo = self.jogo or self.group()
+        self.jogo.add(pensa)
+        super().create()  # invocado aqui para preservar os poderes recebidos do Circus
+        self.jogo.visible = False
 
     def cria_abas(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
