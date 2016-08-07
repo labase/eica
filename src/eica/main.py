@@ -17,10 +17,10 @@ class JogoEica(Vitollino):
         self.set_id(gid)
         self.mundo = Mundo()
         self.homem = Homem()
-        # self.roda = Roda()
-        # self.chaves = Chaves()
-        # self.mundo.roda = self.roda
-        # self.mundo.chaves = self.chaves
+        self.roda = Roda()
+        self.chaves = Chaves()
+        self.mundo.roda = self.roda
+        self.mundo.chaves = self.chaves
 
     def preload(self):
         """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
