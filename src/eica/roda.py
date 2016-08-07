@@ -26,9 +26,9 @@ class Roda(Actor):
         """Abre o balão de conversa"""
         self.jogo.visible = self.ativo
         self.tween(self.jogo, 1000, repeat=0, alpha=1)
-        self.score(evento=Ponto(x=0, y=0), carta="0", ponto="_LINGUA_", valor=self.ativo)
+        self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto="_LINGUA_", valor=self.ativo)
         for termo in self.termos:
-            termo.ativa()
+            termo.ativar()
         self.ativo = not self.ativo
 
     def preload(self):

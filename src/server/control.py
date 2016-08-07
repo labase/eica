@@ -2,7 +2,7 @@
 from datetime import datetime
 from bottle import default_app, route, view, get, post, static_file, request, redirect, run, TEMPLATE_PATH
 import os
-from . import modelo as database
+import modelo as database
 import json
 __author__ = 'carlo'
 DIR = os.path.dirname(__file__)  # + '/view'

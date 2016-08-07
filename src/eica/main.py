@@ -45,7 +45,7 @@ class Homem(Jogo):
 
     def preload(self):
         """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
-        self.ladrilho = "homem"
+        self.ladrilho = "_HOMEM_"
         self.image("pensa", IMG + "thought.png")
         # self.spritesheet(self.ladriho, IMG + "caveman.png", 130, 130, 5 * 2)
         self.spritesheet("homem", IMG + "caveman.png", 130, 130, 5 * 2)
@@ -70,7 +70,7 @@ class Homem(Jogo):
         """Ativa o jogo do Mundo"""
         print("homem action", JogoEica.JOGO.mundo)
         self.ativa()
-        JogoEica.JOGO.mundo.ativa(self.ativo)
+        JogoEica.JOGO.mundo.ativar(self.ativo)
 
 
 def main(gid=None):

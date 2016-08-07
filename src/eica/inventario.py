@@ -32,14 +32,15 @@ class Celula(Actor):
         if not item:
             return
         item.x, item.y = self.x + 20, self.y + 20
-        self.score(evento=Ponto(x=item.x, y=item.y), carta="0", ponto="_CHAVE_", valor=item.frame)
+        self.score(evento=Ponto(x=item.x, y=item.y), carta=[str(item.frame)], ponto=self.tabuleiro.ladrilho, valor=True)
 
 
 class Tabuleiro(Celula):
 
-    def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA):
+    def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA, jogo="_Chaves_"):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         super().__init__(tab)  # super é invocado aqui para preservar os poderes recebidos do Circus
+        self.ladrilho = jogo
         self.seleto = self.tabuleiro = None
         self.quadro = quadro
         for x in range(dimensao.x):
@@ -75,7 +76,7 @@ class Aba(Actor):
         print("mostra_abas", proxima.nome, chave.aba_corrente.nome)
         chave.aba_corrente.mostra(False)
         proxima.mostra(True)
-        self.score(evento=Ponto(x=self.x, y=self.y), carta=chave.aba_corrente.nome, ponto="_ABAS_", valor=proxima.nome)
+        self.score(evento=Ponto(x=self.x, y=self.y), carta=[chave.aba_corrente.nome], ponto="_ABAS_", valor=proxima.nome)
         chave.aba_corrente = proxima
 
 
@@ -203,10 +204,10 @@ class MonoInventario(Inventario):
 
     def ativa(self, ativa):
         """Abre o balão de conversa"""
-        # self.score(evento=Ponto(x=0, y=0), carta="0", ponto="_CHAVES_", valor=self.ativo)
         print("MonoInventario", ativa)
         self.jogo.visible = ativa
         [aba.mostra(ativa) for aba in self.abas]
+        self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto="_MUNDO_", valor=self.ativo)
 
     def up(self, _=None, __=None):
         [aba.rola(-1) for aba in self.abas]

@@ -2,11 +2,12 @@ from braser.vitollino import Actor
 from random import random
 from .inventario import MonoInventario, Tabuleiro
 from . import Ponto
+from .eica import Jogo
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 
 
-class Mundo(Actor):
+class Mundo(Jogo):
     """Essa  é a classe Mundo que recebe os poderes da classe Circus de poder criar um jogo"""
 
     def __init__(self):
@@ -14,18 +15,18 @@ class Mundo(Actor):
         self.ladrilho_coisa = "coisa"
         self.ladrilho_icon = "icon"
         self.roda = self.chaves = None
-        self.tabuleiro = Tabuleiro(self.ladrilho_coisa, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64))
+        self.tabuleiro = Tabuleiro(self.ladrilho_coisa, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64), jogo="_Mundo_")
         self.inventario = MonoInventario(self.recebe, 300, 60)
         # self.take_propics()
 
-    def ativa(self, item):
+    def ativar(self, item):
         self.inventario.ativa(item)
         self.tabuleiro.ativa(item)
 
     def recebe(self, item):
         pass
         self.tabuleiro.seleto = item
-        # self.jogo.add(item)
+        self.grupo_de_elementos.add(item)
 
     def preload(self):
         """Aqui no preload carregamos as imagens de ladrilhos dos items usados no jogo"""
@@ -34,6 +35,7 @@ class Mundo(Actor):
 
     def create(self):
         """Aqui colocamos o selecionador dos jogos da roda e chaves lógicas"""
+        super().create()
         roda = self.sprite(self.ladrilho_icon, 100, 700)
         roda.inputEnabled = True
         roda.input.useHandCursor = True

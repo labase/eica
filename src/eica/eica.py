@@ -59,4 +59,8 @@ class Jogo(Elemento):
         """Abre o balão de conversa"""
         self.ativo = not self.ativo
         self.grupo_de_elementos.visible = self.ativo
-        self.score(evento=Ponto(x=0, y=0), carta="0", ponto=self.ladrilho, valor=self.ativo)
+        self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto=self.ladrilho, valor=self.ativo)
+
+    def create(self):
+        """Aqui colocamos as imagems na tela do jogo"""
+        self.grupo_de_elementos = self.group()

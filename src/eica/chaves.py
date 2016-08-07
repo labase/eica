@@ -35,7 +35,7 @@ class Chaves(Actor):
 
     def ativa(self):
         """Abre o balão de conversa"""
-        self.score(evento=Ponto(x=0, y=0), carta="0", ponto="_CHAVES_", valor=self.ativo)
+        self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto="_CHAVES_", valor=self.ativo)
         self.jogo.visible = self.ativo
         # self.tween(self.fala, 2000, repeat=0, alpha=1)
         self.tabuleiro.ativa(self.ativo)
