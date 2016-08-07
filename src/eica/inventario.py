@@ -1,6 +1,6 @@
 from braser.vitollino import Actor
-from . import Ponto
-from .eica import Botao
+from . import Ponto, Folha
+from .eica import Botao, Imagem, Jogo
 from random import shuffle
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
@@ -65,7 +65,7 @@ class Aba(Actor):
         self.chave, self.x, self.y = chave, x, y
 
     def create(self):
-        self.celula = self.sprite(self.chave.ladrilho_coisa, self.x, self.y)
+        self.celula = self.sprite(Folha.coisa.n, self.x, self.y)
         self.celula.scale.setTo(2.5, 2.5)
         self.celula.inputEnabled = True
         self.celula.frame = 0  # 160
@@ -77,7 +77,8 @@ class Aba(Actor):
         print("mostra_abas", proxima.nome, chave.aba_corrente.nome)
         chave.aba_corrente.mostra(False)
         proxima.mostra(True)
-        self.score(evento=Ponto(x=self.x, y=self.y), carta=[chave.aba_corrente.nome], ponto="_ABAS_", valor=proxima.nome)
+        self.score(evento=Ponto(x=self.x, y=self.y), carta=[chave.aba_corrente.nome],
+                   ponto="_ABAS_", valor=proxima.nome)
         chave.aba_corrente = proxima
 
 
@@ -88,24 +89,13 @@ class Inventario(Actor):
     def __init__(self, recebe, x=BALONX, y=BALONY+FALAY, delta=Ponto(750, 0)):
         Inventario.preloader = Inventario.preloader or self._preload
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.aba_corrente = self.aba = None
-        self.recebe = recebe
-        self.ladrilho_coisa = "objeto"
-        self.ladrilho_fruta = "fruta"
-        self.ladrilho_animal = "animal"
-        self.ladrilho_arvore = "arvore"
-        self.ladrilho_fala = "chave"
-        self.fala = self.falou = self.pensa = None
-        self.fruta = self.animal = self.comida = None
-        self.arvore = self.arma = self.objeto = None
         self.x, self.y, self.delta = x, y, delta
         self.jogo = None
+        self.aba_corrente = self.abas = None
+        self.recebe = recebe
         self.monta_abas()
-        self.abas = [self.fruta, self.animal, self.comida, self.arma, self.objeto,
-                     self.fruta, self.animal, self.comida, self.arma, self.objeto]
-        self.cria_abas()
-        Botao(self.ladrilho_animal, Ponto(self.x, 2*self.delta.y+self.y-20), 14 * 9 - 4, self.up, self)
-        Botao(self.ladrilho_animal, Ponto(self.x + self.delta.x, 2*self.delta.y+self.y-20), 14 * 9 - 5, self.down, self)
+        Botao(Folha.animal, Ponto(self.x, 2*self.delta.y+self.y-20), 14 * 9 - 4, self.up, self)
+        Botao(Folha.animal, Ponto(self.x + self.delta.x, 2*self.delta.y+self.y-20), 14 * 9 - 5, self.down, self)
         self.ativo = True
 
     def add(self, item):
@@ -114,7 +104,6 @@ class Inventario(Actor):
 
     def ativa(self, ativa):
         """Abre o balão de conversa"""
-        # self.score(evento=Ponto(x=0, y=0), carta="0", ponto="_CHAVES_", valor=self.ativo)
         self.jogo.visible = ativa
         # self.tween(self.fala, 2000, repeat=0, alpha=1)
         for aba in self.abas:
@@ -128,21 +117,18 @@ class Inventario(Actor):
 
     def _preload(self):
         """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
-        self.spritesheet(self.ladrilho_fruta, IMG + "fruit.png", 65, 65, 8 * 8)
-        self.spritesheet(self.ladrilho_animal, IMG + "largeemoji.png", 47.5, 47, 14 * 9)
-        self.spritesheet(self.ladrilho_coisa, IMG + "cacarecos.png", 32, 32, 16 * 16)
-        self.spritesheet(self.ladrilho_arvore, IMG + "treesprites1.png", 123.5, 111, 4 * 3)
+        [self.spritesheet(*folha.all()) for folha in Folha.all()]
         Inventario.preloader = lambda _=0: None
 
     def monta_abas(self):
         """Jogador escreve: hominídeo comer fruta_vermelha."""
-        self.fruta = Item(self.recebe, self.ladrilho_fruta, 0, self.x + FALAX, self.y)
-        self.animal = Item(self.recebe, self.ladrilho_animal, 4 * 14 + 7, self.x + FALAX, self.y + self.delta.y * 1)
-        self.comida = Item(self.recebe, self.ladrilho_coisa, 5 * 16 + 6, self.x + FALAX, self.y + self.delta.y * 2)
-        # self.arvore = Item(self.recebe, self.ladrilho_arvore, 0, self.x+FALAX+FALASEPARA*2, self.y+FALAY)
-        self.arma = Item(self.recebe, self.ladrilho_coisa, 16 * 4, self.x + FALAX, self.y + self.delta.y * 3)
-        self.objeto = Item(self.recebe, self.ladrilho_coisa, 16 + 7, self.x + FALAX, self.y + self.delta.y * 4)
-        self.aba_corrente = self.fruta
+        icon = [0, 4 * 14 + 7, 5 * 16 + 6, 0, 16 * 4, 16 + 7]
+        inventario = [(self.recebe, coisa.n, icon[y], self.x + FALAX, self.y + self.delta.y * y)
+                      for y, coisa in enumerate(Folha.allThing())]
+        self.abas = [Item(*argumentos) for argumentos in inventario]
+        self.aba_corrente = self.abas[0]
+        self.cria_abas()
+        return
 
     def mostra_abas(self, corrente, proxima):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
@@ -154,6 +140,7 @@ class Inventario(Actor):
 
     def cria_abas(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        self.abas += self.abas
         for x in range(10):
             Aba(self, self.abas[x], self.x - ABAS + x * ABAS, self.y - BALONY - 50)
 
@@ -168,28 +155,17 @@ class Inventario(Actor):
         self.jogo = self.jogo or self.group()
         self.jogo.visible = False
 
-        self.aba = self.group()
-        self.aba.visible = False
-
 
 class MonoInventario(Inventario):
     """Essa  é a classe Item que seve tanto como ítem como coleção de itens"""
 
     def __init__(self, recebe, x=BALONX, y=BALONY):
         super().__init__(recebe, x, y, Ponto(400, 45))  # invocado aqui para preservar os poderes recebidos do Circus
-        self.abas = [self.fruta, self.animal, self.comida, self.arma, self.objeto]
-
-    def preload(self):
-        """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
-        super().preload()
-        self.image("pensa", IMG + "thought.png")
+        Imagem(Folha.mundo, Ponto(200, -10), self, (2.1, 1.4))
 
     def create(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
-        pensa = self.pensa = self.sprite("pensa", 200, -10)
-        pensa.scale.setTo(2.1, 1.4)
         self.jogo = self.jogo or self.group()
-        self.jogo.add(pensa)
         super().create()  # invocado aqui para preservar os poderes recebidos do Circus
         self.jogo.visible = False
 
@@ -197,7 +173,7 @@ class MonoInventario(Inventario):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         pass
 
-    def ativa(self, ativa):
+    def ativa(self, ativa=True):
         """Abre o balão de conversa"""
         print("MonoInventario", ativa)
         self.jogo.visible = ativa

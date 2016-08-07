@@ -61,24 +61,48 @@ class Jogo(Elemento):
         self.grupo_de_elementos.visible = self.ativo
         self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto=self.ladrilho, valor=self.ativo)
 
+    def add(self, item):
+        """Aqui colocamos as imagems na tela do jogo"""
+        self.grupo_de_elementos.add(item)
+
     def create(self):
         """Aqui colocamos as imagems na tela do jogo"""
         self.grupo_de_elementos = self.group()
 
 
-class Botao(Elemento):
-    """Um objeto clicável"""
+class Imagem(Elemento):
+    """Um objeto estático"""
 
-    def __init__(self, folha, posicao, frame, ato, dono):
+    def __init__(self, folha, posicao, dono, escala=(1., 1.)):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.folha, self.posicao, self.frame, self.ato, self.dono = folha, posicao, frame, ato, dono
+        self.folha, self.posicao, self.dono, self.escala = folha, posicao, dono, escala
         self.botao = None
-        print("folha, posicao, frame, ato, grupo", folha, posicao, frame, ato, dono)
+
+    def preload(self):
+        """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
+        self.image(*self.folha.img())
 
     def create(self):
         """Aqui colocamos as imagems na tela do jogo"""
-        self.botao = self.sprite(self.folha, self.posicao.x, self.posicao.y)
+        self.botao = self.sprite(self.folha.n, self.posicao.x, self.posicao.y)
+        self.botao.scale.setTo(*self.escala)
+        self.dono.add(self.botao)
+
+
+class Botao(Imagem):
+    """Um objeto clicável"""
+
+    def __init__(self, folha, posicao, frame, ato, dono, escala=(1., 1.)):
+        super().__init__(folha, posicao, dono, escala)  # invocado aqui para preservar os poderes recebidos do Circus
+        self.frame, self.ato = frame, ato
+
+    def preload(self):
+        """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
+        self.spritesheet(*self.folha.all())
+
+    def create(self):
+        """Aqui colocamos as imagems na tela do jogo"""
+        super().create()
         self.botao.inputEnabled = True
         self.botao.frame = self.frame
         self.botao.events.onInputDown.add(lambda _=0, botao=0: self.ato(botao),  self)
-        self.dono.add(self.botao)
