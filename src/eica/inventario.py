@@ -81,7 +81,7 @@ class Aba(Actor):
 class Inventario(Actor):
     """Essa  é a classe Chaves que recebe os poderes da classe Circus de poder criar um jogo"""
 
-    def __init__(self, recebe, x=BALONX, y=BALONY):
+    def __init__(self, recebe, x=BALONX, y=BALONY+FALAY, delta=Ponto(750, 0)):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.aba_corrente = self.aba = None
         self.recebe = recebe
@@ -94,7 +94,7 @@ class Inventario(Actor):
         self.fala = self.falou = self.pensa = None
         self.fruta = self.animal = self.comida = None
         self.arvore = self.arma = self.objeto = None
-        self.x, self.y = x, y
+        self.x, self.y, self.delta = x, y, delta
         self.jogo = None
         self.monta_abas()
         self.abas = [self.fruta, self.animal, self.comida, self.arma, self.objeto,
@@ -120,12 +120,12 @@ class Inventario(Actor):
 
     def monta_abas(self):
         """Jogador escreve: hominídeo comer fruta_vermelha."""
-        self.fruta = Item(self.recebe, self.ladrilho_fruta, 0, self.x + FALAX, self.y + FALAY)
-        self.animal = Item(self.recebe, self.ladrilho_animal, 4 * 14 + 7, self.x + FALAX, self.y + FALAY)
-        self.comida = Item(self.recebe, self.ladrilho_coisa, 5 * 16 + 6, self.x + FALAX, self.y + FALAY)
+        self.fruta = Item(self.recebe, self.ladrilho_fruta, 0, self.x + FALAX, self.y)
+        self.animal = Item(self.recebe, self.ladrilho_animal, 4 * 14 + 7, self.x + FALAX, self.y + self.delta.y * 1)
+        self.comida = Item(self.recebe, self.ladrilho_coisa, 5 * 16 + 6, self.x + FALAX, self.y + self.delta.y * 2)
         # self.arvore = Item(self.recebe, self.ladrilho_arvore, 0, self.x+FALAX+FALASEPARA*2, self.y+FALAY)
-        self.arma = Item(self.recebe, self.ladrilho_coisa, 16 * 4, self.x + FALAX, self.y + FALAY)
-        self.objeto = Item(self.recebe, self.ladrilho_coisa, 16 + 7, self.x + FALAX, self.y + FALAY)
+        self.arma = Item(self.recebe, self.ladrilho_coisa, 16 * 4, self.x + FALAX, self.y + self.delta.y * 3)
+        self.objeto = Item(self.recebe, self.ladrilho_coisa, 16 + 7, self.x + FALAX, self.y + self.delta.y * 4)
         self.aba_corrente = self.fruta
 
     def mostra_abas(self, corrente, proxima):
@@ -139,33 +139,62 @@ class Inventario(Actor):
     def cria_abas(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         for x in range(10):
-            Aba(self, self.abas[x], FALAX - ABAS + x * ABAS, FALAY - 50)
+            Aba(self, self.abas[x], self.x - ABAS + x * ABAS, self.y - BALONY - 50)
+
+    def up(self, _=None, __=None):
+        self.aba_corrente.rola(-1)
+
+    def down(self, _=None, __=None):
+        self.aba_corrente.rola(1)
 
     def create(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         self.jogo = self.group()
         self.jogo.visible = False
 
-        def up(_=None, __=None):
-            self.aba_corrente.rola(-1)
-
-        def down(_=None, __=None):
-            self.aba_corrente.rola(1)
-
         self.aba = self.group()
         self.aba.visible = False
-        sobe = self.sprite(self.ladrilho_animal, self.x, self.y + FALAY - 20)
+        sobe = self.sprite(self.ladrilho_animal, self.x, 2*self.delta.y+self.y-20)
         sobe.inputEnabled = True
-        desce = self.sprite(self.ladrilho_animal, self.x + 750, self.y + FALAY - 20)
+        desce = self.sprite(self.ladrilho_animal, self.x + self.delta.x, 2*self.delta.y+self.y-20)
         sobe.frame = 14 * 9 - 4
         desce.inputEnabled = True
         desce.frame = 14 * 9 - 5
-        sobe.events.onInputDown.add(up, self)
-        desce.events.onInputDown.add(down, dict(b=1))
+        sobe.events.onInputDown.add(self.up, self)
+        desce.events.onInputDown.add(self.down, dict(b=1))
         self.jogo.add(sobe)
         self.jogo.add(desce)
         # self.cria_abas()
         self.jogo.visible = False
+
+
+class MonoInventario(Inventario):
+    """Essa  é a classe Item que seve tanto como ítem como coleção de itens"""
+
+    def __init__(self, recebe, x=BALONX, y=BALONY):
+        super().__init__(recebe, x, y, Ponto(400, 45))  # invocado aqui para preservar os poderes recebidos do Circus
+        self.abas = [self.fruta, self.animal, self.comida, self.arma, self.objeto]
+
+    def preload(self):
+        """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
+        pass
+
+    def cria_abas(self):
+        """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
+        pass
+
+    def ativa(self, ativa):
+        """Abre o balão de conversa"""
+        # self.score(evento=Ponto(x=0, y=0), carta="0", ponto="_CHAVES_", valor=self.ativo)
+        print("MonoInventario", ativa)
+        self.jogo.visible = ativa
+        [aba.mostra(ativa) for aba in self.abas]
+
+    def up(self, _=None, __=None):
+        [aba.rola(-1) for aba in self.abas]
+
+    def down(self, _=None, __=None):
+        [aba.rola(1) for aba in self.abas]
 
 
 class Item(Actor):
@@ -196,7 +225,7 @@ class Item(Actor):
         for coisa in self.coisas:
             coisa.visible = False
         for frame, coisa in list(zip(self.range, self.coisas))[:6]:
-            print(frame, coisa.frame)
+            # print(frame, coisa.frame)
             coisa.frame = self.frame + frame
             coisa.visible = True
 
