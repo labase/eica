@@ -64,3 +64,21 @@ class Jogo(Elemento):
     def create(self):
         """Aqui colocamos as imagems na tela do jogo"""
         self.grupo_de_elementos = self.group()
+
+
+class Botao(Elemento):
+    """Um objeto clicável"""
+
+    def __init__(self, folha, posicao, frame, ato, dono):
+        super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
+        self.folha, self.posicao, self.frame, self.ato, self.dono = folha, posicao, frame, ato, dono
+        self.botao = None
+        print("folha, posicao, frame, ato, grupo", folha, posicao, frame, ato, dono)
+
+    def create(self):
+        """Aqui colocamos as imagems na tela do jogo"""
+        self.botao = self.sprite(self.folha, self.posicao.x, self.posicao.y)
+        self.botao.inputEnabled = True
+        self.botao.frame = self.frame
+        self.botao.events.onInputDown.add(lambda _=0, botao=0: self.ato(botao),  self)
+        self.dono.add(self.botao)

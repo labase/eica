@@ -1,5 +1,6 @@
 from braser.vitollino import Actor
 from . import Ponto
+from .eica import Botao
 from random import shuffle
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
@@ -103,7 +104,13 @@ class Inventario(Actor):
         self.abas = [self.fruta, self.animal, self.comida, self.arma, self.objeto,
                      self.fruta, self.animal, self.comida, self.arma, self.objeto]
         self.cria_abas()
+        Botao(self.ladrilho_animal, Ponto(self.x, 2*self.delta.y+self.y-20), 14 * 9 - 4, self.up, self)
+        Botao(self.ladrilho_animal, Ponto(self.x + self.delta.x, 2*self.delta.y+self.y-20), 14 * 9 - 5, self.down, self)
         self.ativo = True
+
+    def add(self, item):
+        """Abre o balão de conversa"""
+        self.jogo.add(item)
 
     def ativa(self, ativa):
         """Abre o balão de conversa"""
@@ -163,18 +170,6 @@ class Inventario(Actor):
 
         self.aba = self.group()
         self.aba.visible = False
-        sobe = self.sprite(self.ladrilho_animal, self.x, 2*self.delta.y+self.y-20)
-        sobe.inputEnabled = True
-        desce = self.sprite(self.ladrilho_animal, self.x + self.delta.x, 2*self.delta.y+self.y-20)
-        sobe.frame = 14 * 9 - 4
-        desce.inputEnabled = True
-        desce.frame = 14 * 9 - 5
-        sobe.events.onInputDown.add(self.up, self)
-        desce.events.onInputDown.add(self.down, dict(b=1))
-        self.jogo.add(sobe)
-        self.jogo.add(desce)
-        # self.cria_abas()
-        self.jogo.visible = False
 
 
 class MonoInventario(Inventario):
