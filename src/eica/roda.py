@@ -1,156 +1,119 @@
 from braser.vitollino import Actor
-from . import Ponto
+from . import Ponto, Folha
 from random import shuffle
+from .eica import Jogo, Imagem, Botao
+from .inventario import ListaInventario, Item
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 BALONX, BALONY = 20, 70
 FALAX, FALAY, FALASEPARA = 100, 40, 100
 
 
-class Roda(Actor):
+class Roda(Jogo):
     """Essa  é a classe Roda que recebe os poderes da classe Circus de poder criar um jogo"""
 
     def __init__(self, x=BALONX, y=BALONY):
-        super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.ladrilho_coisa = "roda"
-        self.ladrilho_fala = "fala"
-        self.fala = self.falou = self.pensa = None
-        self.nome = self.verbo = self.alvo = None
+        super().__init__(ver=False)  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.x, self.y = x, y
-        self.jogo = None
+        Imagem(Folha.fala, Ponto(x, y), self, (0.7, 0.7))
+        Imagem(Folha.fala, Ponto(x + FALAX + FALASEPARA * 3.7, 10), self, (0.5, 0.8))
+        Botao(Folha.animal, Ponto(x + FALAX + FALASEPARA * 2.5, y + FALAY + FALASEPARA), 42, self._click, self)
+        self.inventario = [
+            ListaInventario(lambda _=0: none, Ponto(150+80*x, 90), item=[Folha.animal], passo=Ponto(0, 50), janela=3)
+            for x in range(3)]
+        a, b, c = [(0, 540 + 80 * x, 30) for x in range(3)]
+        self.texto = Fala(lambda _=0: none, Ponto(500, 90),
+                          item=(Palavra(*a), Palavra(*b), Palavra(*c)), passo=Ponto(0, 50), janela=3)
         self.termos = None
-        self.take_propils()
-        self.ativo = True
 
-    def ativa(self):
+    def ativa(self, ativo=None):
         """Abre o balão de conversa"""
-        self.jogo.visible = self.ativo
-        self.tween(self.jogo, 1000, repeat=0, alpha=1)
+        super().ativa(ativo)
+        # self.tween(self.jogo, 1000, repeat=0, alpha=1)
+        [inventario.ativa(self.ativo) for inventario in self.inventario]
+        # [inventario.ativa(self.ativo) for inventario in self.texto.item]
+        self.texto.ativa(self.ativo)
         self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto="_LINGUA_", valor=self.ativo)
-        for termo in self.termos:
-            termo.ativar()
-        self.ativo = not self.ativo
-
-    def preload(self):
-        """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
-        self.spritesheet(self.ladrilho_coisa, IMG + "largeemoji.png", 47.5, 47, 14 * 9)
-        self.image(self.ladrilho_fala, IMG + "balooni.png")
-
-    def take_propils(self):
-        """Jogador escreve: hominídeo comer fruta_vermelha."""
-        self.nome = Take(self.ladrilho_coisa, 14 * 2, self.x + FALAX, self.y + FALAY)
-        self.verbo = Take(self.ladrilho_coisa, 14, self.x + FALAX + FALASEPARA, self.y + FALAY)
-        self.alvo = Take(self.ladrilho_coisa, 14 * 5, self.x + FALAX + FALASEPARA * 2, self.y + FALAY)
-        self.termos = (self.nome, self.verbo, self.alvo)
-
-    def create(self):
-        """Aqui colocamos os sprites da fala"""
-        """Balao de fala"""
-        self.fala = self.sprite(self.ladrilho_fala, self.x, self.y)
-        self.fala.scale.setTo(0.7, 0.7)
-
-        self.jogo = self.group()
-        self.nome.jogo = self.verbo.jogo = self.alvo.jogo = self.jogo
-
-        """Balao de pensamento"""
-        self.pensa = self.sprite(self.ladrilho_fala, self.x + FALAX + FALASEPARA * 3.7, self.y)
-        self.pensa.scale.setTo(0.5, 0.5)
-
-        """Botao de falar"""
-        self.falou = self.sprite(self.ladrilho_coisa, self.x + FALAX + FALASEPARA * 2.5, self.y + FALAY + FALASEPARA)
-        self.falou.frame = 14 * 3
-        self.falou.inputEnabled = True
-        self.falou.scale.setTo(0.7, 0.7)
-        self.falou.events.onInputDown.add(self._click, self)
-
-        self.jogo.add(self.fala)
-        self.jogo.add(self.pensa)
-        self.jogo.add(self.falou)
-        self.jogo.alpha = 0
-        # self.jogo.visible = False
 
     def _click(self, _=None, d=None):
         """Copia fala para pensamento do interlocutor"""
-        faz_sentido = self.nome.falou() and self.verbo.falou() and self.alvo.falou()
-        carta = [self.nome.frame, self.verbo.frame, self.alvo.frame]
-        print("falou", carta, faz_sentido)
-        self.score(evento=Ponto(x=0, y=0), carta=["%s" % c for c in carta], ponto="_FALA_", valor=faz_sentido)
-
-        self.nome.falou(faz_sentido)
-        self.verbo.falou(faz_sentido)
-        self.alvo.falou(faz_sentido)
+        fez_sentido = True  # set(termo.frame for termo in self.inventario) in faz_sentido
+        carta = [termo.frame for termo in self.inventario]
+        print("falou", carta, fez_sentido)
+        self.score(evento=Ponto(x=0, y=0), carta=["%s" % c for c in carta], ponto="_FALA_", valor=fez_sentido)
+        self.texto.fala(carta, fez_sentido)
 
 
-class Take(Actor):
+class Fala(ListaInventario):
     """Essa  é a classe Take que controla os itens do jogo"""
     """Takes com retorno positivo"""
     faz_sentido = [14 * 2 + 0, 14 * 2 + 1, 14 * 2 + 4, 14 * 2 + 5, 14 * 2 + 8,
                    14 + 0, 14 + 1, 14 + 2, 14 + 3, 14 + 4, 14 + 5, 14 + 6, 14 + 7, 14 + 8, 14 + 9,
                    70 + 0, 70 + 1, 70 + 2, 70 + 3, 70 + 4, 70 + 5, 70 + 6]
 
-    def __init__(self, nome, frame, x, y):
-        super().__init__()
-        self.nome, self.frame, self.x, self.y = nome, frame, x, y
-        self.coisa = self.coisas = self.fala = self.jogo = None
+    def __init__(self, recebe, ponto, delta=Ponto(300, 0), ver=False, item=None, passo=Ponto(0, 50), janela=6):
+        super().__init__(recebe, ponto, delta, ver, item, passo, janela)
 
-    def ativa(self):
-        shuffle(self.coisas)
-        for frame, coisa in enumerate(self.coisas):
-            coisa.frame = self.frame + frame
+    def fala(self, carta, fez_sentido=False):
+        frase = carta  # if fez_sentido else WTF
+        [lista.append(palavra) for palavra, lista in zip(frase, self.item)]
 
-    def create(self):
-        """Aqui criamos as funçoes para subir ou descer a roda"""
+    def monta_botoes(self):
+        pass
 
-        def up(_=None, d=None):
-            self.frame += 1
-            print("up", self.frame)
-            for frame, coisa in enumerate(self.coisas):
-                print(frame, coisa.frame)
-                coisa.frame = self.frame + frame
+    def ativa(self, ativo=None):
+        """Abre o balão de conversa"""
+        super().ativa(ativo)
+        # self.tween(self.fala, 2000, repeat=0, alpha=1)
+        for aba in self.abas:
+            aba.mostra(False)
+        for aba in self.item:
+            aba.mostra(self.ativo)
+        # self.aba_corrente.mostra(self.ativo)
 
-        def down(_=None, d=None):
-            self.frame -= 1
-            print("down", self.frame)
-            for frame, coisa in enumerate(self.coisas):
-                coisa.frame = self.frame + frame
 
-        self.coisas = [self._create(coisa) for coisa in range(1, 4)]
-        self.fala = self.sprite(self.nome, self.x + FALAX // 2 + FALASEPARA * 3.5, self.y + FALAY)
-        self.jogo.add(self.fala)
-        self.fala.frame = self.frame + 2
+class Palavra(Item):
+    """Essa  é a classe Item que seve tanto como ítem como coleção de itens"""
 
-        """Coloca os sprites dos botoes de subir e descer"""
-        sobe = self.sprite(self.nome, self.x - 25, self.y + 50 * 0)
-        sobe.inputEnabled = True
-        desce = self.sprite(self.nome, self.x - 25, self.y + 50 * 3.5)
-        sobe.frame = 14 * 9 - 4
-        desce.inputEnabled = True
-        desce.frame = 14 * 9 - 5
-        sobe.events.onInputDown.add(up, self)
-        desce.events.onInputDown.add(down, dict(b=1))
+    def __init__(self, frame=0, x=0, y=0, step=Ponto(0, 50), janela=6):
+        super().__init__(lambda _=0: None, Folha.animal, frame, x, y, step, janela)
+        self.range = list()
+        self.n = self.nome = Folha.animal.n
 
-        self.jogo.add(sobe)
-        self.jogo.add(desce)
-        self.jogo.visible = False
+    def append(self, palavra):
+        self.range.append(palavra)
+        self.coisas.append(self._create(palavra))
+        self.rola(0)
 
-    def _create(self, frame):
+    def mostra(self, muda):
+        """ Mostra esta aba
+
+        :param muda: booleano que diz se é para mostar ou ocultar a aba
+        :return: None
+        """
+        self.aba.visible = muda
+        self.range = list()
+        for coisa in self.coisas:
+            coisa.visible = False
+        self.coisas = list()
+
+    def _copy(self, frame):
         """Aqui colocamos o sprite do icon e selecionamos o frame que o representa"""
-        coisa = self.sprite(self.nome, self.x, self.y + 50 * frame)
-        coisa.inputEnabled = True
-        coisa.input.useHandCursor = True
-        coisa.frame = self.frame + frame
-        coisa.events.onInputDown.add(lambda a=None, b=frame, c=frame: self._click(b, c), dict(b=frame))
-        coisa.anchor.setTo(0.5, 0.5)
-        self.jogo.add(coisa)
+        displace = len(self.coisas)
+        print("_copy", Folha.animal, self.x + self.step.x * displace, self.y + self.step.y * displace, frame)
+        coisa = self.sprite(Folha.animal.n, self.x + self.step.x * displace, self.y + self.step.y * displace)
+        coisa.frame = frame
+        self.aba.add(coisa)
+        # self.aba.visible = True
         return coisa
 
-    def falou(self, fez_sentido=False):
-        falou = self.frame + 1
-        if fez_sentido:
-            self.fala.frame = self.frame + 1
-        else:
-            self.fala.frame = 4 * 14 + 6
-        return falou in self.faz_sentido
-
-    def update(self):
-        pass
+    def rola(self, desloca):
+        """Aqui rolamos o conjunto de sprites mudando o frame de cada sprite"""
+        lista = len(self.range)
+        self.range = (self.range + self.range + self.range)[lista + desloca: 2 * lista + desloca]
+        for coisa in self.coisas:
+            coisa.visible = False
+        for frame, coisa in list(zip(self.range, self.coisas))[:self.janela]:
+            # print(frame, coisa.frame)
+            coisa.frame = frame
+            coisa.visible = True

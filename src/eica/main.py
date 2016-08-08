@@ -9,7 +9,7 @@ from . import Folha, Ponto
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 
 
-class MiniEica(Vitollino):
+class JogoEica(Vitollino):
     JOGO = None
     """Essa  é a classe Jogo que recebe os poderes da classe Circus de poder criar um jogo"""
 
@@ -24,16 +24,32 @@ class Eica(Jogo):
     def __init__(self):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         Imagem(Folha.eica, Ponto(0, 0), self, (1.6, 1.6))
-        Homem(self.clica)
+        ''''''
         self.mundo = Mundo()  # MonoInventario(lambda _=0: None)
+        Homem(self.clica)
+        self.roda = Roda()
+        self.chaves = Chaves(y=100)
+        Botao(Folha.animal, Ponto(25, 25), 3 * 14 + 4, self.ativaroda, self)
+        Botao(Folha.animal, Ponto(725, 25), 3 * 14 + 4, self.ativachaves, self)
+        # self.take_propics()
+
+    def ativaroda(self, item=None):
+        self.roda.ativa()
+
+    def ativachaves(self, item=None):
+        self.chaves.ativa()
 
     def clica(self, item):
         """Aqui colocamos as imagems na tela do jogo"""
-        self.mundo.ativa(self.ativo)
+        self.mundo.ativa()
         # self.ativa()
 
+    def preload(self):
+        """Aqui no preload carregamos as imagens de ladrilhos dos items usados no jogo"""
+        self.spritesheet(*Folha.animal.all())
 
-class JogoEica(Vitollino):
+
+class __JogoEica(Vitollino):
     JOGO = None
     """Essa  é a classe Jogo que recebe os poderes da classe Circus de poder criar um jogo"""
 
@@ -73,12 +89,12 @@ class Homem(Jogo):
         """Ativa o jogo do Mundo"""
         print("homem action", JogoEica.JOGO.mundo)
         self.ativa()
-        JogoEica.JOGO.mundo.ativar(self.ativo)
+        JogoEica.JOGO.mundo.ativa(self.ativo)
 
 
 def main(gid=None):
     # JogoEica.JOGO = JogoEica(gid)
-    JogoEica.JOGO = MiniEica(gid)
+    JogoEica.JOGO = JogoEica(gid)
 
 
 if __name__ == "__main__":

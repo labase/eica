@@ -55,9 +55,9 @@ class Jogo(Elemento):
         self.ladrilho = "_%s_" % str(self.__name__)
         self.grupo_de_elementos = None
 
-    def ativa(self):
+    def ativa(self, ativo=None):
         """Abre o balão de conversa"""
-        self.ativo = not self.ativo
+        self.ativo = (not self.ativo) if ativo is None else ativo
         self.grupo_de_elementos.visible = self.ativo
         self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto=self.ladrilho, valor=self.ativo)
 

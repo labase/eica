@@ -8,7 +8,7 @@ IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 
 
 class Null:
-    def add(self,_=0):
+    def add(self, _=0):
         pass
 NULL = Null()
 
@@ -18,22 +18,17 @@ class Mundo(Jogo):
 
     def __init__(self):
         super().__init__(ver=False)  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.ladrilho_coisa = "coisa"
-        self.ladrilho_icon = "icon"
         self.roda = self.chaves = None
-        # self.tabuleiro = Tabuleiro(self.ladrilho_coisa, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64), jogo="_Mundo_")
-        Imagem(Folha.mundo, Ponto(200, -10), self, (2.1, 1.4), ver=False)
-        self.inventario = MonoInventario(self.recebe, 300, 60)
-        Botao(Folha.animal, Ponto(100, 700), 3 * 14 + 4, lambda _, __: self.roda.ativa(), NULL)
-        Botao(Folha.animal, Ponto(700, 700), 3 * 14 + 4, lambda _, __: self.chaves.ativa(), NULL)
-        # self.take_propics()
+        self.tabuleiro = Tabuleiro(Folha.coisa.n, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64), jogo="_Mundo_")
+        self.balao = Imagem(Folha.mundo, Ponto(200, -10), self, (2.1, 1.4), ver=False)
+        self.inventario = MonoInventario(self.recebe, Ponto(300, 45))
 
     def ativa(self, item=None):
-        super().ativa()
-        item = self.ativo if item is None else item
+        super().ativa(item)
         self.inventario.ativa(self.ativo)
-        # self.tabuleiro.ativa(item)
-
+        self.tabuleiro.ativa(item)
+        self.balao.botao.visible = self.ativo
+        self.grupo_de_elementos.visible = True
 
     def recebe(self, item):
         pass
@@ -42,30 +37,14 @@ class Mundo(Jogo):
 
     def preload(self):
         """Aqui no preload carregamos as imagens de ladrilhos dos items usados no jogo"""
-        self.spritesheet(self.ladrilho_coisa, IMG + "cacarecos.png", 32, 32, 16 * 16)
-        self.spritesheet(self.ladrilho_icon, IMG + "largeemoji.png", 47.5, 47, 16 * 16)
-
-    def _create(self):
-        """Aqui colocamos o selecionador dos jogos da roda e chaves lógicas"""
-        super().create()
-        roda = self.sprite(self.ladrilho_icon, 100, 700)
-        roda.inputEnabled = True
-        roda.input.useHandCursor = True
-        roda.events.onInputDown.add(lambda _, __: self.roda.ativa(), self)
-        roda.anchor.setTo(0.5, 0.5)
-        roda.frame = 3 * 14 + 4
-        chaves = self.sprite(self.ladrilho_icon, 700, 700)
-        chaves.inputEnabled = True
-        chaves.input.useHandCursor = True
-        chaves.events.onInputDown.add(lambda _, __: self.chaves.ativa(), self)
-        chaves.anchor.setTo(0.5, 0.5)
-        chaves.frame = 3 * 14 + 4
+        self.spritesheet(*Folha.coisa.all())
+        self.spritesheet(*Folha.animal.all())
 
     def take_propics(self):
         """o hominídeo tenta retirar uma pedra de grande porte do lugar, 
         observa o cajado e utiliza ele como uma alavanca para deslocar a pedra."""
-        pedra = Take(self.ladrilho_coisa, 16 * 15 - 1, 220, 320)
-        cajado = Take(self.ladrilho_coisa, 16 * 3 + 5, 240, 380, lambda: pedra.activate(pedra.rola), 250, 300)
+        pedra = Take(Folha.coisa.n, 16 * 15 - 1, 220, 320)
+        cajado = Take(Folha.coisa.n, 16 * 3 + 5, 240, 380, lambda: pedra.activate(pedra.rola), 250, 300)
         cajado.act = cajado.pega
 
 
