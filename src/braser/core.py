@@ -17,10 +17,10 @@ class Braser:
     CANVAS = JsPhaser().phaser().CANVAS
     Game = JsPhaser().BraserGame
 
-    def __init__(self, x=800, y=600, mode=None, name="braser", **kwargs):
+    def __init__(self, x=800, y=600, mode=None, name="braser", states=None, alpha=False, **kwargs):
         mode = mode or Braser.CANVAS
-        self.game = Braser.Game(x, y, mode, name,
-                                {"preload": self.preload, "create": self.create, "update": self.update})
+        states = {"preload": self.preload, "create": self.create, "update": self.update} if states is None else states
+        self.game = Braser.Game(x, y, mode, name, states, alpha)
         self.subscribers = []
 
     def subscribe(self, subscriber):

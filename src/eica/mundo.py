@@ -16,17 +16,17 @@ NULL = Null()
 class Mundo(Jogo):
     """Essa  é a classe Mundo que recebe os poderes da classe Circus de poder criar um jogo"""
 
-    def __init__(self):
+    def __init__(self, x):
         super().__init__(ver=False)  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.roda = self.chaves = None
-        self.tabuleiro = Tabuleiro(Folha.coisa.n, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64), jogo="_Mundo_")
-        self.balao = Imagem(Folha.mundo, Ponto(200, -10), self, (2.1, 1.4), ver=False)
-        self.inventario = MonoInventario(self.recebe, Ponto(300, 45))
+        # self.tabuleiro = Tabuleiro(Folha.coisa.n, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64), jogo="_Mundo_")
+        self.balao = Imagem(Folha.nuvem, Ponto(x+200, -160), self, (3.2, 3.6), ver=False)
+        self.inventario = MonoInventario(self.recebe, Ponto(x+300, 45))
 
     def ativa(self, item=None):
         super().ativa(item)
         self.inventario.ativa(self.ativo)
-        self.tabuleiro.ativa(item)
+        # self.tabuleiro.ativa(item)
         self.balao.botao.visible = self.ativo
         self.grupo_de_elementos.visible = True
 

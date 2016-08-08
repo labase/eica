@@ -12,14 +12,18 @@ FALAX, FALAY, FALASEPARA = 100, 40, 100
 class Roda(Jogo):
     """Essa  é a classe Roda que recebe os poderes da classe Circus de poder criar um jogo"""
 
-    def __init__(self, x=BALONX, y=BALONY):
+    def __init__(self, x=BALONX, y=BALONY, acao=lambda _=0: None):
         super().__init__(ver=False)  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.x, self.y = x, y
-        Imagem(Folha.fala, Ponto(x, y), self, (0.7, 0.7))
-        Imagem(Folha.fala, Ponto(x + FALAX + FALASEPARA * 3.7, 10), self, (0.5, 0.8))
-        Botao(Folha.animal, Ponto(x + FALAX + FALASEPARA * 2.5, y + FALAY + FALASEPARA), 42, self._click, self)
+        self.x, self.y, self.acao = x, y, acao
+        # Imagem(Folha.cumulus, Ponto(x, y), self, (0.7, 0.7))
+        # Imagem(Folha.cumulus, Ponto(x + FALAX + FALASEPARA * 3.7, 10), self, (0.5, 0.8))
+        Imagem(Folha.nuvem, Ponto(x, y-90), self, (2.0, 3.1))
+        Imagem(Folha.cumulus, Ponto(x + FALAX + FALASEPARA * 3.7, -40), self, (1.6, 3.2))
+        Botao(Folha.twosapiens, Ponto(250+x, 450+y-90), 0, self._click, self, (0.22, 0.22))
+        Botao(Folha.twosapiens, Ponto(250+x + FALAX + FALASEPARA * 2, 450+y-100), 2, self._click, self, (0.22, 0.22))
+        Botao(Folha.minitens, Ponto(x + FALAX + FALASEPARA * 2.5, y + FALAY + FALASEPARA), 39, self._click, self)
         self.inventario = [
-            ListaInventario(lambda _=0: none, Ponto(150+80*x, 90), item=[Folha.animal], passo=Ponto(0, 50), janela=3)
+            ListaInventario(lambda _=0: none, Ponto(150+80*x, 90), item=[Folha.minitens], passo=Ponto(0, 50), janela=3)
             for x in range(3)]
         a, b, c = [(0, 540 + 80 * x, 30) for x in range(3)]
         self.texto = Fala(lambda _=0: none, Ponto(500, 90),
@@ -29,11 +33,16 @@ class Roda(Jogo):
     def ativa(self, ativo=None):
         """Abre o balão de conversa"""
         super().ativa(ativo)
+        self.acao(not self.ativo)
         # self.tween(self.jogo, 1000, repeat=0, alpha=1)
         [inventario.ativa(self.ativo) for inventario in self.inventario]
         # [inventario.ativa(self.ativo) for inventario in self.texto.item]
         self.texto.ativa(self.ativo)
         self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto="_LINGUA_", valor=self.ativo)
+
+    def _nop(self, _=None, d=None):
+        """Copia fala para pensamento do interlocutor"""
+        pass
 
     def _click(self, _=None, d=None):
         """Copia fala para pensamento do interlocutor"""
@@ -76,7 +85,7 @@ class Palavra(Item):
     """Essa  é a classe Item que seve tanto como ítem como coleção de itens"""
 
     def __init__(self, frame=0, x=0, y=0, step=Ponto(0, 50), janela=6):
-        super().__init__(lambda _=0: None, Folha.animal, frame, x, y, step, janela)
+        super().__init__(lambda _=0: None, Folha.itens, frame, x, y, step, janela)
         self.range = list()
         self.n = self.nome = Folha.animal.n
 
@@ -100,9 +109,10 @@ class Palavra(Item):
     def _copy(self, frame):
         """Aqui colocamos o sprite do icon e selecionamos o frame que o representa"""
         displace = len(self.coisas)
-        print("_copy", Folha.animal, self.x + self.step.x * displace, self.y + self.step.y * displace, frame)
-        coisa = self.sprite(Folha.animal.n, self.x + self.step.x * displace, self.y + self.step.y * displace)
+        print("_copy", Folha.minitens, self.x + self.step.x * displace, self.y + self.step.y * displace, frame)
+        coisa = self.sprite(Folha.minitens.n, self.x + self.step.x * displace, self.y + self.step.y * displace)
         coisa.frame = frame
+        # coisa.scale.setTo(0.2, 0.2)
         self.aba.add(coisa)
         # self.aba.visible = True
         return coisa

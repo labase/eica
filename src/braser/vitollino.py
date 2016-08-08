@@ -7,8 +7,8 @@ class Vitollino:
     BRASER = None
     GID = "00000000000000000000"
 
-    def __init__(self):
-        self._init()
+    def __init__(self, w=800, h=800, mode=None, name="braser", states=None, alpha=False):
+        self._init(w, h, mode, name, states, alpha)
         self.gamer = Vitollino.BRASER
         self.gamer.subscribe(self)
         self.game = self.gamer.game
@@ -18,9 +18,9 @@ class Vitollino:
         Vitollino.GID = gid
         print(gid)
 
-    def _init(self):
+    def _init(self, w=800, h=800, mode=None, name="braser", states=None, alpha=False):
         doc["pydiv"].html = ""
-        Vitollino.BRASER = Braser(800, 800)
+        Vitollino.BRASER = Braser(w, h, mode, name, states, alpha)
         Vitollino.BRASER.send('getid', {}, self.set_id, "GET")
 
     def preload(self):
@@ -61,5 +61,5 @@ class Vitollino:
 
 
 class Actor(Vitollino):
-    def _init(self):
+    def _init(self, w=800, h=800, mode=None, name="braser", states=None, alpha=False):
         pass

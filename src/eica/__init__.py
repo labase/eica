@@ -31,9 +31,12 @@ class Recurso:
 
 
 class Folha:
-    twosapiens = Recurso("twosapiens", LOCAL + "dialogo.png")
-    sapiens = Recurso("sapiens", LOCAL + "homen01.png")
+    nuvem = Recurso("nuvem", LOCAL + "nuvem.png")
+    cumulus = Recurso("cumulus", LOCAL + "cumulus.png")
+    twosapiens = Recurso("twosapiens", LOCAL + "dialogo_bg.png", 260, 300, 3)
+    sapiens = Recurso("sapiens", LOCAL + "homem01.png")
     itens = Recurso("itens", LOCAL + "spritesheet.png", 200, 200, 6 * 7)
+    minitens = Recurso("minitens", LOCAL + "spritesheety.png", 64, 64, 6 * 7)
     coisa = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
     comida = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
     arma = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
@@ -45,8 +48,8 @@ class Folha:
     fala = Recurso("chave", IMG + "balooni.png")
     chave = Recurso("fala", IMG + "jogo_chaves.jpg")
     mundo = Recurso("pensa", IMG + "thought.png")
-    # eica = Recurso("fundo", LOCAL + "background.png")
-    eica = Recurso("fundo", IMG + "eicamundo.png")
+    eica = Recurso("fundo", LOCAL + "background.png")
+    # eica = Recurso("fundo", IMG + "eicamundo.png")
 
     @classmethod
     def all(cls):
@@ -54,4 +57,8 @@ class Folha:
 
     @classmethod
     def allThing(cls):
+        return [Folha.minitens]*5
+
+    @classmethod
+    def alloldThing(cls):
         return Folha.fruta, Folha.comida, Folha.animal, Folha.arma, Folha.objeto

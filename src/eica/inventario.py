@@ -65,10 +65,10 @@ class Aba(Actor):
         self.chave, self.x, self.y = chave, x, y
 
     def create(self):
-        self.celula = self.sprite(Folha.coisa.n, self.x, self.y)
+        self.celula = self.sprite(Folha.minitens.n, self.x, self.y)
         self.celula.scale.setTo(2.5, 2.5)
         self.celula.inputEnabled = True
-        self.celula.frame = 0  # 160
+        self.celula.frame = 36  # 160
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.mostra_abas(self.chave, self.aba), self)
         self.chave.add(self.celula)
 
@@ -98,8 +98,8 @@ class Inventario(Jogo):
 
     def monta_botoes(self):
         meio = len(self.item) // 2
-        Botao(Folha.animal, Ponto(self.x, meio * self.delta.y + self.y - 20), 14 * 9 - 4, self.up, self)
-        Botao(Folha.animal, Ponto(self.x + self.delta.x, meio * self.delta.y + self.y - 20), 14 * 9 - 5, self.down,
+        Botao(Folha.minitens, Ponto(self.x, meio * self.delta.y + self.y - 20), 37, self.up, self)
+        Botao(Folha.minitens, Ponto(self.x + self.delta.x, meio * self.delta.y + self.y - 20), 39, self.down,
               self)
 
     def ativa(self, ativo=None):
@@ -192,13 +192,14 @@ class ListaInventario(MonoInventario):
 
     def monta_botoes(self):
         meio = len(self.item) // 2
-        Botao(Folha.animal, Ponto(meio * self.delta.y + self.x - 20, self.y), 14 * 9 - 4, self.up, self)
-        Botao(Folha.animal, Ponto(meio * self.delta.y + self.x - 20, self.y + self.delta.x), 14 * 9 - 5, self.down,
+        Botao(Folha.minitens, Ponto(meio * self.delta.y + self.x - 20, self.y), 38, self.up, self)
+        Botao(Folha.minitens, Ponto(meio * self.delta.y + self.x - 20, self.y + self.delta.x), 40, self.down,
               self)
 
     def monta_abas(self):
         """Jogador escreve: hominídeo comer fruta_vermelha."""
-        icon = [0, 4 * 14 + 7, 5 * 16 + 6, 0, 16 * 4, 16 + 7]
+        # icon = [0, 4 * 14 + 7, 5 * 16 + 6, 0, 16 * 4, 16 + 7]
+        icon = range(0, 7*7, 6)
         inventario = [
             (self.recebe, coisa.n, icon[y], self.x, self.y + FALAX - 20 + self.delta.y * y, self.passo, self.janela)
             for y, coisa in enumerate(self.item)]

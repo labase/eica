@@ -14,7 +14,7 @@ class JogoEica(Vitollino):
     """Essa  é a classe Jogo que recebe os poderes da classe Circus de poder criar um jogo"""
 
     def __init__(self, gid):
-        super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
+        super().__init__(1000, 800, alpha=True)  # super é invocado aqui para preservar os poderes recebidos do Circus
         Eica()
 
 
@@ -23,14 +23,14 @@ class Eica(Jogo):
 
     def __init__(self):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
-        Imagem(Folha.eica, Ponto(0, 0), self, (1.6, 1.6))
+        Imagem(Folha.eica, Ponto(-500, -200), self, (1.8, 1.8))
         ''''''
-        self.mundo = Mundo()  # MonoInventario(lambda _=0: None)
-        Homem(self.clica)
-        self.roda = Roda()
+        self.mundo = Mundo(x=-150)  # MonoInventario(lambda _=0: None)
+        self.homem = Homem(self.clica)
+        self.roda = Roda(acao=self.homem.esconde)
         self.chaves = Chaves(y=100)
-        Botao(Folha.animal, Ponto(25, 25), 3 * 14 + 4, self.ativaroda, self)
-        Botao(Folha.animal, Ponto(725, 25), 3 * 14 + 4, self.ativachaves, self)
+        Botao(Folha.itens, Ponto(15, 15), 36 + 1, self.ativaroda, self, escala=(0.6, 0.6))
+        Botao(Folha.itens, Ponto(735+50, 15), 36 + 3, self.ativachaves, self, escala=(0.6, 0.6))
         # self.take_propics()
 
     def ativaroda(self, item=None):
@@ -47,33 +47,8 @@ class Eica(Jogo):
     def preload(self):
         """Aqui no preload carregamos as imagens de ladrilhos dos items usados no jogo"""
         self.spritesheet(*Folha.animal.all())
-
-
-class __JogoEica(Vitollino):
-    JOGO = None
-    """Essa  é a classe Jogo que recebe os poderes da classe Circus de poder criar um jogo"""
-
-    def __init__(self, gid):
-        super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.ladrilho_homem = "homem"
-        self.set_id(gid)
-        self.mundo = Mundo()
-        self.homem = Homem()
-        self.roda = Roda()
-        self.chaves = Chaves()
-        self.mundo.roda = self.roda
-        self.mundo.chaves = self.chaves
-
-    def preload(self):
-        """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
-        self.image("fundo", IMG + "eicamundo.png")
-        # self.spritesheet(self.ladrilho_homem, IMG + "caveman.png", 130, 130, 5 * 2)
-
-    def create(self):
-        """Aqui colocamos a imagem do mundo na tela do jogo"""
-        fundo = self.sprite("fundo")
-        fundo.scale.setTo(1.6, 1.6)
-        # fundo.resizeWorld()
+        self.spritesheet(*Folha.itens.all())
+        self.spritesheet(*Folha.minitens.all())
 
 
 class Homem(Jogo):
@@ -83,7 +58,12 @@ class Homem(Jogo):
         super().__init__()
         acao = acao or self._click
         # Imagem(Folha.eica, Ponto(0, 0), self, (1.6, 1.6))
-        Botao(Folha.homem, Ponto(x=250, y=300), frame, acao, self, (0.4, 0.4))
+        self.homem = Botao(Folha.sapiens, Ponto(x=250, y=450), frame, acao, self, (0.08, 0.08))
+
+    def esconde(self, ativa=False):
+        """Esconde o Homem"""
+        print("homem action Esconde", ativa)
+        self.homem.botao.visible = ativa
 
     def _click(self, _=None, __=None):
         """Ativa o jogo do Mundo"""
