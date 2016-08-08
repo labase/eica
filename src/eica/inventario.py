@@ -154,7 +154,7 @@ class Inventario(Jogo):
 class MonoInventario(Inventario):
     """Essa  é a classe Item que seve tanto como ítem como coleção de itens"""
 
-    def __init__(self, recebe, ponto=PONTO, delta=Ponto(750, 50), ver=False, item=None, passo=Ponto(50, 0), janela=6):
+    def __init__(self, recebe, ponto=PONTO, delta=Ponto(400, 50), ver=False, item=None, passo=Ponto(50, 0), janela=6):
         super().__init__(recebe, ponto, delta, ver, item, passo, janela)
 
     def cria_abas(self):

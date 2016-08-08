@@ -1,14 +1,13 @@
 # from enum import Enum     # for enum34, or the stdlib version
 # from aenum import Enum  # for the aenum version
+import os
+__version__ = "2.0.3"
 
+here = os.path.dirname(__file__)
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
+LOCAL = os.path.join(here, "../assets/")
 
 
-def enum(**enums):
-    return type('Enum', (), enums)
-
-
-# Ponto = enum('Ponto', 'x y')
 class Ponto:
     def __init__(self, x=0, y=0):
         self.x, self.y = x, y
@@ -32,6 +31,9 @@ class Recurso:
 
 
 class Folha:
+    twosapiens = Recurso("twosapiens", LOCAL + "dialogo.png")
+    sapiens = Recurso("sapiens", LOCAL + "homen01.png")
+    itens = Recurso("itens", LOCAL + "spritesheet.png", 200, 200, 6 * 7)
     coisa = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
     comida = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
     arma = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
@@ -43,6 +45,7 @@ class Folha:
     fala = Recurso("chave", IMG + "balooni.png")
     chave = Recurso("fala", IMG + "jogo_chaves.jpg")
     mundo = Recurso("pensa", IMG + "thought.png")
+    # eica = Recurso("fundo", LOCAL + "background.png")
     eica = Recurso("fundo", IMG + "eicamundo.png")
 
     @classmethod

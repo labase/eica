@@ -59,7 +59,7 @@ class Jogo(Elemento):
         """Abre o balão de conversa"""
         self.ativo = (not self.ativo) if ativo is None else ativo
         self.grupo_de_elementos.visible = self.ativo
-        self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto=self.ladrilho, valor=self.ativo)
+        # self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto=self.ladrilho, valor=self.ativo)
 
     def add(self, item):
         """Aqui colocamos as imagems na tela do jogo"""
