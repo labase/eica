@@ -1,27 +1,39 @@
 from braser.vitollino import Actor
 from random import random
 from .inventario import MonoInventario, Tabuleiro
-from . import Ponto
-from .eica import Jogo
+from . import Ponto, Folha
+from .eica import Jogo, Botao, Imagem
 
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
+
+
+class Null:
+    def add(self,_=0):
+        pass
+NULL = Null()
 
 
 class Mundo(Jogo):
     """Essa  é a classe Mundo que recebe os poderes da classe Circus de poder criar um jogo"""
 
     def __init__(self):
-        super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
+        super().__init__(ver=False)  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.ladrilho_coisa = "coisa"
         self.ladrilho_icon = "icon"
         self.roda = self.chaves = None
-        self.tabuleiro = Tabuleiro(self.ladrilho_coisa, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64), jogo="_Mundo_")
+        # self.tabuleiro = Tabuleiro(self.ladrilho_coisa, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64), jogo="_Mundo_")
+        Imagem(Folha.mundo, Ponto(200, -10), self, (2.1, 1.4), ver=False)
         self.inventario = MonoInventario(self.recebe, 300, 60)
+        Botao(Folha.animal, Ponto(100, 700), 3 * 14 + 4, lambda _, __: self.roda.ativa(), NULL)
+        Botao(Folha.animal, Ponto(700, 700), 3 * 14 + 4, lambda _, __: self.chaves.ativa(), NULL)
         # self.take_propics()
 
-    def ativar(self, item):
-        self.inventario.ativa(item)
-        self.tabuleiro.ativa(item)
+    def ativa(self, item=None):
+        super().ativa()
+        item = self.ativo if item is None else item
+        self.inventario.ativa(self.ativo)
+        # self.tabuleiro.ativa(item)
+
 
     def recebe(self, item):
         pass
@@ -33,7 +45,7 @@ class Mundo(Jogo):
         self.spritesheet(self.ladrilho_coisa, IMG + "cacarecos.png", 32, 32, 16 * 16)
         self.spritesheet(self.ladrilho_icon, IMG + "largeemoji.png", 47.5, 47, 16 * 16)
 
-    def create(self):
+    def _create(self):
         """Aqui colocamos o selecionador dos jogos da roda e chaves lógicas"""
         super().create()
         roda = self.sprite(self.ladrilho_icon, 100, 700)
@@ -48,7 +60,6 @@ class Mundo(Jogo):
         chaves.events.onInputDown.add(lambda _, __: self.chaves.ativa(), self)
         chaves.anchor.setTo(0.5, 0.5)
         chaves.frame = 3 * 14 + 4
-        # homem.scale.setTo(0.4, 0.4)
 
     def take_propics(self):
         """o hominídeo tenta retirar uma pedra de grande porte do lugar, 

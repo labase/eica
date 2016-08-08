@@ -161,7 +161,6 @@ class MonoInventario(Inventario):
 
     def __init__(self, recebe, x=BALONX, y=BALONY):
         super().__init__(recebe, x, y, Ponto(400, 45))  # invocado aqui para preservar os poderes recebidos do Circus
-        Imagem(Folha.mundo, Ponto(200, -10), self, (2.1, 1.4))
 
     def create(self):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
@@ -178,7 +177,7 @@ class MonoInventario(Inventario):
         print("MonoInventario", ativa)
         self.jogo.visible = ativa
         [aba.mostra(ativa) for aba in self.abas]
-        self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto="_MUNDO_", valor=self.ativo)
+        # self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto="_MUNDO_", valor=ativa)
 
     def up(self, _=None, __=None):
         [aba.rola(-1) for aba in self.abas]

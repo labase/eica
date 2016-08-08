@@ -25,11 +25,11 @@ class Eica(Jogo):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         Imagem(Folha.eica, Ponto(0, 0), self, (1.6, 1.6))
         Homem(self.clica)
-        self.mundo = MonoInventario(lambda _=0: None)
+        self.mundo = Mundo()  # MonoInventario(lambda _=0: None)
 
     def clica(self, item):
         """Aqui colocamos as imagems na tela do jogo"""
-        self.mundo.ativa(True or self.ativo)
+        self.mundo.ativa(self.ativo)
         # self.ativa()
 
 
@@ -73,12 +73,12 @@ class Homem(Jogo):
         """Ativa o jogo do Mundo"""
         print("homem action", JogoEica.JOGO.mundo)
         self.ativa()
-        JogoEica.JOGO.mundo.ativa()
+        JogoEica.JOGO.mundo.ativar(self.ativo)
 
 
 def main(gid=None):
-    JogoEica.JOGO = JogoEica(gid)
-    # JogoEica.JOGO = MiniEica(gid)
+    # JogoEica.JOGO = JogoEica(gid)
+    JogoEica.JOGO = MiniEica(gid)
 
 
 if __name__ == "__main__":

@@ -49,9 +49,9 @@ class Elemento(Actor):
 class Jogo(Elemento):
     """Essa  é a classe Mundo que recebe os poderes da classe Circus de poder criar um jogo"""
 
-    def __init__(self):
+    def __init__(self, ver=True):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.ativo = False
+        self.ativo = ver
         self.ladrilho = "_%s_" % str(self.__name__)
         self.grupo_de_elementos = None
 
@@ -68,14 +68,15 @@ class Jogo(Elemento):
     def create(self):
         """Aqui colocamos as imagems na tela do jogo"""
         self.grupo_de_elementos = self.group()
+        self.grupo_de_elementos.visible = self.ativo
 
 
 class Imagem(Elemento):
     """Um objeto estático"""
 
-    def __init__(self, folha, posicao, dono, escala=(1., 1.)):
+    def __init__(self, folha, posicao, dono, escala=(1., 1.), ver=True):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.folha, self.posicao, self.dono, self.escala = folha, posicao, dono, escala
+        self.folha, self.posicao, self.dono, self.escala, self.ver = folha, posicao, dono, escala, ver
         self.botao = None
 
     def preload(self):
@@ -92,8 +93,8 @@ class Imagem(Elemento):
 class Botao(Imagem):
     """Um objeto clicável"""
 
-    def __init__(self, folha, posicao, frame, ato, dono, escala=(1., 1.)):
-        super().__init__(folha, posicao, dono, escala)  # invocado aqui para preservar os poderes recebidos do Circus
+    def __init__(self, folha, posicao, frame, ato, dono, escala=(1., 1.), ver=True):
+        super().__init__(folha, posicao, dono, escala, ver)
         self.frame, self.ato = frame, ato
 
     def preload(self):
