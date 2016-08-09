@@ -3,6 +3,8 @@ from . import Ponto, Folha
 from .eica import Botao, Imagem, Jogo
 from random import shuffle
 
+X = 64
+
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 BALONX, BALONY = 0, 70
 TABUAX, TABUAY, TABUAS = 400, 120, 90
@@ -66,7 +68,7 @@ class Aba(Actor):
 
     def create(self):
         self.celula = self.sprite(Folha.minitens.n, self.x, self.y)
-        self.celula.scale.setTo(2.5, 2.5)
+        self.celula.scale.setTo(1.9, 2.0)
         self.celula.inputEnabled = True
         self.celula.frame = 36  # 160
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.mostra_abas(self.chave, self.aba), self)
@@ -86,7 +88,7 @@ class Inventario(Jogo):
     """Essa  é a classe Chaves que recebe os poderes da classe Circus de poder criar um jogo"""
     preloader = None
 
-    def __init__(self, recebe, ponto=PONTO, delta=Ponto(750, 0), ver=False, item=None, passo=Ponto(50, 0), janela=6):
+    def __init__(self, recebe, ponto=PONTO, delta=Ponto(750, 0), ver=False, item=None, passo=Ponto(X, 0), janela=6):
         Inventario.preloader = Inventario.preloader or self._preload
         super().__init__(ver)  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.x, self.y, self.delta, self.item, self.passo, self.janela = \
@@ -122,7 +124,8 @@ class Inventario(Jogo):
 
     def monta_abas(self):
         """Jogador escreve: hominídeo comer fruta_vermelha."""
-        icon = [0, 4 * 14 + 7, 5 * 16 + 6, 0, 16 * 4, 16 + 7]
+        # icon = [0, 4 * 14 + 7, 5 * 16 + 6, 0, 16 * 4, 16 + 7]
+        icon = list(range(0, 6*7, 6))
         inventario = [
             (self.recebe, coisa.n, icon[y], self.x + FALAX, self.y + self.delta.y * y, self.passo, self.janela)
             for y, coisa in enumerate(self.item)]
@@ -142,7 +145,7 @@ class Inventario(Jogo):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         self.abas += self.abas
         for x in range(10):
-            Aba(self, self.abas[x], self.x - ABAS + x * ABAS, self.y - BALONY - 50)
+            Aba(self, self.abas[x], self.x - ABAS+80 + x * ABAS, self.y - BALONY - 100)
 
     def up(self, _=None, __=None):
         self.aba_corrente.rola(-1)
@@ -154,7 +157,7 @@ class Inventario(Jogo):
 class MonoInventario(Inventario):
     """Essa  é a classe Item que seve tanto como ítem como coleção de itens"""
 
-    def __init__(self, recebe, ponto=PONTO, delta=Ponto(400, 50), ver=False, item=None, passo=Ponto(50, 0), janela=6):
+    def __init__(self, recebe, ponto=PONTO, delta=Ponto(450, 50), ver=False, item=None, passo=Ponto(X, 0), janela=6):
         super().__init__(recebe, ponto, delta, ver, item, passo, janela)
 
     def cria_abas(self):
@@ -178,7 +181,7 @@ class MonoInventario(Inventario):
 class ListaInventario(MonoInventario):
     """Essa  é a classe Item que seve tanto como ítem como coleção de itens"""
 
-    def __init__(self, recebe, ponto=PONTO, delta=Ponto(200, 50), ver=False, item=None, passo=Ponto(50, 0), janela=6):
+    def __init__(self, recebe, ponto=PONTO, delta=Ponto(200, 50), ver=False, item=None, passo=Ponto(X, 0), janela=6):
         super().__init__(recebe, ponto, delta, ver, item, passo, janela)
         self.cursor = 1
 
@@ -199,9 +202,11 @@ class ListaInventario(MonoInventario):
     def monta_abas(self):
         """Jogador escreve: hominídeo comer fruta_vermelha."""
         # icon = [0, 4 * 14 + 7, 5 * 16 + 6, 0, 16 * 4, 16 + 7]
-        icon = range(0, 7*7, 6)
+        inicio = 0
+        icon = list(range(inicio, inicio+6*7, 6))
         inventario = [
-            (self.recebe, coisa.n, icon[y], self.x, self.y + FALAX - 20 + self.delta.y * y, self.passo, self.janela)
+            (self.recebe, coisa.n, icon[y], self.x, self.y + FALAX - 20 + self.delta.y * y,
+             self.passo, self.janela, 36)
             for y, coisa in enumerate(self.item)]
         self.abas = [Item(*argumentos) for argumentos in inventario]
         self.aba_corrente = self.abas[0]
@@ -212,10 +217,10 @@ class ListaInventario(MonoInventario):
 class Item(Actor):
     """Essa  é a classe Item que seve tanto como ítem como coleção de itens"""
 
-    def __init__(self, recebe, nome, frame, x, y, step=Ponto(50, 0), janela=6):
+    def __init__(self, recebe, nome, frame, x, y, step=Ponto(X, 0), janela=6, escopo=8):
         super().__init__()
         self.recebe, self.nome, self.frame, self.x, self.y, \
-            self.step, self.lista, self.janela = recebe, nome, frame, x, y, step, 8, janela
+            self.step, self.lista, self.janela = recebe, nome, frame, x, y, step, escopo, janela
         self.aba = self.coisas = self.fala = self.jogo = None
         self.seleto = None
         self.range = list(range(0, self.lista))

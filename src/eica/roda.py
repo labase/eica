@@ -23,8 +23,8 @@ class Roda(Jogo):
         Botao(Folha.twosapiens, Ponto(250+x + FALAX + FALASEPARA * 2, 450+y-100), 2, self._click, self, (0.22, 0.22))
         Botao(Folha.minitens, Ponto(x + FALAX + FALASEPARA * 2.5, y + FALAY + FALASEPARA), 39, self._click, self)
         self.inventario = [
-            ListaInventario(lambda _=0: none, Ponto(150+80*x, 90), item=[Folha.minitens], passo=Ponto(0, 50), janela=3)
-            for x in range(3)]
+            ListaInventario(lambda _=0: None, Ponto(150+80*x, 90), item=[Folha.minitens], passo=Ponto(0, 50),
+                            janela=3) for x in range(3)]
         a, b, c = [(0, 540 + 80 * x, 30) for x in range(3)]
         self.texto = Fala(lambda _=0: none, Ponto(500, 90),
                           item=(Palavra(*a), Palavra(*b), Palavra(*c)), passo=Ponto(0, 50), janela=3)

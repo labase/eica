@@ -4,6 +4,7 @@ from bottle import default_app, route, view, get, post, static_file, request, re
 import os
 import modelo as database
 import json
+
 __author__ = 'carlo'
 DIR = os.path.dirname(__file__)  # + '/view'
 INDEX = os.path.dirname(__file__) + '/../'
@@ -15,7 +16,7 @@ FAKE = [{k: 10 * i + j for j, k in enumerate(HEAD)} for i in range(4)]
 
 def retrieve_data(req):
     jdata = req['data']
-    print (jdata)
+    print(jdata)
     return json.loads(jdata)
 
 
@@ -23,7 +24,7 @@ def retrieve_params(req):
     # print ('retrieve_params', req)
     doc_id = req.pop('doc_id')
     data = {k: req[k] for k in req}
-    print (doc_id, data)
+    print(doc_id, data)
     return {doc_id: data}
 
 
@@ -39,6 +40,12 @@ def go_eica():
     # redirect('/carinhas/carinhas.html')
     # redirect('/tuple/index.html')
     redirect('/eica/test.html')
+
+
+@get('/static/assets/<filename:re:.*\.(png|jpg|svg|gif)>')
+def assets(filename):
+    # print('/static/<filename:re:.*\.css>', filename, INDEX)
+    return static_file(filename, root=INDEX + "/assets")
 
 
 @get('/static/<filename:re:.*\.(html|css|ico)>')
@@ -91,7 +98,7 @@ def score():
         # record = record[PEC]
         print('record resultado:', record)
         user = record["user"]
-        idade = int(record["idade"][4:])+5
+        idade = int(record["idade"][4:]) + 5
         ano = record["ano"][3:]
         sexo = record["sexo"]
         print("score:", dict(user=user, idade=idade, ano=ano, sexo=sexo))
