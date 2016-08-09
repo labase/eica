@@ -206,7 +206,7 @@ class ListaInventario(MonoInventario):
         icon = list(range(inicio, inicio+6*7, 6))
         inventario = [
             (self.recebe, coisa.n, icon[y], self.x, self.y + FALAX - 20 + self.delta.y * y,
-             self.passo, self.janela, 36)
+             self.passo, self.janela, 48)
             for y, coisa in enumerate(self.item)]
         self.abas = [Item(*argumentos) for argumentos in inventario]
         self.aba_corrente = self.abas[0]

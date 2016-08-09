@@ -19,7 +19,7 @@ class Mundo(Jogo):
     def __init__(self, x):
         super().__init__(ver=False)  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.roda = self.chaves = None
-        # self.tabuleiro = Tabuleiro(Folha.coisa.n, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64), jogo="_Mundo_")
+        self.tabuleiro = Tabuleiro(Folha.coisa.n, Ponto(123, 8), Ponto(0, 300-128), Ponto(64, 64), jogo="_Mundo_")
         self.balao = Imagem(Folha.nuvem, Ponto(x+250, -120), self, (3.0, 3.6), ver=False)
         self.inventario = MonoInventario(self.recebe, Ponto(x+300, 45))
 

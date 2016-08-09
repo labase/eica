@@ -17,7 +17,7 @@ class Chaves(Jogo):
         Imagem(Folha.eica, Ponto(-900, -600), self, (2.8, 2.8))
         Imagem(Folha.chaves, Ponto(x+100, y+40), dono=self, escala=(0.9, 0.9))
         self.tabuleiro = Tabuleiro(Folha.coisa.n, posicao=Ponto(POSICAO.x+x, POSICAO.y-80+y))
-        self.inventario = Inventario(self.recebe, Ponto(PONTO.x+x, PONTO.y+y))
+        self.inventario = Inventario(self.recebe, Ponto(PONTO.x+x, PONTO.y+y), janela=12)
         self.seleto = None
         self.itens = []
 

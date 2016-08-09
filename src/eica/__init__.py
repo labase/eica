@@ -37,7 +37,7 @@ class Folha:
     twosapiens = Recurso("twosapiens", LOCAL + "dialogo_bg.png", 260, 300, 3)
     sapiens = Recurso("sapiens", LOCAL + "homem01.png")
     itens = Recurso("itens", LOCAL + "spritesheet.png", 200, 200, 6 * 7)
-    minitens = Recurso("minitens", LOCAL + "spritesheety.png", 64, 64, 6 * 7)
+    minitens = Recurso("minitens", LOCAL + "spritesheety.png", 64, 64, 6 * 8)
     coisa = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
     comida = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
     arma = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
