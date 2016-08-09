@@ -14,17 +14,21 @@
         <script type="text/python">
             from eica.main import main
             from braser import Braser
-            main("{{ doc_id }}")
+            from browser import doc
+            ver = main("{{ doc_id }}")
+            doc["versiontext"].text = ver
         </script>
     </head>
     <body onLoad="brython(1, {static_stdlib_import: true})" class="main">
-        <div id="pydiv">
+        <div style="position:relative; min-height:100%;">
+            <div id="pydiv">
                 <span style="color:white">AGUARDE..</span>
-                <img src="/static/assets/raincloud.gif" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" alt="carregando"></img>
-
+                <img src="assets/caveman.gif" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" alt="carregando"></img>
+            </div>
+            <div id="version" style="position:fixed; bottom:0px;">
+                <span id="versiontext" style="color:white;"></span>
+            </div>
         </div>
-
-
-    <script src='http://codepen.io/assets/libs/fullpage/jquery.js'></script>
+        <script src='http://codepen.io/assets/libs/fullpage/jquery.js'></script>
     </body>
 </html>

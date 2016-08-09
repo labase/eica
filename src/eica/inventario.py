@@ -68,7 +68,7 @@ class Aba(Actor):
 
     def create(self):
         self.celula = self.sprite(Folha.minitens.n, self.x, self.y)
-        self.celula.scale.setTo(1.9, 2.0)
+        self.celula.scale.setTo(1.9, 1.6)
         self.celula.inputEnabled = True
         self.celula.frame = 36  # 160
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.mostra_abas(self.chave, self.aba), self)
@@ -127,7 +127,7 @@ class Inventario(Jogo):
         # icon = [0, 4 * 14 + 7, 5 * 16 + 6, 0, 16 * 4, 16 + 7]
         icon = list(range(0, 6*7, 6))
         inventario = [
-            (self.recebe, coisa.n, icon[y], self.x + FALAX, self.y + self.delta.y * y, self.passo, self.janela)
+            (self.recebe, coisa.n, icon[y], self.x + FALAX, self.y + self.delta.y * y+10, self.passo, self.janela)
             for y, coisa in enumerate(self.item)]
         self.abas = [Item(*argumentos) for argumentos in inventario]
         self.aba_corrente = self.abas[0]
@@ -145,7 +145,7 @@ class Inventario(Jogo):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         self.abas += self.abas
         for x in range(10):
-            Aba(self, self.abas[x], self.x - ABAS+80 + x * ABAS, self.y - BALONY - 100)
+            Aba(self, self.abas[x], self.x - ABAS+80 + x * ABAS, self.y - BALONY - 60)
 
     def up(self, _=None, __=None):
         self.aba_corrente.rola(-1)

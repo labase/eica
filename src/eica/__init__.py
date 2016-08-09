@@ -1,7 +1,7 @@
 # from enum import Enum     # for enum34, or the stdlib version
 # from aenum import Enum  # for the aenum version
 import os
-__version__ = "2.0.3"
+__version__ = "2.0.4"
 
 here = os.path.dirname(__file__)
 IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
@@ -31,6 +31,7 @@ class Recurso:
 
 
 class Folha:
+    chaves = Recurso("chaves", LOCAL + "tabela_chaves.png")
     nuvem = Recurso("nuvem", LOCAL + "nuvem.png")
     cumulus = Recurso("cumulus", LOCAL + "cumulus.png")
     twosapiens = Recurso("twosapiens", LOCAL + "dialogo_bg.png", 260, 300, 3)
