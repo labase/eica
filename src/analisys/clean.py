@@ -2,6 +2,7 @@
 from tinydb import TinyDB, Query
 from tinydb.operations import delete
 import os
+import operator
 # from tinydb.storages import MemoryStorage
 from uuid import uuid1
 from datetime import datetime as dt
@@ -9,14 +10,27 @@ from time import strftime
 # DBM = lambda :TinyDB(storage=MemoryStorage)
 import matplotlib.pyplot as plt
 
+Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
+
 JSONDB = os.path.dirname(__file__) + '/eica.json'
 
 DBF = lambda: TinyDB(JSONDB)
 __author__ = 'carlo'
 
 PONTOS = dict(_LINGUA_=120, _CHAVES_=130, _MUNDO_=140, _Chaves_=150, _ABAS_=110, _HOMEM_=90)
+PONTO = "_LINGUA_ _CHAVES_ _MUNDO_ _Chaves_ _ABAS_ _FALA_ _Mundo_ _HOMEM_".split()
 CARTAS = dict(fruta=142, objeto=144, animal=146, comida=148, arma=149, __A_T_I_V_A__=100)
-
+FILTRO = dict(
+    _LINGUA_=lambda item, casa, ponto, valor, plot: [55, 60][bool(valor)] if plot == "_LINGUA_" else -2,
+    _CHAVES_=lambda item, casa, ponto, valor, plot: [65, 70][bool(valor)] if plot == "_CHAVES_" else -2,
+    _MUNDO_=lambda item, casa, ponto, valor, plot: [75, 80][bool(valor)] if plot == "_MUNDO_" else -2,
+    _Chaves_=lambda item, casa, ponto, valor, plot: item if plot == "_Chaves_" else -2,
+    _ABAS_=lambda item, casa, ponto, valor, plot: int(casa.split("_")[0])//10 if plot == "_ABAS_" else -2,
+    _HOMEM_=lambda item, casa, ponto, valor, plot: [85, 90][bool(valor)] if plot == "_HOMEM_" else -2,
+    _FALA_=lambda item, casa, ponto, valor, plot:
+    sum(int(val) for val in item.split("_"))//2 if plot == "_FALA_" else -2,
+    _Mundo_=lambda item, casa, ponto, valor, plot: item if plot == "_Mundo_" else -2,
+    )
 '''
 db = TinyDB(JSONDB)
 
@@ -75,13 +89,13 @@ class Banco:
         for usr in banco.find_those_users(nousers):
             print(usr)
 
-    def new_merge_sessions_ordered(self, given_user):
+    def new_merge_timed_sessions_ordered(self, given_user):
         user_sessions = self.banco.search(self.query.user == given_user)
         value_keys = ("tempo", "carta", "casa", "valor", "ponto")
-        tuple_session_values_content = [tuple([jogada[termo] for termo in value_keys])
+        tuple_session_values_content = [tuple([jogada["tempo"], jogada])
                                         for sessions in user_sessions for jogada in sessions["jogada"]]
-        sorted(tuple_session_values_content)
-        dict_session_values = [{key: value for key, value in zip(value_keys, values)}
+        tuple_session_values_content.sort(key=operator.itemgetter(0))
+        dict_session_values = [values[1]
                                for values in tuple_session_values_content]
         return dict_session_values
 
@@ -116,13 +130,14 @@ class Banco:
             self.banco.update(delete('value'), eids=[user.eid])
 
     def new_update_user_with_merged_data(self, given_user):
-        raise()
+        pass
+        """
         given_user_merged_dict_list = self.new_merge_sessions_ordered(given_user)
         user_sessions = self.banco.search(self.query.user == given_user)
         user_sessions[0]["jogada"] = given_user_merged_dict_list
         given_user_other_ids_to_be_removed = [session.eid for session in user_sessions[1:]]
         self.banco.remove(eids=given_user_other_ids_to_be_removed)
-        return given_user_other_ids_to_be_removed
+        return given_user_other_ids_to_be_removed"""
 
     def find_those_users(self, names):
         users = self.banco.search(self.query.value.user.exists())
@@ -134,7 +149,7 @@ class Banco:
 
     def new_find_all_users_names(self):
         users = self.banco.search(self.query.user.exists())
-        return [a["user"] for a in users]
+        return [a["user"] for a in users if self.new_merge_timed_sessions_ordered(a["user"])]
 
     def find_those_users_ids(self, names):
         users = self.banco.search(self.query.value.user.exists())
@@ -227,9 +242,11 @@ class Banco:
                       for copy in self.banco.search(self.query.user == name["user"])]
             tempos = [lance["tempo"] for copy in tempos for lance in copy]
             # tempo = strptime(max(tempos), "%c")-strptime(min(tempos), "%c")
-            timeformat = "%Y-%m-%d %H:%M:%S"
-            tempo = dt.strptime(max(tempos).split(".")[0], timeformat)-dt.strptime(min(tempos).split(".")[0], timeformat)
-            print("{:3d}".format(i), "Lances: {:3d}".format(jogadas), "T:{:>9}".format(str(tempo)), report.format(**name))
+            timeformat = Y_M_D_H_M_S
+            tempo = dt.strptime(max(tempos).split(".")[0], timeformat)\
+                - dt.strptime(min(tempos).split(".")[0], timeformat)
+            print("{:3d}".format(i), "Lances: {:3d}".format(jogadas),
+                  "T:{:>9}".format(str(tempo)), report.format(**name))
 
     def rename_user_with_inconsistent_names(self):
         users = [("ana fernanda dos santos", "ana fernanda dos santos "),
@@ -266,7 +283,7 @@ class Banco:
         timeformat = "%Y-%m-%d %H:%M:%S.%f"
         # userdata = self.banco.search((self.query.user == u_name) and (self.query.jogada != []))
         # userdata = [data for user in userdata for data in user["jogada"]]
-        userdata = self.new_merge_sessions_ordered(u_name)
+        userdata = self.new_merge_timed_sessions_ordered(u_name)
         userdata = [userdata[0]]+userdata
         value_keys = ("tempo", "carta", "casa", "valor", "ponto", "delta")
         initial_time = dt.strptime(userdata[0]["tempo"], timeformat)
@@ -288,54 +305,24 @@ class Banco:
                      for key in value_keys} for i, data in enumerate(userdata[1:])]
         return playdata
 
-    def simple_plot(self, data):
-        def to_floatornan(number, ponto):
-            try:
-                return float(number)
-            except ValueError:
-                return -2.0
-
-        def to_floatormarker(number, ponto):
-                if number in "objeto fruta arma animal comida __A_T_I_V_A__".split():
-                    if number == "__A_T_I_V_A__":
-                        return -2.0
-                    else:
-                        return CARTAS[number]
-                return -2.0
-
-        def to_floatorgame(number, ponto):
-            if number in "__A_T_I_V_A__":
-                return PONTOS[ponto]
-            return -2.0
+    def new_simple_plot(self, u_name='wesleyana vitoria aquino de souza'):
+        data = banco.new_list_play_data_with_delta(u_name)
         fig1 = plt.figure()
-        x = [0] + [float(d["tempo"]) for d in data] + [float(data[-1]["tempo"]) + 1]
-
-        y = [-2] + [to_floatornan(d["carta"], d["ponto"]) for d in data] + [-2]
-        z = x[:]
-        w = [-2] + [to_floatormarker(d["carta"], d["ponto"]) for d in data] + [-2]
-        j = x[:]
-        k = [-2] + [to_floatorgame(d["carta"], d["ponto"]) for d in data] + [-2]
-        # l, = plt.plot([], [], 'r-')
-        # plt.xlim(0, 1200)
-        plt.ylim(0, 150)
+        x = [0.] + [float(d["tempo"]) for d in data] + [float(data[-1]["tempo"]) + 1]
+        plt.ylim(0, 90)
         plt.xlabel('tempo')
-        plt.title('wesley')
-        plt.fill(z, w, 'b-', linewidth=0)
-        plt.fill(j, k, 'g', linewidth=0)
-        plt.fill(x, y, 'r-', linewidth=0)
-        # plt.bar(x, y, 'r', linewidth=2)
-        # plt.bar(z, w, 'b', linewidth=2)
-        # plt.bar(j, k, 'g', linewidth=2)
-        # plt.barh(y_pos, performance, align='center', alpha=0.4)
-
+        plt.title(u_name)
+        plt.gca().set_color_cycle(['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow'])
+        for plot in PONTO:
+            plt.fill(x, [-2] + [FILTRO[d["ponto"]](d["carta"], d["casa"], d["ponto"], d["valor"], plot)
+                                for d in data] + [-2], linewidth=0)
+        plt.legend([plot for plot in PONTO], ncol=4, bbox_to_anchor=(0, 1, 1, 3),
+                   loc=3, borderaxespad=1.2, mode="expand", )
         plt.grid(True)
+        plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.8, hspace=.35)
+        fig1.savefig("plot/%s.jpg" % "_".join(u_name.split()))
 
-        # line, = plt.plot(x, y, '-')
-
-        dashes = [10, 5, 100, 5]  # 10 points on, 5 off, 100 on, 5 off
-        # line.set_dashes(dashes)
-
-        plt.show()
+        # plt.show()
 
     def save(self, value):
         key = str(uuid1())
@@ -345,12 +332,13 @@ class Banco:
 
 if __name__ == '__main__':
     banco = Banco()
-    prin = banco.new_find_all_users_names()
-    banco.new_report_user_data()
-    banco.simple_plot(banco.new_list_play_data_with_delta())  # "Pitter Guimaraes Correia Goncalves"))
-    for i in banco.new_list_play_data_with_delta():  # ("Pitter Guimaraes Correia Goncalves"):
-        print(i)
+    prin = list(set(banco.new_find_all_users_names()))
+    for user in prin:
+        banco.new_simple_plot(user)
+    # banco.new_report_user_data()
+    # banco.new_simple_plot()
+    # for i in banco.new_list_play_data_with_delta():
+    #     print(i)
     # banco.report_user_data()
     # banco.report_no_user_data()
     # banco.rename_user_with_inconsistent_names()
-
