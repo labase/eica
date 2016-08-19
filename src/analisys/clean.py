@@ -6,6 +6,7 @@ import operator
 # from tinydb.storages import MemoryStorage
 from uuid import uuid1
 from datetime import datetime as dt
+from datetime import timedelta as td
 from time import strftime
 # DBM = lambda :TinyDB(storage=MemoryStorage)
 import matplotlib.pyplot as plt
@@ -13,6 +14,7 @@ import matplotlib.pyplot as plt
 Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
 
 JSONDB = os.path.dirname(__file__) + '/eica.json'
+JSONDBOUT = os.path.dirname(__file__) + '/eica_new.json'
 
 DBF = lambda: TinyDB(JSONDB)
 __author__ = 'carlo'
@@ -25,12 +27,12 @@ FILTRO = dict(
     _CHAVES_=lambda item, casa, ponto, valor, plot: [65, 70][bool(valor)] if plot == "_CHAVES_" else -2,
     _MUNDO_=lambda item, casa, ponto, valor, plot: [75, 80][bool(valor)] if plot == "_MUNDO_" else -2,
     _Chaves_=lambda item, casa, ponto, valor, plot: item if plot == "_Chaves_" else -2,
-    _ABAS_=lambda item, casa, ponto, valor, plot: int(casa.split("_")[0])//10 if plot == "_ABAS_" else -2,
+    _ABAS_=lambda item, casa, ponto, valor, plot: int(casa.split("_")[0]) // 10 if plot == "_ABAS_" else -2,
     _HOMEM_=lambda item, casa, ponto, valor, plot: [85, 90][bool(valor)] if plot == "_HOMEM_" else -2,
     _FALA_=lambda item, casa, ponto, valor, plot:
-    sum(int(val) for val in item.split("_"))//2 if plot == "_FALA_" else -2,
+    sum(int(val) for val in item.split("_")) // 2 if plot == "_FALA_" else -2,
     _Mundo_=lambda item, casa, ponto, valor, plot: item if plot == "_Mundo_" else -2,
-    )
+)
 '''
 db = TinyDB(JSONDB)
 
@@ -47,12 +49,23 @@ for num, registro in enumerate(vale):
     print(num, registro)
 '''
 
+TB = "TATIANE MONTEIRO|R|ALTA|VERDADEIRO SUCESSO|TONI CARLOS|R|ZERO|FALSO SUCESSO|KAYKE|R|ZERO|FALSO SUCESSO|"\
+    "MARIA EDUARDA ALVES|I|ZERO|EXPULSÃO SIMBÓLICA|RADAMES|B|BAIXA|FALSO SUCESSO|ESTER|I|ZERO|EXPULSÃO SIMBÓLICA|" \
+    "KEYLA|I|BAIXA|EXPULSÃO SIMBÓLICA|CHRISTIAN|R|ZERO|FALSO SUCESSO|ANTONIOGUILHERME|R|BAIXA|FALSO SUCESSO|" \
+     "ANA FERNANDA|R|MÉDIA|SUCESSO MÍNIMO|MARIA EDUARDA DA SILVA|I|BAIXA|EXPULSÃO SIMBÓLICA|PATRICK|B|MÉDIA|" \
+     "SUCESSO MÍNIMO|SAMUEL|B|BOA|VERDADEIRO SUCESSO|PITTER|B|ALTA|VERDADEIRO SUCESSO|LINDA|R|ALTA|" \
+     "VERDADEIRO SUCESSO|JULIA|I|BAIXA|EXPULSÃO SIMBÓLICA|KAUE|R|ALTA|VERDADEIRO SUCESSO|RENAN|R|ALTA|" \
+     "VERDADEIRO SUCESSO|THIAGO|R|BOA|VERDADEIRO SUCESSO|FILIPE|R|BAIXA|FALSO SUCESSO|LAIZA|R|ALTA|" \
+     "VERDADEIRO SUCESSO|JULIE BRENDA|R|ALTA|VERDADEIRO SUCESSO|KAMILLE|R|ALTA|VERDADEIRO SUCESSO|" \
+     "WESLEYANA|R|ALTA|VERDADEIRO SUCESSO|".split("|")
+
 
 class Banco:
     def __init__(self, base=DBF):
         self.banco = base()
         self.query = Query()
         self.users = []
+        self.initial_time = 0
 
     def __setitem__(self, key, value):
         if self.banco.contains(where('key') == key):
@@ -89,6 +102,40 @@ class Banco:
         for usr in banco.find_those_users(nousers):
             print(usr)
 
+    def new_list_play_data_adjusted_with_delta(self, given_user):
+        timeformat = "%Y-%m-%d %H:%M:%S.%f"
+        user_sessions = self.banco.search(self.query.user == given_user)
+        # print(len(user_sessions), next(s["jogada"][0] if s["jogada"] else "######" for s in user_sessions))
+        tuple_session_values_content = [(jogada.update({0: i}) if i == 0 else 0, jogada)[1]
+                                        for sessions in user_sessions for i, jogada in enumerate(sessions["jogada"])
+                                        if sessions["jogada"]]
+        tuple_session_values_content.sort(key=operator.itemgetter("tempo"))
+
+        self.initial_time = dt.strptime(tuple_session_values_content[0]["tempo"], timeformat)
+        all_plays = zip(tuple_session_values_content, tuple_session_values_content[1:])
+
+        def calc(antjog, jog):
+            # print(antjog)
+            last_play_time = dt.strptime(antjog["tempo"], timeformat)
+            delta = dt.strptime(jog["tempo"], timeformat) - last_play_time
+            if 0 in jog:
+                self.initial_time += delta - td(seconds=1)
+                delta = td(seconds=1)
+                # jog.pop(0)
+            tempo = dt.strptime(jog["tempo"], timeformat) - self.initial_time
+            jog = dict(jog)
+
+            jog.update(dict(tempo=tempo.total_seconds(), delta=delta.total_seconds()))
+            return jog
+
+        first = tuple_session_values_content
+        first = calc(first[0], first[0])
+
+        merge = [first] + [calc(antjog, jog) for antjog, jog in all_plays]
+        # for pl in merge:
+        #     print("tempo ", pl["tempo"], "  delta", pl["delta"], "XXXXXXXXXX" if 0 in pl else "")
+        return merge
+
     def new_merge_timed_sessions_ordered(self, given_user):
         user_sessions = self.banco.search(self.query.user == given_user)
         value_keys = ("tempo", "carta", "casa", "valor", "ponto")
@@ -124,6 +171,7 @@ class Banco:
             value_keys = ["user", "idade", "ano", "sexo", "jogada"]
             shallow_content = {key: user["value"][key] for key in value_keys}
             return shallow_content
+
         users = self.find_all_users()
         for user in users:
             self.banco.update(reformat_a_user(user), eids=[user.eid])
@@ -181,10 +229,11 @@ class Banco:
         banco = self
         unique = set(banco.find_all_users_names())
         values = [banco.find_inconsistent_users_ids(name) for name in unique]
-        values = [value for value in values if value["hora"] == 0]
+        values = [value for value in values
+                  if value["hora"] == 0 and value["user"] not in "Jonatas Rafael,ggggg".split(",")]
         report = "nome:{user: >40}  idade: {idade: >4}   ano: {ano}   dia+hora: {hora} genero: {sexo} "
         for i, name in enumerate(values):
-                print("{:3d}".format(i), report.format(**name))
+            print("{:3d}".format(i), report.format(**name))
 
     def report_user_data(self):
         banco = self
@@ -204,8 +253,8 @@ class Banco:
             tempos = [lance["tempo"] for copy in tempos for lance in copy]
             # tempo = strptime(max(tempos), "%c")-strptime(min(tempos), "%c")
             timeformat = "%Y-%m-%d %H:%M:%S"
-            tempo = dt.strptime(max(tempos).split(".")[0], timeformat)\
-                - dt.strptime(min(tempos).split(".")[0], timeformat)
+            tempo = dt.strptime(max(tempos).split(".")[0], timeformat) \
+                    - dt.strptime(min(tempos).split(".")[0], timeformat)
             print("{:3d}".format(i), "Lances: {:3d}".format(jogadas),
                   "T:{:>9}".format(str(tempo)), report.format(**name))
 
@@ -219,7 +268,7 @@ class Banco:
         dias = [user["jogada"][0]["tempo"].split()[0] for user in user_sessions if user["jogada"]]
         dias = set(dias)
         if len(dias) > 1:
-            dias = [(user.eid, user["user"]+(str(dia) if dia else ""), data)
+            dias = [(user.eid, user["user"] + (str(dia) if dia else ""), data)
                     for user in user_sessions
                     for dia, data in enumerate(dias)
                     if user["jogada"] and user["jogada"][0]["tempo"].split()[0] == data]
@@ -243,8 +292,8 @@ class Banco:
             tempos = [lance["tempo"] for copy in tempos for lance in copy]
             # tempo = strptime(max(tempos), "%c")-strptime(min(tempos), "%c")
             timeformat = Y_M_D_H_M_S
-            tempo = dt.strptime(max(tempos).split(".")[0], timeformat)\
-                - dt.strptime(min(tempos).split(".")[0], timeformat)
+            tempo = dt.strptime(max(tempos).split(".")[0], timeformat) \
+                    - dt.strptime(min(tempos).split(".")[0], timeformat)
             print("{:3d}".format(i), "Lances: {:3d}".format(jogadas),
                   "T:{:>9}".format(str(tempo)), report.format(**name))
 
@@ -284,26 +333,52 @@ class Banco:
         # userdata = self.banco.search((self.query.user == u_name) and (self.query.jogada != []))
         # userdata = [data for user in userdata for data in user["jogada"]]
         userdata = self.new_merge_timed_sessions_ordered(u_name)
-        userdata = [userdata[0]]+userdata
+        userdata = [userdata[0]] + userdata
         value_keys = ("tempo", "carta", "casa", "valor", "ponto", "delta")
         initial_time = dt.strptime(userdata[0]["tempo"], timeformat)
         options = {key: lambda _, data, k: data[k] for key in value_keys}
 
         def get_delta(i, *args):
-            tempo = dt.strptime(userdata[i]["tempo"], timeformat)\
-                - dt.strptime(userdata[i-1]["tempo"], timeformat)
+            tempo = dt.strptime(userdata[i]["tempo"], timeformat) \
+                    - dt.strptime(userdata[i - 1]["tempo"], timeformat)
             return tempo.total_seconds()
 
         def get_playtime(i, *args):
             timeformat = "%Y-%m-%d %H:%M:%S.%f"
-            tempo = dt.strptime(userdata[i]["tempo"], timeformat)\
-                - initial_time
+            tempo = dt.strptime(userdata[i]["tempo"], timeformat) \
+                    - initial_time
             return tempo.total_seconds()
+
         options["delta"] = get_delta
         options["tempo"] = get_playtime
         playdata = [{key: options[key](i, data, key)
                      for key in value_keys} for i, data in enumerate(userdata[1:])]
         return playdata
+
+    def __new_list_play_data_adjusted_with_delta(self, u_name='wesleyana vitoria aquino de souza'):
+        timeformat = "%Y-%m-%d %H:%M:%S.%f"
+        userdata = self.new_merge_adjusted_timed_sessions_ordered(u_name)
+        userdata = [userdata[0]] + userdata
+        value_keys = ("tempo", "carta", "casa", "valor", "ponto", "delta")
+        initial_time = dt.strptime(userdata[0][1][0]["tempo"], timeformat)
+        options = {key: lambda _, j, data, k: data[k] for key in value_keys}
+
+        def get_delta(i, *args):
+            tempo = dt.strptime(userdata[i]["tempo"], timeformat) \
+                    - dt.strptime(userdata[i - 1]["tempo"], timeformat)
+            return tempo.total_seconds()
+
+        def get_playtime(i, j, *args):
+            timeformat = "%Y-%m-%d %H:%M:%S.%f"
+            tempo = dt.strptime(userdata[i]["tempo"], timeformat) \
+                    - initial_time - j
+            return tempo.total_seconds()
+
+        options["delta"] = get_delta
+        options["tempo"] = get_playtime
+        playdata = [{key: options[key](i, j, data, key)
+                     for key in value_keys} for j, session in userdata for i, data in enumerate(session)]
+        return playdata[1:]
 
     def new_simple_plot(self, u_name='wesleyana vitoria aquino de souza'):
         data = banco.new_list_play_data_with_delta(u_name)
@@ -324,21 +399,63 @@ class Banco:
 
         # plt.show()
 
+    def parse_prognostics(self):
+        prog = "EXPULSÃO SIMBÓLICA,FALSO SUCESSO,SUCESSO MÍNIMO,VERDADEIRO SUCESSO".split(",")
+        tt = "nome nota trans prog".split()
+        ntb = zip(*[TB[i:-1:4] for i in range(4)])
+        # ntb = zip(tb[0:], tb[1:], tb[2:], tb[3:])
+        # print(list(next(ntb) for i in range(6)))
+        prognostic_list = [{i[0]: i[1] if i[0] != "prog" else i[1][0] for i in zip(tt, tl)} for tl in ntb]
+        # print(len(dtb))
+        nm = set(n.lower() for n in Banco().new_find_all_users_names())
+
+        def match(n):
+            for entry in prognostic_list:
+                if entry["nome"].lower() in n.lower():
+                    return {key: entry[key] for key in tt[1:]}
+            return {key: None for key in tt[1:]}
+
+        user_prog_dict = {key.lower(): match(key) for key in nm}
+        print(nm)
+
+        for l in user_prog_dict:
+            print(l, user_prog_dict[l])
+        return user_prog_dict
+
+    def new_use_once_only_clean_db_with_merged_sessions_and_prognostics(self):
+        new_data_base = TinyDB(JSONDBOUT)
+        prognostics = self.parse_prognostics()
+        users_with_demographics = list(set(n for n in self.new_find_all_users_names()))
+        new_user_list = [dict(
+            jogada=self.new_list_play_data_adjusted_with_delta(user),
+            **prognostics[user.lower()],
+            **self.new_find_inconsistent_users_ids(user)
+        ) for user in users_with_demographics]
+        for user in new_user_list:
+            print({key: val if key != "jogada" else val[0] for key, val in user.items()})
+            new_data_base.insert(user)
+
+        return new_user_list
+
     def save(self, value):
         key = str(uuid1())
         self.banco.insert(dict(key=key, value=value))
         return key
 
 
-if __name__ == '__main__':
+if __name__ == '___main__':
     banco = Banco()
     prin = list(set(banco.new_find_all_users_names()))
+    banco.report_no_user_data()
+    exit()
     for user in prin:
         banco.new_simple_plot(user)
-    # banco.new_report_user_data()
-    # banco.new_simple_plot()
-    # for i in banco.new_list_play_data_with_delta():
-    #     print(i)
-    # banco.report_user_data()
-    # banco.report_no_user_data()
-    # banco.rename_user_with_inconsistent_names()
+        # banco.new_report_user_data()
+        # banco.new_simple_plot()
+        # for i in banco.new_list_play_data_with_delta():
+        #     print(i)
+        # banco.report_user_data()
+        # banco.report_no_user_data()
+        # banco.rename_user_with_inconsistent_names()
+# Banco().parse_prognostics()
+# Banco().new_clean_db_with_merged_sessions_and_prognostics()

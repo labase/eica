@@ -4,6 +4,7 @@ __author__ = 'carlo'
 
 Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
 PONTO = "_LINGUA_ _CHAVES_ _MUNDO_ _Chaves_ _ABAS_ _FALA_ _Mundo_ _HOMEM_".split()
+CARDS = "_Chaves_ _FALA_ _Mundo_".split()
 FILTRO = dict(
     _LINGUA_=lambda item, casa, ponto, valor, plot: [55, 60][bool(valor)] if plot == "_LINGUA_" else -2,
     _CHAVES_=lambda item, casa, ponto, valor, plot: [65, 70][bool(valor)] if plot == "_CHAVES_" else -2,
@@ -15,14 +16,53 @@ FILTRO = dict(
     sum(int(val) for val in item.split("_"))//2 if plot == "_FALA_" else -2,
     _Mundo_=lambda item, casa, ponto, valor, plot: item if plot == "_Mundo_" else -2,
     )
+DELTA = dict(
+    _LINGUA_=lambda delta, plot: delta if plot == "_LINGUA_" else -2,
+    _CHAVES_=lambda delta, plot: delta if plot == "_CHAVES_" else -2,
+    _MUNDO_=lambda delta, plot: delta if plot == "_MUNDO_" else -2,
+    _Chaves_=lambda delta, plot: delta if plot == "_Chaves_" else -2,
+    _ABAS_=lambda delta, plot: delta if plot == "_ABAS_" else -2,
+    _HOMEM_=lambda delta, plot: delta if plot == "_HOMEM_" else -2,
+    _FALA_=lambda delta, plot: delta if plot == "_FALA_" else -2,
+    _Mundo_=lambda delta, plot: delta if plot == "_Mundo_" else -2,
+    )
 
 
 class Stats:
     def __init__(self):
         self.banco = Banco()
 
+    def new_delta_plot(self, u_name='wesleyana vitoria aquino de souza'):
+        # data = self.banco.new_list_play_data_with_delta(u_name)
+        data = self.banco.new_list_play_data_adjusted_with_delta(u_name)
+        data = [d for d in data if d["ponto"] in CARDS]
+        first = [bef.update(dict(first=aft["delta"] - bef["delta"] + 15)) for bef, aft in zip(data, data[1:])]
+        data[-1].update(dict(first=-2, second=-2))
+        secon = [bef.update(dict(second=aft["first"] - bef["first"] + 25))
+                 for bef, aft in zip(data, data[1:])]
+        data[-1].update(dict(first=-2, second=-2))
+        fig1 = plt.figure()
+        x = range(len(data)+2)
+        plt.ylim(0, 35)
+        plt.xlim(0, 50)
+        plt.xlabel('jogadas')
+        plt.title(u_name)
+        plt.gca().set_prop_cycle(color=['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow'])
+        for plot in CARDS:
+            plt.fill(x, [-2] + [DELTA[d["ponto"]](d["delta"], plot)
+                                for d in data] + [-2], linewidth=0)
+        plt.plot(x, [-2] + [d["first"] for d in data] + [-2], "magenta")
+        plt.plot(x, [-2] + [d["second"] for d in data] + [-2], "black",)
+        plt.legend(["PRIM", "SEG"]+[plot for plot in CARDS], ncol=5, bbox_to_anchor=(0, 1, 1, 3),
+                   loc=3, borderaxespad=1.2, mode="expand")
+        plt.grid(True)
+        plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.9, hspace=.35)
+        fig1.savefig("delta/%s.jpg" % "_".join(u_name.split()))
+        # plt.show()
+
     def new_simple_plot(self, u_name='wesleyana vitoria aquino de souza'):
-        data = self.banco.new_list_play_data_with_delta(u_name)
+        # data = self.banco.new_list_play_data_with_delta(u_name)
+        data = self.banco.new_list_play_data_adjusted_with_delta(u_name)
         fig1 = plt.figure()
         x = [0.] + [float(d["tempo"]) for d in data] + [float(data[-1]["tempo"]) + 1]
         plt.ylim(0, 90)
@@ -38,6 +78,11 @@ class Stats:
         plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.8, hspace=.35)
         # fig1.savefig("plot/%s.jpg" % "_".join(u_name.split()))
         plt.show()
+
+    def delta_given_users(self, g_users=None):
+        prin = g_users if g_users else list(set(self.banco.new_find_all_users_names()))
+        for user in prin:
+            self.new_delta_plot(user)
 
     def plot_given_users(self, g_users=None):
         prin = g_users if g_users else list(set(self.banco.new_find_all_users_names()))
@@ -62,13 +107,13 @@ class Stats:
         # for i, bar in enumerate(ubars):
         #     plt.bar(x, bar, bottom=None if i == 0 else ubars[i-1], color=cl[i])
         print(ubars[:10])
-        plt.bar(x, ubars[0], color="r", label=legend[0])
-        plt.bar(x, ubars[1], bottom=ubars[0], color="g", label=legend[1])
-        plt.bar(x, ubars[2], bottom=[i+j for i, j in zip(ubars[0], ubars[1])], color="b", label=legend[2])
+        plt.bar(x, ubars[0], color="r", label=legend[0], linewidth=0)
+        plt.bar(x, ubars[1], bottom=ubars[0], color="g", label=legend[1], linewidth=0)
+        plt.bar(x, ubars[2], bottom=[i+j for i, j in zip(ubars[0], ubars[1])], color="b", label=legend[2], linewidth=0)
         plt.bar(x, ubars[3], bottom=[i+j+k for i, j, k in
-                                     zip(ubars[0], ubars[1], ubars[2])], color="m", label=legend[3])
+                                     zip(ubars[0], ubars[1], ubars[2])], color="m", label=legend[3], linewidth=0)
         plt.bar(x, ubars[4], bottom=[i+j+k+l for i, j, k, l in
-                                     zip(ubars[0], ubars[1], ubars[2], ubars[3])], color="c", label=legend[4])
+                                     zip(ubars[0], ubars[1], ubars[2], ubars[3])], color="c", label=legend[4], linewidth=0)
         plt.legend(ncol=2, loc="upper left")
         plt.show()
         return
@@ -87,4 +132,7 @@ class Stats:
 
 
 if __name__ == '__main__':
-    Stats().plot_item_use_across_games()
+    # Stats().plot_item_use_across_games()
+    # Stats().new_delta_plot("filipe balbino ribeiro")
+    # Stats().new_delta_plot()
+    Stats().delta_given_users()
