@@ -70,6 +70,21 @@ class Learn:
                 w.writerow(line)
             return data
 
+    def build_with_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab"):
+        """
+        Gera um arquivo csv compatível com o Orange
+
+        :param measure: Um dos possiveis itens de medida do banco: tempo, delta, carta
+        :param prog: Um dos possíveis prognosticos do banco: prog, nota, trans, sexo, idade, ano
+        :param slicer: recorta eos dados neste tamanho
+        :param filename: o nomo do aqrquivo que se quer gerar
+        :return:
+        """
+        data = [[user["user"], user[prog]]+[turn[measure] for turn in user["jogada"]][:slicer] for user in self.banco.all()]
+        for line in data:
+            pass
+        return data
+
 if __name__ == '__main__':
     # Learn().report_user_data()
     # Learn().report_user_turn()
