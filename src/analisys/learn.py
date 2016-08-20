@@ -1,6 +1,7 @@
 # -*- coding: UTF8 -*-
 from tinydb import TinyDB, Query
 import os
+from csv import writer
 # import operator
 # from datetime import datetime as dt
 # from datetime import timedelta as td
@@ -48,6 +49,28 @@ class Learn:
             data = {key: val or "#" for key, val in name.items()}
             print(format_string.format(i, **data))
 
+    def build_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab"):
+        """
+        Gera um arquivo csv compatível com o Orange
+
+        :param measure: Um dos possiveis itens de medida do banco: tempo, delta, carta
+        :param prog: Um dos possíveis prognosticos do banco: prog, nota, trans, sexo, idade, ano
+        :param slicer: recorta eos dados neste tamanho
+        :param filename: o nomo do aqrquivo que se quer gerar
+        :return:
+        """
+        data = [[user[prog]]+[turn[measure] for turn in user["jogada"]][:slicer] for user in self.banco.all()]
+        with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
+            w = writer(writecsv, delimiter='\t')
+            w.writerow('t%d' % t for t, _ in enumerate(data[0]))  # primeiro cabeçalho
+            w.writerow('c' if t == 0 else 'd' for t, _ in enumerate(data[0]))
+            w.writerow('c' if t == 0 else '' for t, _ in enumerate(data[0]))
+            for line in data:
+                print(line)
+                w.writerow(line)
+            return data
+
 if __name__ == '__main__':
-    Learn().report_user_data()
-    Learn().report_user_turn()
+    # Learn().report_user_data()
+    # Learn().report_user_turn()
+    Learn().build_User_table_for_prog()
