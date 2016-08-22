@@ -1,5 +1,5 @@
 from learn import Learn
-from random import shuffle
+from random import shuffle, random
 import operator
 from constants import PRIMES, DATA
 __author__ = 'carlo'
@@ -71,13 +71,15 @@ class Wisard:
     def learn(self, clazz, master_retina, offset=10):
         def updater(lobe, index, off):
             return {index: lobe[index] + off}
+        if random() > 0.6:
+            return
         clazzes = self.clazzes
         shuffle(clazzes)
         for cls in clazzes:
             retina = master_retina[:]
             [lobe.update(
                 updater(lobe, (retina.pop(RND % len(retina)), retina.pop(RND % len(retina))),
-                        self.enf if cls == clazz else self.sup))
+                        self.enf if cls == clazz else self.sup if cls != "N" else 0))
              for lobe in self.cortex[cls] if len(retina)]
 
     def _classify(self, retina):
@@ -105,8 +107,8 @@ def show(retina):
 def run(data):
     # bleacher = dict(V=60, S=0, E=8, F=15)
     # w = Wisard(32 * 32, bleach=62, mapper=bleacher, enf=11, sup=2)
-    bleacher = dict(V=60, S=0, E=8, F=15)
-    w = Wisard(32 * 64, bleach=62, mapper=bleacher, enf=11, sup=2)
+    bleacher = dict(V=29, S=-4, E=4, F=4)
+    w = Wisard(32 * 64, bleach=35, mapper=bleacher, enf=11, sup=2)
     # show(w.retinify(data[0][2:]))
     # return
     w.learn_samples(data)
@@ -168,19 +170,26 @@ def main(_):
     total = list(tot.keys())
     total.sort()
     total_conf = 0
+    total_sec = 0
     for line in total:
         val = dict(tot[line])
         user = val.pop("U")[-1:]
         val = list(val.items())
         # print(val)
         val.sort(key=operator.itemgetter(1), reverse=True)
-        first, sec = val[0][1], val[1][1]
+        first, sec, third = val[0][1], val[1][1], val[2][1]
         conf = min(100 * abs(first-sec) // abs(first), 100) if (user == val[0][0]) or ("e" == user) else 0
+        secd = min(abs(sec // first)*conf, 100)  # if (user == val[0][0]) or ("e" == user) else 0
         # conf = 100 * abs(first-sec) // max(abs(first), abs(sec))
         # conf = 100 * (max(first, 0)-max(sec, 0)) // first
         total_conf += conf
+        total_sec += secd
         # print(tot[line]["U"] + "  " + "".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]), "conf: %d" % conf)
         print("{name: >42} {val} conf: {conf}".format(name=tot[line]["U"], val="".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]) , conf=conf))
+        out_form = "{name: >42} classe original: {era} pri: {prim}  1ªconf: {conf: >3}% sec: {sec} 2ªconf: {csec: >3}%"
+        name = " ".join(tot[line]["U"].split()[:-1])
+        era = tot[line]["U"].split()[-1][0]
+        # print(out_form.format(name=name, era=era, prim=val[0][0], conf=conf, sec=val[1][0], csec=secd))
         # print("{U}: {tot}".format(result))
     print("total confidence %d" % (total_conf//len(total)))
     return
