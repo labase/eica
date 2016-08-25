@@ -63,7 +63,7 @@ class Stats:
     def new_simple_plot(self, u_name='wesleyana vitoria aquino de souza'):
         # data = self.banco.new_list_play_data_with_delta(u_name)
         data = self.banco.new_list_play_data_adjusted_with_delta(u_name)
-        fig1 = plt.figure()
+        plt.figure()
         x = [0.] + [float(d["tempo"]) for d in data] + [float(data[-1]["tempo"]) + 1]
         plt.ylim(0, 90)
         plt.xlabel('tempo')
@@ -89,15 +89,15 @@ class Stats:
         for user in prin:
             self.new_simple_plot(user)
 
-    def plot_item_use_across_games(self, u_name='wesleyana vitoria aquino de souza'):
+    def plot_item_use_across_games(self):
         u_names = list(set(self.banco.new_find_all_users_names()))
-        udata = [self.cross_usage_In_user(u_name) for u_name in u_names]
-        udata.sort(key= lambda u: sum(u[1:]))
+        udata = [self.cross_usage_in_user(u_name) for u_name in u_names]
+        udata.sort(key=lambda u: sum(u[1:]))
         ubars = list(zip(*udata))
         labels = ubars.pop(0)
         legend = "Objetos usados,Trans chave/fala,Trans fala/mundo,Trans chave/mundo,Trans total".split(",")
         print(legend)
-        cl = "r g b c m y".split()
+        # cl = "r g b c m y".split()
         plt.grid(True)
         plt.subplots_adjust(bottom=0.5, left=.05, right=.96, top=0.96, hspace=.35)
         plt.title("Transitividade absoluta de objetos no jogo e total usado")
@@ -112,13 +112,14 @@ class Stats:
         plt.bar(x, ubars[2], bottom=[i+j for i, j in zip(ubars[0], ubars[1])], color="b", label=legend[2], linewidth=0)
         plt.bar(x, ubars[3], bottom=[i+j+k for i, j, k in
                                      zip(ubars[0], ubars[1], ubars[2])], color="m", label=legend[3], linewidth=0)
-        plt.bar(x, ubars[4], bottom=[i+j+k+l for i, j, k, l in
-                                     zip(ubars[0], ubars[1], ubars[2], ubars[3])], color="c", label=legend[4], linewidth=0)
+        plt.bar(
+            x, ubars[4], bottom=[i+j+k+l for i, j, k, l in
+                                 zip(ubars[0], ubars[1], ubars[2], ubars[3])], color="c", label=legend[4], linewidth=0)
         plt.legend(ncol=2, loc="upper left")
         plt.show()
         return
 
-    def cross_usage_In_user(self, u_name):
+    def cross_usage_in_user(self, u_name):
         data = self.banco.new_list_play_data_with_delta(u_name)
         games = "_Chaves_ _FALA_ _Mundo_".split()
 
