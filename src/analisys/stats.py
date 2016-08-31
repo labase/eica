@@ -44,16 +44,16 @@ class Stats:
         fig1 = plt.figure()
         x = range(len(data)+2)
         plt.ylim(0, 35)
-        plt.xlim(0, 50)
+        plt.xlim(0, 128)
         plt.xlabel('jogadas')
         plt.title(u_name)
         plt.gca().set_prop_cycle(color=['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow'])
         for plot in CARDS:
             plt.fill(x, [-2] + [DELTA[d["ponto"]](d["delta"], plot)
                                 for d in data] + [-2], linewidth=0)
-        plt.plot(x, [-2] + [d["first"] for d in data] + [-2], "magenta")
+        # plt.plot(x, [-2] + [d["first"] for d in data] + [-2], "magenta")
         plt.plot(x, [-2] + [d["second"] for d in data] + [-2], "black",)
-        plt.legend(["PRIM", "SEG"]+[plot for plot in CARDS], ncol=5, bbox_to_anchor=(0, 1, 1, 3),
+        plt.legend(["SEG"]+[plot for plot in CARDS], ncol=5, bbox_to_anchor=(0, 1, 1, 3),
                    loc=3, borderaxespad=1.2, mode="expand")
         plt.grid(True)
         plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.9, hspace=.35)
@@ -95,6 +95,7 @@ class Stats:
         udata.sort(key=lambda u: sum(u[1:]))
         ubars = list(zip(*udata))
         labels = ubars.pop(0)
+        labels = [" ".join([part.capitalize() if i == 0 else part[:1].capitalize() for i, part in enumerate(name.split())]) for name in labels]
         legend = "Objetos usados,Trans chave/fala,Trans fala/mundo,Trans chave/mundo,Trans total".split(",")
         print(legend)
         # cl = "r g b c m y".split()
@@ -134,6 +135,6 @@ class Stats:
 
 if __name__ == '__main__':
     # Stats().plot_item_use_across_games()
-    # Stats().new_delta_plot("filipe balbino ribeiro")
+    # Stats().new_delta_plot()
     # Stats().new_delta_plot()
     Stats().delta_given_users()

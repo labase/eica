@@ -7,8 +7,6 @@ import operator
 from uuid import uuid1
 from datetime import datetime as dt
 from datetime import timedelta as td
-from time import strftime
-# DBM = lambda :TinyDB(storage=MemoryStorage)
 import matplotlib.pyplot as plt
 
 Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
@@ -33,6 +31,8 @@ FILTRO = dict(
     sum(int(val) for val in item.split("_")) // 2 if plot == "_FALA_" else -2,
     _Mundo_=lambda item, casa, ponto, valor, plot: item if plot == "_Mundo_" else -2,
 )
+nousers = "carlo,carla,Jonatas,ggggg,,Jonatas Rafael,JonatasRafael,Rafael,Gabriel,teste,Camila (teste)".split(",")
+
 '''
 db = TinyDB(JSONDB)
 
@@ -49,9 +49,9 @@ for num, registro in enumerate(vale):
     print(num, registro)
 '''
 
-TB = "TATIANE MONTEIRO|R|ALTA|VERDADEIRO SUCESSO|TONI CARLOS|R|ZERO|FALSO SUCESSO|KAYKE|R|ZERO|FALSO SUCESSO|"\
-    "MARIA EDUARDA ALVES|I|ZERO|EXPULSÃO SIMBÓLICA|RADAMES|B|BAIXA|FALSO SUCESSO|ESTER|I|ZERO|EXPULSÃO SIMBÓLICA|" \
-    "KEYLA|I|BAIXA|EXPULSÃO SIMBÓLICA|CHRISTIAN|R|ZERO|FALSO SUCESSO|ANTONIOGUILHERME|R|BAIXA|FALSO SUCESSO|" \
+TB = "TATIANE MONTEIRO|R|ALTA|VERDADEIRO SUCESSO|TONI CARLOS|R|ZERO|FALSO SUCESSO|KAYKE|R|ZERO|FALSO SUCESSO|" \
+     "MARIA EDUARDA ALVES|I|ZERO|EXPULSÃO SIMBÓLICA|RADAMES|B|BAIXA|FALSO SUCESSO|ESTER|I|ZERO|EXPULSÃO SIMBÓLICA|" \
+     "KEYLA|I|BAIXA|EXPULSÃO SIMBÓLICA|CHRISTIAN|R|ZERO|FALSO SUCESSO|ANTONIOGUILHERME|R|BAIXA|FALSO SUCESSO|" \
      "ANA FERNANDA|R|MÉDIA|SUCESSO MÍNIMO|MARIA EDUARDA DA SILVA|I|BAIXA|EXPULSÃO SIMBÓLICA|PATRICK|B|MÉDIA|" \
      "SUCESSO MÍNIMO|SAMUEL|B|BOA|VERDADEIRO SUCESSO|PITTER|B|ALTA|VERDADEIRO SUCESSO|LINDA|R|ALTA|" \
      "VERDADEIRO SUCESSO|JULIA|I|BAIXA|EXPULSÃO SIMBÓLICA|KAUE|R|ALTA|VERDADEIRO SUCESSO|RENAN|R|ALTA|" \
@@ -66,15 +66,6 @@ class Banco:
         self.query = Query()
         self.users = []
         self.initial_time = 0
-
-    def __setitem__(self, key, value):
-        if self.banco.contains(where('key') == key):
-            self.banco.update(dict(value=value), where('key') == key)
-        else:
-            self.banco.insert(dict(key=key, value=value))
-
-    def __getitem__(self, key):
-        return self.banco.search(where('key') == key)[0]['value']
 
     def find_all_users(self):
         self.users = self.banco.search(self.query.value.exists())
@@ -167,9 +158,9 @@ class Banco:
         return dict_session_values
 
     def caution_reformat_db_to_shallow_dict(self):
-        def reformat_a_user(user):
+        def reformat_a_user(usr):
             value_keys = ["user", "idade", "ano", "sexo", "jogada"]
-            shallow_content = {key: user["value"][key] for key in value_keys}
+            shallow_content = {key: usr["value"][key] for key in value_keys}
             return shallow_content
 
         users = self.find_all_users()
@@ -198,6 +189,10 @@ class Banco:
     def new_find_all_users_names(self):
         users = self.banco.search(self.query.user.exists())
         return [a["user"] for a in users if self.new_merge_timed_sessions_ordered(a["user"])]
+
+    def new_find_those_users_ids(self, names):
+        users = self.banco.search(self.query.user.exists())
+        return [a.eid for a in users if a["user"] in names]
 
     def find_those_users_ids(self, names):
         users = self.banco.search(self.query.value.user.exists())
@@ -230,14 +225,17 @@ class Banco:
         unique = set(banco.find_all_users_names())
         values = [banco.find_inconsistent_users_ids(name) for name in unique]
         values = [value for value in values
-                  if value["hora"] == 0 and value["user"] not in "Jonatas Rafael,ggggg".split(",")]
+                  if value["hora"] == 0 and value["user"] not in nousers]
         report = "nome:{user: >40}  idade: {idade: >4}   ano: {ano}   dia+hora: {hora} genero: {sexo} "
         for i, name in enumerate(values):
             print("{:3d}".format(i), report.format(**name))
 
-    def report_user_data(self):
+    def report_user_data(self, desde="2016-08-08 00:00:0.0"):
+        timeformat = "%Y-%m-%d %H:%M:%S.%f"
         banco = self
+        desde = dt.strptime(desde, timeformat)
         unique = set(banco.find_all_users_names())
+        unique -= set(nousers)
         values = [banco.find_inconsistent_users_ids(name) for name in unique]
         values = [value for value in values if value["hora"] != 0]
         dem = ["user", "idade", "sexo", "ano", "hora"]
@@ -251,10 +249,11 @@ class Banco:
             tempos = [copy["value"]["jogada"]
                       for copy in self.banco.search(self.query.value.user == name["user"])]
             tempos = [lance["tempo"] for copy in tempos for lance in copy]
+            if dt.strptime(tempos[0], timeformat) < desde:
+                continue
             # tempo = strptime(max(tempos), "%c")-strptime(min(tempos), "%c")
-            timeformat = "%Y-%m-%d %H:%M:%S"
-            tempo = dt.strptime(max(tempos).split(".")[0], timeformat) \
-                    - dt.strptime(min(tempos).split(".")[0], timeformat)
+            tempo = dt.strptime(max(tempos), timeformat) \
+                    - dt.strptime(min(tempos), timeformat)
             print("{:3d}".format(i), "Lances: {:3d}".format(jogadas),
                   "T:{:>9}".format(str(tempo)), report.format(**name))
 
@@ -276,7 +275,7 @@ class Banco:
 
     def new_report_user_data(self):
         banco = self
-        unique = set(banco.new_find_all_users_names())
+        unique = set(banco.new_find_all_users_names()) - set(nousers)
         values = [banco.new_find_inconsistent_users_ids(name) for name in unique]
         values = [value for value in values if value["hora"] != 0]
         dem = ["user", "idade", "sexo", "ano", "hora"]
@@ -294,7 +293,7 @@ class Banco:
             timeformat = Y_M_D_H_M_S
             tempo = dt.strptime(max(tempos).split(".")[0], timeformat) \
                     - dt.strptime(min(tempos).split(".")[0], timeformat)
-            print("{:3d}".format(i), "Lances: {:3d}".format(jogadas),
+            print("{:3d}".format(i), "Lances: {:4d}".format(jogadas),
                   "T:{:>9}".format(str(tempo)), report.format(**name))
 
     def rename_user_with_inconsistent_names(self):
@@ -321,8 +320,30 @@ class Banco:
                 values["user"] = master
                 self.banco.update(dict(value=values), eids=[oid])
 
+    def new_rename_user_with_inconsistent_names(self):
+        users = [("ana fernanda dos santos", "ana fernanda dos santos "),
+                 ("christian rodrigues gago", "christian"),
+                 ("evellyn vitoria feitosa araujo", "evellyn"),
+                 ("Ester Helen Rodrigues Cordeiro de Brito", "ESTERHELENRODRIGUESCORDEIRODEBRITO"),
+                 ("jade feitosa matias dos santos", "jade", "jady  feitosa ", "jady  feitosa"),
+                 ("julia gabrielly nascimento marques", "julia gabrielly nacismento marqeus", "julia"),
+                 ("kamille de oliveira", "kamille de olivera "),
+                 ("laiza fernandes de farias", "laiza"),
+                 ("samuel gomes", "samuel"),
+                 ("tatiane monteiro nascimento", "tiane monteiro nascimento"),
+                 ]
+        # users = [tuple(" ".join(nome.capitalize() for nome in item.split()) if i == 0) for i, item in enumerate(user)]
+        masters = [" ".join(nome.capitalize() for nome in tup[0].split(" ")) for tup in users]
+        print(masters)
+        for master, user in zip(masters, users):
+            allcopies = [(master, record.eid, record["user"])
+                         for u_name in user
+                         for record in self.banco.search(self.query.user == u_name)]
+            # print(allcopies)
+            for _, oid, name in allcopies:
+                self.banco.update(dict(user=master), eids=[oid])
+
     def report_merged_user(self, user="tatiane monteiro nascimento"):
-        banco = self
         merge_sorted_data = self.merge_sessions_ordered(user)
         for i, data in enumerate(merge_sorted_data):
             print(i, data)
@@ -437,25 +458,37 @@ class Banco:
 
         return new_user_list
 
+    def script_to_provide_clean_db_from_zero(self):
+        # self.caution_reformat_db_to_shallow_dict()
+        # print(self.new_find_those_users_ids(nousers))
+        # self.use_with_caution_removes_records_fro_db(self.new_find_those_users_ids(nousers))
+        # self.new_rename_user_with_inconsistent_names()
+        # self.new_rename_users_across_days()
+        self.new_use_once_only_clean_db_with_merged_sessions_and_prognostics()
+        # self.new_report_user_data()
+
     def save(self, value):
         key = str(uuid1())
         self.banco.insert(dict(key=key, value=value))
         return key
 
 
-if __name__ == '___main__':
+if __name__ == '__main__':
     banco = Banco()
-    prin = list(set(banco.new_find_all_users_names()))
-    banco.report_no_user_data()
-    exit()
-    for user in prin:
-        banco.new_simple_plot(user)
-        # banco.new_report_user_data()
-        # banco.new_simple_plot()
-        # for i in banco.new_list_play_data_with_delta():
-        #     print(i)
-        # banco.report_user_data()
-        # banco.report_no_user_data()
-        # banco.rename_user_with_inconsistent_names()
+    print(len(banco.find_all_users()))
+    banco.script_to_provide_clean_db_from_zero()
+    # prin = list(set(banco.new_find_all_users_names()))
+    # banco.report_no_user_data()
+    # exit()
+    # for user in prin:
+    #     banco.new_simple_plot(user)
+    #################################################
+    # banco.new_report_user_data()
+    # banco.new_simple_plot()
+    # for i in banco.new_list_play_data_with_delta():
+    #     print(i)
+    # banco.report_user_data()
+    # banco.report_no_user_data()
+    # banco.rename_user_with_inconsistent_names()
 # Banco().parse_prognostics()
 # Banco().new_clean_db_with_merged_sessions_and_prognostics()
