@@ -49,6 +49,16 @@ for num, registro in enumerate(vale):
     print(num, registro)
 '''
 
+SB = "TATIANE MONTEIRO|R|ALTA|VERDADEIRO SUCESSO|TONI CARLOS|R|ZERO|FALSO SUCESSO|KAYKE|R|ZERO|FALSO SUCESSO|" \
+     "ANICOLER|I|ZERO|ALTA DOTAÇÂO|ISRAEL|B|BAIXA|ALTA DOTAÇÂO|CASSIANA VENTURA|I|ZERO|ALTA DOTAÇÂO|" \
+     "MARIA EDUARDA ALVES|I|ZERO|EXPULSÃO SIMBÓLICA|RADAMES|B|BAIXA|FALSO SUCESSO|ESTER|I|ZERO|EXPULSÃO SIMBÓLICA|" \
+     "KEYLA|I|BAIXA|EXPULSÃO SIMBÓLICA|CHRISTIAN|R|ZERO|FALSO SUCESSO|ANTONIOGUILHERME|R|BAIXA|FALSO SUCESSO|" \
+     "ANA FERNANDA|R|MÉDIA|SUCESSO MÍNIMO|MARIA EDUARDA DA SILVA|I|BAIXA|EXPULSÃO SIMBÓLICA|PATRICK|B|MÉDIA|" \
+     "SUCESSO MÍNIMO|SAMUEL|B|BOA|VERDADEIRO SUCESSO|PITTER|B|ALTA|VERDADEIRO SUCESSO|LINDA|R|ALTA|" \
+     "VERDADEIRO SUCESSO|JULIA|I|BAIXA|EXPULSÃO SIMBÓLICA|KAUE|R|ALTA|VERDADEIRO SUCESSO|RENAN|R|ALTA|" \
+     "VERDADEIRO SUCESSO|THIAGO|R|BOA|VERDADEIRO SUCESSO|FILIPE|R|BAIXA|FALSO SUCESSO|LAIZA|R|ALTA|" \
+     "VERDADEIRO SUCESSO|JULIE BRENDA|R|ALTA|VERDADEIRO SUCESSO|KAMILLE|R|ALTA|VERDADEIRO SUCESSO|" \
+     "WESLEYANA|R|ALTA|ALTA DOTAÇÂO|LETICIA|I|ZERO|ALTA DOTAÇÂO|".split("|")
 TB = "TATIANE MONTEIRO|R|ALTA|VERDADEIRO SUCESSO|TONI CARLOS|R|ZERO|FALSO SUCESSO|KAYKE|R|ZERO|FALSO SUCESSO|" \
      "MARIA EDUARDA ALVES|I|ZERO|EXPULSÃO SIMBÓLICA|RADAMES|B|BAIXA|FALSO SUCESSO|ESTER|I|ZERO|EXPULSÃO SIMBÓLICA|" \
      "KEYLA|I|BAIXA|EXPULSÃO SIMBÓLICA|CHRISTIAN|R|ZERO|FALSO SUCESSO|ANTONIOGUILHERME|R|BAIXA|FALSO SUCESSO|" \
@@ -459,13 +469,13 @@ class Banco:
         return new_user_list
 
     def script_to_provide_clean_db_from_zero(self):
-        # self.caution_reformat_db_to_shallow_dict()
-        # print(self.new_find_those_users_ids(nousers))
-        # self.use_with_caution_removes_records_fro_db(self.new_find_those_users_ids(nousers))
-        # self.new_rename_user_with_inconsistent_names()
-        # self.new_rename_users_across_days()
+        self.caution_reformat_db_to_shallow_dict()
+        print(self.new_find_those_users_ids(nousers))
+        self.use_with_caution_removes_records_fro_db(self.new_find_those_users_ids(nousers))
+        self.new_rename_user_with_inconsistent_names()
+        self.new_rename_users_across_days()
         self.new_use_once_only_clean_db_with_merged_sessions_and_prognostics()
-        # self.new_report_user_data()
+        self.new_report_user_data()
 
     def save(self, value):
         key = str(uuid1())
