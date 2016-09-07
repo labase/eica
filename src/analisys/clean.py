@@ -70,6 +70,12 @@ TB = "TATIANE MONTEIRO|R|ALTA|VERDADEIRO SUCESSO|TONI CARLOS|R|ZERO|FALSO SUCESS
      "WESLEYANA|R|ALTA|VERDADEIRO SUCESSO|".split("|")
 
 
+def parse_time(time):
+    try:
+        return dt.strptime(time, "%Y-%m-%d %H:%M:%S.%f")
+    except ValueError:
+        return dt.strptime(time, "%Y-%m-%d %H:%M:%S")
+
 class Banco:
     def __init__(self, base=DBF):
         self.banco = base()
@@ -112,18 +118,19 @@ class Banco:
                                         if sessions["jogada"]]
         tuple_session_values_content.sort(key=operator.itemgetter("tempo"))
 
-        self.initial_time = dt.strptime(tuple_session_values_content[0]["tempo"], timeformat)
+        self.initial_time = parse_time(tuple_session_values_content[0]["tempo"])
         all_plays = zip(tuple_session_values_content, tuple_session_values_content[1:])
 
         def calc(antjog, jog):
             # print(antjog)
-            last_play_time = dt.strptime(antjog["tempo"], timeformat)
-            delta = dt.strptime(jog["tempo"], timeformat) - last_play_time
+            last_play_time = parse_time(antjog["tempo"])
+            delta = parse_time(jog["tempo"]) - last_play_time
             if 0 in jog:
                 self.initial_time += delta - td(seconds=1)
                 delta = td(seconds=1)
                 # jog.pop(0)
-            tempo = dt.strptime(jog["tempo"], timeformat) - self.initial_time
+            tempo = parse_time(jog["tempo"]) - self.initial_time
+
             jog = dict(jog)
 
             jog.update(dict(tempo=tempo.total_seconds(), delta=delta.total_seconds()))
@@ -243,7 +250,7 @@ class Banco:
     def report_user_data(self, desde="2016-08-08 00:00:0.0"):
         timeformat = "%Y-%m-%d %H:%M:%S.%f"
         banco = self
-        desde = dt.strptime(desde, timeformat)
+        desde = parse_time(desde)
         unique = set(banco.find_all_users_names())
         unique -= set(nousers)
         values = [banco.find_inconsistent_users_ids(name) for name in unique]
@@ -259,18 +266,21 @@ class Banco:
             tempos = [copy["value"]["jogada"]
                       for copy in self.banco.search(self.query.value.user == name["user"])]
             tempos = [lance["tempo"] for copy in tempos for lance in copy]
-            if dt.strptime(tempos[0], timeformat) < desde:
+            if parse_time(tempos[0]) < desde:
                 continue
             # tempo = strptime(max(tempos), "%c")-strptime(min(tempos), "%c")
-            tempo = dt.strptime(max(tempos), timeformat) \
-                    - dt.strptime(min(tempos), timeformat)
+            tempo = parse_time(max(tempos)) \
+                    - parse_time(min(tempos))
             print("{:3d}".format(i), "Lances: {:3d}".format(jogadas),
                   "T:{:>9}".format(str(tempo)), report.format(**name))
 
     def new_rename_users_across_days(self, users=('Tatiane Monteiro Nascimento', 'patrick de oliveira nascimento')):
         for user in users:
             eid_name_date = self.new_split_user_across_days(user)
-            [self.banco.update(dict(user=date_name), eids=[date_eid]) for date_eid, date_name, _ in eid_name_date]
+            try:
+                [self.banco.update(dict(user=date_name), eids=[date_eid]) for date_eid, date_name, _ in eid_name_date]
+            except ValueError:
+                print(eid_name_date)
 
     def new_split_user_across_days(self, user):
         user_sessions = self.banco.search(self.query.user == user)
@@ -300,9 +310,8 @@ class Banco:
                       for copy in self.banco.search(self.query.user == name["user"])]
             tempos = [lance["tempo"] for copy in tempos for lance in copy]
             # tempo = strptime(max(tempos), "%c")-strptime(min(tempos), "%c")
-            timeformat = Y_M_D_H_M_S
-            tempo = dt.strptime(max(tempos).split(".")[0], timeformat) \
-                    - dt.strptime(min(tempos).split(".")[0], timeformat)
+            tempo = parse_time(max(tempos)) \
+                    - parse_time(min(tempos))
             print("{:3d}".format(i), "Lances: {:4d}".format(jogadas),
                   "T:{:>9}".format(str(tempo)), report.format(**name))
 
@@ -360,23 +369,22 @@ class Banco:
             # print(i, "nome:{user: >40}  idade: {idade: >4}   ano: {ano}     genero: {sexo}".format(**name))
 
     def new_list_play_data_with_delta(self, u_name='wesleyana vitoria aquino de souza'):
-        timeformat = "%Y-%m-%d %H:%M:%S.%f"
         # userdata = self.banco.search((self.query.user == u_name) and (self.query.jogada != []))
         # userdata = [data for user in userdata for data in user["jogada"]]
         userdata = self.new_merge_timed_sessions_ordered(u_name)
         userdata = [userdata[0]] + userdata
         value_keys = ("tempo", "carta", "casa", "valor", "ponto", "delta")
-        initial_time = dt.strptime(userdata[0]["tempo"], timeformat)
+        initial_time = parse_time(userdata[0]["tempo"])
         options = {key: lambda _, data, k: data[k] for key in value_keys}
 
         def get_delta(i, *args):
-            tempo = dt.strptime(userdata[i]["tempo"], timeformat) \
-                    - dt.strptime(userdata[i - 1]["tempo"], timeformat)
+            tempo = parse_time(userdata[i]["tempo"]) \
+                    - parse_time(userdata[i - 1]["tempo"])
             return tempo.total_seconds()
 
         def get_playtime(i, *args):
             timeformat = "%Y-%m-%d %H:%M:%S.%f"
-            tempo = dt.strptime(userdata[i]["tempo"], timeformat) \
+            tempo = parse_time(userdata[i]["tempo"]) \
                     - initial_time
             return tempo.total_seconds()
 
@@ -387,21 +395,19 @@ class Banco:
         return playdata
 
     def __new_list_play_data_adjusted_with_delta(self, u_name='wesleyana vitoria aquino de souza'):
-        timeformat = "%Y-%m-%d %H:%M:%S.%f"
         userdata = self.new_merge_adjusted_timed_sessions_ordered(u_name)
         userdata = [userdata[0]] + userdata
         value_keys = ("tempo", "carta", "casa", "valor", "ponto", "delta")
-        initial_time = dt.strptime(userdata[0][1][0]["tempo"], timeformat)
+        initial_time = parse_time(userdata[0][1][0]["tempo"])
         options = {key: lambda _, j, data, k: data[k] for key in value_keys}
 
         def get_delta(i, *args):
-            tempo = dt.strptime(userdata[i]["tempo"], timeformat) \
-                    - dt.strptime(userdata[i - 1]["tempo"], timeformat)
+            tempo = parse_time(userdata[i]["tempo"]) \
+                    - parse_time(userdata[i - 1]["tempo"])
             return tempo.total_seconds()
 
         def get_playtime(i, j, *args):
-            timeformat = "%Y-%m-%d %H:%M:%S.%f"
-            tempo = dt.strptime(userdata[i]["tempo"], timeformat) \
+            tempo = parse_time(userdata[i]["tempo"]) \
                     - initial_time - j
             return tempo.total_seconds()
 

@@ -33,9 +33,13 @@ class Stats:
         self.banco = Banco()
 
     def new_delta_plot(self, u_name='wesleyana vitoria aquino de souza'):
+
         # data = self.banco.new_list_play_data_with_delta(u_name)
         data = self.banco.new_list_play_data_adjusted_with_delta(u_name)
         data = [d for d in data if d["ponto"] in CARDS]
+        if not data:
+            print(u_name)
+            return
         first = [bef.update(dict(first=aft["delta"] - bef["delta"] + 15)) for bef, aft in zip(data, data[1:])]
         data[-1].update(dict(first=-2, second=-2))
         secon = [bef.update(dict(second=aft["first"] - bef["first"] + 25))
@@ -134,7 +138,7 @@ class Stats:
 
 
 if __name__ == '__main__':
-    # Stats().plot_item_use_across_games()
+    Stats().plot_item_use_across_games()
     # Stats().new_delta_plot()
     # Stats().new_delta_plot()
-    Stats().delta_given_users()
+    # Stats().delta_given_users()

@@ -327,8 +327,9 @@ def main(_, unsupervised=False):
             for line in data]
     print("Tabela gerada por rede neural sem peso para derivada segunda do tempo com prognóstico da carla")
     # bleacher = dict(V=805, S=-6, E=81, F=154)
-    bleacher = dict(V=1485, S=-359, E=34, F=139)
-    w = Wisard(data, 32 * endtime, bleach=1252, mapper=bleacher, enf=335, sup=18, unsupervised=unsupervised)
+    # bleacher = dict(V=1485, S=-359, E=34, F=139)
+    bleacher = dict(V=893, S=-304, E=-48, F=25)
+    w = Wisard(data, 32 * endtime, bleach=995, mapper=bleacher, enf=452, sup=39, unsupervised=unsupervised)
     # bleacher = dict(V=603, S=0, E=81, F=154)
     # w = Wisard(data, 32 * endtime, bleach=600, mapper=bleacher, enf=110, sup=20)
     w.main()
