@@ -49,6 +49,9 @@ class GA:
                 self.fenotype = fenotype
                 self.fitness = fitnesse_function(fenotype, target)
 
+            def __hash__(self,):
+                return hash(self.fenotype)
+
             def __lt__(self, other):
                 return self.fitness < other.fitness
 
@@ -63,7 +66,7 @@ class GA:
                     return self
                 me, consort = list(self.fenotype), list(consort.fenotype)
                 xover = random.randint(-dnasize, dnasize)
-                mutat = random.randint(-dnasize * 3, dnasize)
+                mutat = random.randint(-dnasize * 1, dnasize)
                 return Gene(
                     "".join(chr(ord(male_gene) + xover // 2) if seq == mutat else male_gene
                     if seq < xover else female_gene for seq, (male_gene, female_gene) in enumerate(zip(me, consort))))
@@ -84,21 +87,27 @@ class GA:
         return min(random.sample(populace, 2)), min(random.sample(populace, 2))
 
     def natural_selection(self):
-        self.fit_population.sort()
-        population = self.fit_population
-        elite_cut = self.popul//10
-        populace = population[elite_cut:]
-        elite = population[:elite_cut]
-        self.fit_population = elite + [a.mate(b) for _ in populace for a, b in [self.dating(populace)]]
+        while len(self.fit_population) <= self.popul:
+            self.fit_population.sort()
+            population = self.fit_population
+            elite_cut = self.popul//10
+            populace = population[elite_cut:]
+            elite = population[:elite_cut]
+            self.fit_population += elite + [a.mate(b) for _ in populace for a, b in [self.dating(populace)]]
+            self.fit_population = list(set(self.fit_population))
+        while len(self.fit_population) > self.popul:
+            self.fit_population.remove(max(random.sample(self.fit_population, 2)))
         self.fit_population.sort()
 
     def life(self):
-        for generation in range(150):
+        for generation in range(190):
             self.natural_selection()
-            best, fitness = self.fit_population[0].parts()
+            fitness, best = self.fit_population[0].parts()
             # print([a.fitness for a in self.fit_population])
             print([(a.fitness, a.fenotype) for a in self.fit_population])
             print("{2}. generation --  best: {0} ({1})".format(best, fitness, generation))
+            if fitness == 0:
+                break
 
     def live(self):
         current_gen = self.population  # self.initPopulation(30, 11)
