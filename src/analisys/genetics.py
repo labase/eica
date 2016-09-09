@@ -1,56 +1,54 @@
-from enum import Enum
 import random
+from learn import Learn
+from enplicow import Wisard
+
 __author__ = "elek"
 __date__ = "$Dec 16, 2010 5:36:12 PM$"
-
-
-def selection(population, fit):
-    return [a if (fit(a) < fit(b)) else b for _ in (0, 1) for a, b in [random.sample(population, 2)]]
-
-
-def crossover(c1, c2):
-    if random.randint(0, 10) < 3:
-        sep = random.randint(0, len(c1) - 1)
-        return c1[:sep] + c2[sep:], c2[:sep] + c1[sep:]
-    else:
-        return c1, c2
-
-
-def mutation(c1):
-    if random.randint(0, 10) < 2:
-        sep = random.randint(0, len(c1) - 1)
-        off = random.randint(-5, 5)
-        return c1[:sep] + chr(ord(c1[sep]) + off) + c1[sep + 1:]
-    else:
-        return c1
+C, S = "0", "9"
+A, Z, AZ = ord(C), ord(S), ord(S) - ord(C) + 1
+DATA = []
 
 
 def fitnesse(ch, target):
-    if len(target) != len(ch):
-        return None
-    else:
         return sum(abs(ord(targ) - ord(sample)) for targ, sample in zip(list(ch), list(target)))
 
 
+def wfitnesse(ch, target=0):
+    v, s, f, e, b, a, d =\
+        int(ch[:4]), int(ch[4:7]), int(ch[7:10]), int(ch[10:13]), int(ch[13:16]), int(ch[16:19]), int(ch[19:21])
+    bleacher = dict(V=v, S=s, E=e, F=f)
+    # print(v, s, f, e, b, a, d, DATA[0])
+    w = Wisard(DATA, 32 * 128, bleach=b, mapper=bleacher, enf=a, sup=d)
+    confidence = w.single()
+    print(confidence, 100 - confidence, "v:%d, s:%d, f:%d, e:%d, b:%d, a:%d, d:%d" % (v, s, f, e, b, a, d))
+    return 100 - confidence
+
+
 class GA:
-    def __init__(self, target, fitnesse_function, selection_function, crossover_function,
-                 mutation_function, popul=30):
+    genes = dict()
+
+    def __init__(self, target, fitnesse_function, popul=15):
         self.target = target
         self.fitnesse = fitnesse_function
         self.fit = lambda x: self.fitnesse(x, self.target)
-        self.mutation = mutation_function
-        self.crossover = crossover_function
-        self.selection = selection_function
         self.dnasize = dnasize = len(target)
         self.popul = popul
 
         class Gene:
+
             def __init__(self, fenotype):
                 self.fenotype = fenotype
-                self.fitness = fitnesse_function(fenotype, target)
+                self.fitness = GA.genes[fenotype] if fenotype in GA.genes else fitnesse_function(fenotype, target)
+                GA.genes[fenotype] = self.fitness
 
             def __hash__(self,):
                 return hash(self.fenotype)
+
+            def __eq__(self, other):
+                return self.fenotype == other.fenotype
+
+            def __ne__(self, other):
+                return self.fenotype != other.fenotype
 
             def __lt__(self, other):
                 return self.fitness < other.fitness
@@ -62,38 +60,35 @@ class GA:
                 return self if self < consort else consort
 
             def mate(self, consort):
-                if self < consort:
-                    return self
-                me, consort = list(self.fenotype), list(consort.fenotype)
-                xover = random.randint(-dnasize, dnasize)
-                mutat = random.randint(-dnasize * 1, dnasize)
-                return Gene(
-                    "".join(chr(ord(male_gene) + xover // 2) if seq == mutat else male_gene
-                    if seq < xover else female_gene for seq, (male_gene, female_gene) in enumerate(zip(me, consort))))
+                def mutate(gene, sequence):
+                    return chr((ord(gene)-A+xover//2) % AZ + A)\
+                        if sequence == random.randint(-dnasize * 2, dnasize) else gene
 
-        self.population = ["".join([chr(i) for i in random.sample(range(97, 122), self.dnasize)]) for _ in range(popul)]
+                def cross_over(left, right, sequence):
+                    return left if sequence < xover else right, sequence
+                me, consort = list(self.fenotype), list(consort.fenotype)
+                xover = random.randint(-dnasize // 2, dnasize)
+                # mutat = random.randint(-dnasize * 4, dnasize)
+                return [
+                    Gene("".join(
+                        mutate(*cross_over(male, female, seq)) for seq, (female, male) in enumerate(zip(me, consort)))),
+                    Gene("".join(
+                        mutate(*cross_over(male, female, seq)) for seq, (male, female) in enumerate(zip(me, consort))))]
+
+        self.population = ["".join([chr(i) for i in random.sample(list(range(A, Z))*4, self.dnasize)]) for _ in range(popul)]
         self.fit_population = [Gene(fenotype) for fenotype in self.population]
 
-    def find_best(self, population, fitnes):
-        return min((fitnes(sample), sample) for sample in population)[1]
-
-    def meiosis(self, male, female):
-        xover = random.randint(-self.dnasize, self.dnasize)
-        mutat = random.randint(-self.dnasize*4, self.dnasize)
-        return [chr(ord(male_gene) + xover // 2) if seq < mutat else male_gene
-                if seq < xover else female_gene for seq, (male_gene, female_gene) in enumerate(zip(male, female))]
-
-    def dating(self, populace):
-        return min(random.sample(populace, 2)), min(random.sample(populace, 2))
-
     def natural_selection(self):
+
+        def dating():
+            return min(random.sample(populace, 2)).mate(min(random.sample(populace, 2)))
         while len(self.fit_population) <= self.popul:
             self.fit_population.sort()
             population = self.fit_population
-            elite_cut = self.popul//10
+            elite_cut = self.popul//20
             populace = population[elite_cut:]
             elite = population[:elite_cut]
-            self.fit_population += elite + [a.mate(b) for _ in populace for a, b in [self.dating(populace)]]
+            self.fit_population += elite + [a for _ in populace for a in dating()]
             self.fit_population = list(set(self.fit_population))
         while len(self.fit_population) > self.popul:
             self.fit_population.remove(max(random.sample(self.fit_population, 2)))
@@ -108,24 +103,24 @@ class GA:
             print("{2}. generation --  best: {0} ({1})".format(best, fitness, generation))
             if fitness == 0:
                 break
+        print(len(GA.genes))
 
-    def live(self):
-        current_gen = self.population  # self.initPopulation(30, 11)
-        f = lambda x: self.fitnesse(x, self.target)
-        for i in range(150):
-            next_gen = []
-            while len(next_gen) < len(current_gen):
-                p1, p2 = self.selection(current_gen, f)
-                c1, c2 = self.crossover(p1, p2)
-                next_gen.append(mutation(c1))
-                next_gen.append(mutation(c2))
-            current_gen = next_gen
-            best = self.find_best(current_gen, f)
-            b = f(best)
-            print("{2}. generation --  best: {0} ({1})".format(best, b, i))
-            if b == 0:
-                break
+
+def main():
+    global DATA
+    import csv
+    with open('table.tab', 'r') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter='\t', quotechar='|')
+        data = [row for row in spamreader][3:]
+        endtime = 128
+        # data = Learn().build_with_User_table_for_prog(slicer=endtime)
+        print(data[0])
+        DATA = [(line[0], line[1],
+                 Wisard.retinify([float(t) - float(t0) + 10 for t, t0 in zip(line[3:endtime], line[2:endtime])]))
+                for line in data]
 
 if __name__ == '__main__':
-    ga = GA("helloworld", fitnesse, selection, crossover, mutation)
+    main()
+    ga = GA("012345678998765432101", wfitnesse)  # , selection, crossover, mutation)
+    # ga = GA("helloworld", fitnesse)  # , selection, crossover, mutation)
     ga.life()

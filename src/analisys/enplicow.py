@@ -84,12 +84,12 @@ class Wisard:
 
     def learn_samples(self):
         enf, sup, samples, unsupervised, clazzes = self.enf, self.sup, self.data, self.unsupervised, self.clazzes
-        print(len(samples[0][2]), samples[0])
+        # print(len(samples[0][2]), samples[0])
         cortices = [(cortex.clazz, cortex.cortex) for cortex in self.cortex]
         for _, sample_clazz, master_retina in samples:
             if unsupervised:
                 sample_clazz = choice(clazzes)
-                print(sample_clazz)
+                # print(sample_clazz)
             if sample_clazz:
                 for clazz, cortex in cortices:
                     for neuron in cortex:
@@ -123,7 +123,7 @@ class Wisard:
 
     def classify_samples(self):
         bleach, retinasize, samples = self.bleach, self.retinasize, self.data
-        print("classify_samples", samples[0])
+        # print("classify_samples", samples[0])
         cortices = [(cortex.clazz, cortex.bleacher, cortex.cortex) for cortex in self.cortex]
         return [
             (name, sample_clazz,
@@ -139,6 +139,64 @@ class Wisard:
         # self.update_balance()
         res = self.classify_samples()
         return res
+
+    def single(self, namer=-1):
+        global RND
+        histo_classes = {clazz: [] for clazz in self.clazzes}
+        clazzes = self.clazzes + ["U"]
+        tot = {u[0]: {key: 0 if key != "U" else str(u[0]) + " " + str(u[1]) for key in clazzes} for u in
+               self.data}
+        primes = PRIMES[:]
+        for _ in range(1):
+            # shuffle(data)
+            RND = primes.pop()
+            res = self.run()
+            [histo_classes[cl].append((s, name)) for name, _, line in res for cl, s in line.items()]
+            [tot[name].update({cl: tot[name][cl] + s for cl, s in line.items()}) for name, _, line in res]
+        total = list(tot.keys())
+        total.sort()
+        total_conf = 0
+        total_sec = 0
+        for line in total:
+            val = dict(tot[line])
+            user = val.pop("U")[namer:] if "U" in val else ""
+            val = list(val.items())
+            # print(val)
+            val.sort(key=operator.itemgetter(1), reverse=True)
+            first, sec, third = val[0][1], val[1][1], val[2][1]
+            confidence = min(100 * abs(first - sec) // max(abs(first), 1), 100)
+            conf = confidence if (user == val[0][0][namer:]) or ("e" == user) else -2 * confidence
+            secd = min(abs(sec // max(abs(first), 1)) * conf, 100)  # if (user == val[0][0]) or ("e" == user) else 0
+            # conf = 100 * abs(first-sec) // max(abs(first), abs(sec))
+            # conf = 100 * (max(first, 0)-max(sec, 0)) // first
+            total_conf += conf
+            total_sec += secd
+            '''
+            # print(tot[line]["U"] + "  " + "".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]), "conf: %d" % conf)
+            print("{name: >42} {val} conf: {conf}".format(name=tot[line]["U"] if "U" in tot[line] else "",
+                                                          val="".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]),
+                                                          conf=conf))
+        print("total confidence %f" % (1.0 * total_conf / len(total)))'''
+        if False:
+            ordered_histos = {}
+            ordered_notes = {}
+            ordered_cutter = {}
+            for clazz, histo in histo_classes.items():
+                histo.sort()
+                minh = histo[0][0]
+                ordered_histos[clazz] = [name for _, name in histo]
+                ordered_notes[clazz] = [abs(10 * (noteh - note) / note) for (noteh, _), (note, _)
+                                        in zip(histo, histo[1:])]
+                print(clazz, [name for _, name in histo], [note - minh for note, _ in histo], ordered_notes[clazz])
+                ordered_cutter[clazz] = ordered_notes[clazz].index(max(ordered_notes[clazz]))
+
+            for sample in range(148):
+                rank = [(histo.index(sample) if histo.index(sample) > ordered_cutter[clazz]
+                         else histo.index(sample) // 4, clazz) for clazz, histo in ordered_histos.items()]
+                rank.sort(reverse=True)
+                print(sample, rank)
+            return
+        return 1.0 * total_conf / len(total)
 
     def main(self, namer=-1):
         global RND
@@ -171,6 +229,7 @@ class Wisard:
             # conf = 100 * (max(first, 0)-max(sec, 0)) // first
             total_conf += conf
             total_sec += secd
+
             # print(tot[line]["U"] + "  " + "".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]), "conf: %d" % conf)
             print("{name: >42} {val} conf: {conf}".format(name=tot[line]["U"] if "U" in tot[line] else "",
                                                           val="".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]),
@@ -195,6 +254,33 @@ class Wisard:
                 rank.sort(reverse=True)
                 print(sample, rank)
             return
+        return 1.0 * total_conf / len(total)
+
+    def _single(self, namer=-1):
+        res = self.run()
+        clazzes = self.clazzes + ["U"]
+        tot = {u[0]: {key: 0 if key != "U" else str(u[0]) + " " + str(u[1]) for key in clazzes} for u in
+               self.data}
+        [tot[name].update({cl: tot[name][cl] + s for cl, s in line.items()}) for name, _, line in res]
+        total = list(tot.keys())
+        total.sort()
+        total_conf = 0
+        total_sec = 0
+        for line in total:
+            val = dict(tot[line])
+            user = val.pop("U")[namer:] if "U" in val else ""
+            val = list(val.items())
+            # print(val)
+            val.sort(key=operator.itemgetter(1), reverse=True)
+            first, sec, third = val[0][1], val[1][1], val[2][1]
+            confidence = min(100 * abs(first - sec) // max(abs(first), 1), 100)
+            conf = confidence if (user == val[0][0][namer:]) or ("e" == user) else -2 * confidence
+            secd = min(abs(sec // max(abs(first), 1)) * conf, 100)  # if (user == val[0][0]) or ("e" == user) else 0
+            # conf = 100 * abs(first-sec) // max(abs(first), abs(sec))
+            # conf = 100 * (max(first, 0)-max(sec, 0)) // first
+            total_conf += conf
+            total_sec += secd
+        return 1.0 * total_conf / len(total)
 
     def unsupervised_class(self, _=-1):
         self.reset_brain()
@@ -318,7 +404,8 @@ def plot(data):
     plt.show()
 
 
-def main(_, unsupervised=False):
+def gmain(ch="216501166744497073410"):
+    from learn import Learn
     endtime = 128
     data = Learn().build_with_User_table_for_prog(slicer=endtime)
     print(len(data[0]))
@@ -327,9 +414,37 @@ def main(_, unsupervised=False):
             for line in data]
     print("Tabela gerada por rede neural sem peso para derivada segunda do tempo com prognóstico da carla")
     # bleacher = dict(V=805, S=-6, E=81, F=154)
-    # bleacher = dict(V=1485, S=-359, E=34, F=139)
-    bleacher = dict(V=893, S=-304, E=-48, F=25)
-    w = Wisard(data, 32 * endtime, bleach=995, mapper=bleacher, enf=452, sup=39, unsupervised=unsupervised)
+    # bleacher = dict(V=1485, S=-359, E=34, F=139) 199321270259550360019
+    v, s, f, e, b, a, d =\
+        int(ch[:4]), int(ch[4:7]), int(ch[7:10]), int(ch[10:13]), int(ch[13:16]), int(ch[16:19]), int(ch[19:21])
+    bleacher = dict(V=v, S=s, E=e, F=f)
+    w = Wisard(data, 32 * endtime, bleach=b, mapper=bleacher, enf=a, sup=d)
+    # bleacher = dict(V=893, S=-304, E=-48, F=25)
+    # w = Wisard(data, 32 * endtime, bleach=995, mapper=bleacher, enf=452, sup=39, unsupervised=unsupervised)
+    # bleacher = dict(V=603, S=0, E=81, F=154)
+    # w = Wisard(data, 32 * endtime, bleach=600, mapper=bleacher, enf=110, sup=20)
+    w.main()
+    print(len(data[0][2:]))
+
+
+def main(_, unsupervised=False):
+    from learn import Learn
+    endtime = 128
+    data = Learn().build_with_User_table_for_prog(slicer=endtime)
+    print(len(data[0]))
+    data = [(line[0], line[1],
+             Wisard.retinify([float(t) - float(t0) + 10 for t, t0 in zip(line[3:endtime], line[2:endtime])]))
+            for line in data]
+    print("Tabela gerada por rede neural sem peso para derivada segunda do tempo com prognóstico da carla")
+    # bleacher = dict(V=805, S=-6, E=81, F=154)
+    # 83.36 16.64 v:2165, s:11, f:667, e:422, b:970, a:734, d:10
+    bleacher = dict(V=1615, S=-15, E=42, F=169)  # 199321270259550360019
+    # bleacher = dict(V=1615, S=-15, E=42, F=169)  # 199321270259550360019
+    # bleacher = dict(V=2531, S=169, E=634, F=856)
+    # w = Wisard(data, 32 * endtime, bleach=913, mapper=bleacher, enf=609, sup=18, unsupervised=unsupervised)
+    w = Wisard(data, 32 * endtime, bleach=913, mapper=bleacher, enf=609, sup=18, unsupervised=unsupervised)
+    # bleacher = dict(V=893, S=-304, E=-48, F=25)
+    # w = Wisard(data, 32 * endtime, bleach=995, mapper=bleacher, enf=452, sup=39, unsupervised=unsupervised)
     # bleacher = dict(V=603, S=0, E=81, F=154)
     # w = Wisard(data, 32 * endtime, bleach=600, mapper=bleacher, enf=110, sup=20)
     w.main()
@@ -346,6 +461,8 @@ def main(_, unsupervised=False):
 
 
 if __name__ == '__main__':
-    main(DATA, unsupervised=False)
+    gmain()
+    # main("116208942029867439738")
+    # main(DATA, unsupervised=False)
     # Wisard.sense_domain(DATA)
     # Wisard().unsupervised_learn(DATA)

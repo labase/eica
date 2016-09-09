@@ -59,14 +59,23 @@ class Learn:
         :param filename: o nomo do aqrquivo que se quer gerar
         :return:
         """
-        data = [[user[prog]]+[turn[measure] for turn in user["jogada"]][:slicer] for user in self.banco.all()]
+        def sigla(name):
+            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0]+"." for i, n in enumerate(name.split())) + name[-1]
+        data = [
+            [sigla(user["user"]), user[prog]] +
+            [float(turn[measure])-float(turn0[measure]) for turn, turn0 in zip(user["jogada"][1:slicer], user["jogada"][:slicer])] for user in self.banco.all()]
         with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
             w = writer(writecsv, delimiter='\t')
-            w.writerow('t%d' % t for t, _ in enumerate(data[0]))  # primeiro cabeçalho
-            w.writerow('c' if t == 0 else 'd' for t, _ in enumerate(data[0]))
-            w.writerow('c' if t == 0 else '' for t, _ in enumerate(data[0]))
+            w.writerow(['n', 'CL'] + ['t%d' % t for t, _ in enumerate(data[1][:-1])])  # primeiro cabeçalho
+            w.writerow(['d']+['d' if t == 0 else 'c' for t, _ in enumerate(data[1])])
+            w.writerow(['m']+['c' if t == 0 else '' for t, _ in enumerate(data[1])])
             for line in data:
+                if line[1] is None:
+                    pass
+                    # continue
                 print(line)
+                sz = len(line)
+                line = ["none" if (i == 1 and line[i] is None) else line[i] if i < sz else 0.0 for i in range(130)]
                 w.writerow(line)
             return data
 
@@ -88,4 +97,4 @@ class Learn:
 if __name__ == '__main__':
     # Learn().report_user_data()
     # Learn().report_user_turn()
-    Learn().build_User_table_for_prog()
+    Learn().build_User_table_for_prog(slicer=128)
