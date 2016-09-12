@@ -1,8 +1,14 @@
-from clean import Banco
+# -*- coding: UTF8 -*-
+from tinydb import TinyDB, Query
+import os
 import matplotlib.pyplot as plt
+
+
+Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S.%f"
+JSONDB = os.path.dirname(__file__) + '/eica_new.json'
 __author__ = 'carlo'
 
-Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
+Y = Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S.%f"
 PONTO = "_LINGUA_ _CHAVES_ _MUNDO_ _Chaves_ _ABAS_ _FALA_ _Mundo_ _HOMEM_".split()
 CARDS = "_Chaves_ _FALA_ _Mundo_".split()
 FILTRO = dict(
@@ -29,13 +35,39 @@ DELTA = dict(
 
 
 class Stats:
-    def __init__(self):
-        self.banco = Banco()
+    def __init__(self, path=JSONDB):
+        self.banco = TinyDB(path)
+        self.query = Query()
+        
+    def list_user_data(self, u_name):
+        return self.banco.search(self.query.user == u_name)[0]["jogada"]
+
+    def report_all_user_data(self):
+        [self.report_user_data(user) for user in self.new_find_all_users_names()]
+
+    def report_user_data(self, user="tatiane monteiro nascimento"):
+        from datetime import datetime as dt
+        n, s, m, a = "2016-08-05 10:31:0.031774", "2016-09-05 10:31:0.0", "2016-09-08 01:31:0.0", "2016-09-08 13:31:0.0"
+        n, s, m, a = dt.strptime(n, Y), dt.strptime(s, Y), dt.strptime(m, Y), dt.strptime(a, Y)
+        data = self.banco.search(self.query.user == user)[0]
+        data.pop("jogada")
+        hora = dt.strptime(data["hora"], Y)
+        turma = "funda" if hora < s else "super" if hora < m else 'medio' if hora < a else "agora"
+        data["turma"] = turma
+        data = {key: value if value else "NA" for key, value in data.items()}
+        # print(data)
+        forma = "nome:{user: >52}  idade: {idade: >4}   ano: {ano}     " \
+                "genero: {sexo: >16} nota: {nota: >2} prog: {prog: >2}, trans: {trans: >6} {turma} {hora}"
+        print(forma.format(**data))
+
+    def new_find_all_users_names(self):
+        users = self.banco.search(self.query.user.exists())
+        return [a["user"] for a in users]
 
     def new_delta_plot(self, u_name='wesleyana vitoria aquino de souza'):
 
         # data = self.banco.new_list_play_data_with_delta(u_name)
-        data = self.banco.new_list_play_data_adjusted_with_delta(u_name)
+        data = self.list_user_data(u_name)
         data = [d for d in data if d["ponto"] in CARDS]
         if not data:
             print(u_name)
@@ -66,7 +98,7 @@ class Stats:
 
     def new_simple_plot(self, u_name='wesleyana vitoria aquino de souza'):
         # data = self.banco.new_list_play_data_with_delta(u_name)
-        data = self.banco.new_list_play_data_adjusted_with_delta(u_name)
+        data = self.list_user_data(u_name)
         plt.figure()
         x = [0.] + [float(d["tempo"]) for d in data] + [float(data[-1]["tempo"]) + 1]
         plt.ylim(0, 90)
@@ -84,17 +116,17 @@ class Stats:
         plt.show()
 
     def delta_given_users(self, g_users=None):
-        prin = g_users if g_users else list(set(self.banco.new_find_all_users_names()))
+        prin = g_users if g_users else list(set(self.new_find_all_users_names()))
         for user in prin:
             self.new_delta_plot(user)
 
     def plot_given_users(self, g_users=None):
-        prin = g_users if g_users else list(set(self.banco.new_find_all_users_names()))
+        prin = g_users if g_users else list(set(self.new_find_all_users_names()))
         for user in prin:
             self.new_simple_plot(user)
 
     def plot_item_use_across_games(self):
-        u_names = list(set(self.banco.new_find_all_users_names()))
+        u_names = list(set(self.new_find_all_users_names()))
         udata = [self.cross_usage_in_user(u_name) for u_name in u_names]
         udata.sort(key=lambda u: sum(u[1:]))
         ubars = list(zip(*udata))
@@ -125,7 +157,7 @@ class Stats:
         return
 
     def cross_usage_in_user(self, u_name):
-        data = self.banco.new_list_play_data_with_delta(u_name)
+        data = self.list_user_data(u_name)
         games = "_Chaves_ _FALA_ _Mundo_".split()
 
         def parse_carta(carta):
@@ -138,7 +170,8 @@ class Stats:
 
 
 if __name__ == '__main__':
-    Stats().plot_item_use_across_games()
+    # Stats().plot_item_use_across_games()
     # Stats().new_delta_plot()
+    Stats().report_all_user_data()
     # Stats().new_delta_plot()
     # Stats().delta_given_users()

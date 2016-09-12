@@ -49,7 +49,7 @@ class Learn:
             data = {key: val or "#" for key, val in name.items()}
             print(format_string.format(i, **data))
 
-    def build_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab"):
+    def build_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab", learn=False):
         """
         Gera um arquivo csv compatível com o Orange
 
@@ -70,9 +70,8 @@ class Learn:
             w.writerow(['d']+['d' if t == 0 else 'c' for t, _ in enumerate(data[1])])
             w.writerow(['m']+['c' if t == 0 else '' for t, _ in enumerate(data[1])])
             for line in data:
-                if line[1] is None:
-                    pass
-                    # continue
+                if line[1] is None and learn:
+                    continue
                 print(line)
                 sz = len(line)
                 line = ["none" if (i == 1 and line[i] is None) else line[i] if i < sz else 0.0 for i in range(130)]
@@ -97,4 +96,4 @@ class Learn:
 if __name__ == '__main__':
     # Learn().report_user_data()
     # Learn().report_user_turn()
-    Learn().build_User_table_for_prog(slicer=128)
+    Learn().build_User_table_for_prog(slicer=128, learn=True)

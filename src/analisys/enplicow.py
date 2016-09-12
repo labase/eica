@@ -20,7 +20,6 @@ from random import choice
 import operator
 from constants import PRIMES, DATA
 from constants import COLOR as K
-from learn import Learn
 
 __author__ = 'carlo'
 __version__ = "0.3.0"
@@ -140,7 +139,7 @@ class Wisard:
         res = self.classify_samples()
         return res
 
-    def single(self, namer=-1):
+    def single(self, namer=-1, result=False):
         global RND
         histo_classes = {clazz: [] for clazz in self.clazzes}
         clazzes = self.clazzes + ["U"]
@@ -171,12 +170,14 @@ class Wisard:
             # conf = 100 * (max(first, 0)-max(sec, 0)) // first
             total_conf += conf
             total_sec += secd
-            '''
-            # print(tot[line]["U"] + "  " + "".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]), "conf: %d" % conf)
-            print("{name: >42} {val} conf: {conf}".format(name=tot[line]["U"] if "U" in tot[line] else "",
-                                                          val="".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]),
-                                                          conf=conf))
-        print("total confidence %f" % (1.0 * total_conf / len(total)))'''
+            if result:
+                print("{name: >42} {val} conf: {conf}".format(name=tot[line]["U"] if "U" in tot[line] else "",
+                                                              val="".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]),
+                                                              conf=conf))
+        print("total confidence %f" % (1.0 * total_conf / len(total)))
+        if result:
+            import sys
+            sys.exit(0)
         if False:
             ordered_histos = {}
             ordered_notes = {}
@@ -231,7 +232,7 @@ class Wisard:
             total_sec += secd
 
             # print(tot[line]["U"] + "  " + "".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]), "conf: %d" % conf)
-            print("{name: >42} {val} conf: {conf}".format(name=tot[line]["U"] if "U" in tot[line] else "",
+            print("{name: >52} {val} conf: {conf}".format(name=tot[line]["U"] if "U" in tot[line] else "",
                                                           val="".join(["%s:%8.0f " % (a[-3:], b) for a, b in val]),
                                                           conf=conf))
         print("total confidence %f" % (1.0 * total_conf / len(total)))
@@ -427,7 +428,7 @@ def gmain(ch="216501166744497073410"):
     print(len(data[0][2:]))
 
 
-def main(_, unsupervised=False):
+def main(_=0, unsupervised=False):
     from learn import Learn
     endtime = 128
     data = Learn().build_with_User_table_for_prog(slicer=endtime)
@@ -438,7 +439,7 @@ def main(_, unsupervised=False):
     print("Tabela gerada por rede neural sem peso para derivada segunda do tempo com prognóstico da carla")
     # bleacher = dict(V=805, S=-6, E=81, F=154)
     # 83.36 16.64 v:2165, s:11, f:667, e:422, b:970, a:734, d:10
-    bleacher = dict(V=1615, S=-15, E=42, F=169)  # 199321270259550360019
+    bleacher = dict(V=1602, S=-15, E=59, F=165)  # 199321270259550360019
     # bleacher = dict(V=1615, S=-15, E=42, F=169)  # 199321270259550360019
     # bleacher = dict(V=2531, S=169, E=634, F=856)
     # w = Wisard(data, 32 * endtime, bleach=913, mapper=bleacher, enf=609, sup=18, unsupervised=unsupervised)
@@ -461,7 +462,7 @@ def main(_, unsupervised=False):
 
 
 if __name__ == '__main__':
-    gmain()
+    main()
     # main("116208942029867439738")
     # main(DATA, unsupervised=False)
     # Wisard.sense_domain(DATA)

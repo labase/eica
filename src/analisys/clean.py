@@ -31,7 +31,7 @@ FILTRO = dict(
     sum(int(val) for val in item.split("_")) // 2 if plot == "_FALA_" else -2,
     _Mundo_=lambda item, casa, ponto, valor, plot: item if plot == "_Mundo_" else -2,
 )
-nousers = "carlo,carla,Jonatas,ggggg,,Jonatas Rafael,JonatasRafael,Rafael,Gabriel,teste,Camila (teste)".split(",")
+nousers = "carlo,carla,Jonatas,ggggg,,Jonatas Rafael,JonatasRafael,Rafael,teste,Camila (teste)".split(",")
 
 '''
 db = TinyDB(JSONDB)
@@ -75,6 +75,7 @@ def parse_time(time):
         return dt.strptime(time, "%Y-%m-%d %H:%M:%S.%f")
     except ValueError:
         return dt.strptime(time, "%Y-%m-%d %H:%M:%S")
+
 
 class Banco:
     def __init__(self, base=DBF):
@@ -203,6 +204,10 @@ class Banco:
         users = self.banco.search(self.query.value.user.exists())
         return [a["value"]["user"] for a in users]
 
+    def new_find_all_users_names_in_date(self, date="2016-08-10"):
+        users = self.banco.search(self.query.user.exists())
+        return [a["user"] for a in users if self.new_merge_timed_sessions_ordered(a["user"])]
+
     def new_find_all_users_names(self):
         users = self.banco.search(self.query.user.exists())
         return [a["user"] for a in users if self.new_merge_timed_sessions_ordered(a["user"])]
@@ -292,6 +297,21 @@ class Banco:
                     for dia, data in enumerate(dias)
                     if user["jogada"] and user["jogada"][0]["tempo"].split()[0] == data]
         return dias
+
+    def new_database_report_user_data(self):
+        bank = TinyDB(JSONDBOUT)
+        values = bank.search(self.query.user.exists())
+        report = "nome:{user: >40}  idade: {idade: >4}   ano: {ano}   dia+hora: {hora} genero: {sexo} "
+        for i, name in enumerate(values):
+            jogadas = sum(len(copy["jogada"])
+                          for copy in bank.search(self.query.user == name["user"]))
+            tempos = [copy["jogada"]
+                      for copy in bank.search(self.query.user == name["user"])]
+            tempos = [lance["tempo"] for copy in tempos for lance in copy]
+            # tempo = strptime(max(tempos), "%c")-strptime(min(tempos), "%c")
+            tempo = (max(tempos)) - (min(tempos))
+            print("{:3d}".format(i), "Lances: {:4d}".format(jogadas),
+                  "T:{:>9}".format(str(tempo)), report.format(**name))
 
     def new_report_user_data(self):
         banco = self
@@ -470,7 +490,8 @@ class Banco:
         ) for user in users_with_demographics]
         for user in new_user_list:
             print({key: val if key != "jogada" else val[0] for key, val in user.items()})
-            new_data_base.insert(user)
+            if not new_data_base.search(self.query.user == user["user"]):
+                new_data_base.insert(user)
 
         return new_user_list
 
@@ -481,7 +502,7 @@ class Banco:
         self.new_rename_user_with_inconsistent_names()
         self.new_rename_users_across_days()
         self.new_use_once_only_clean_db_with_merged_sessions_and_prognostics()
-        self.new_report_user_data()
+        self.new_database_report_user_data()
 
     def save(self, value):
         key = str(uuid1())
@@ -493,6 +514,8 @@ if __name__ == '__main__':
     banco = Banco()
     print(len(banco.find_all_users()))
     banco.script_to_provide_clean_db_from_zero()
+    # banco.new_database_report_user_data()
+    # banco.script_to_provide_clean_db_from_zero()
     # prin = list(set(banco.new_find_all_users_names()))
     # banco.report_no_user_data()
     # exit()
