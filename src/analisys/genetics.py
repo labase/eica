@@ -22,8 +22,8 @@ def wwfitnesse(ch, _=0, result=False):
         int(ch[:4]), int(ch[4:7]), int(ch[7:10]), int(ch[10:13])
     bleacher = dict(V=v, S=s, E=e, F=f)
     # print(v, s, f, e, b, a, d, DATA[0])
-    w = Wisard(DATA, 32 * 128, bleach=0, mapper=bleacher, enf=600, sup=10)
-    confidence = w.single(result)
+    w = Wisard(DATA, 32 * 128, bleach=0, mapper=bleacher, enf=100, sup=10)
+    confidence = w.single(print_result=False)
     print(confidence, 100 - confidence, "v:%d, s:%d, f:%d, e:%d" % (v, s, f, e))
     return 100 - confidence
 

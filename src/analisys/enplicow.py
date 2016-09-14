@@ -128,8 +128,8 @@ class Wisard:
             (name, sample_clazz,
              {clazz: sum(
                  neuron[(retina[neuron[(0, LGN)]], retina[neuron[(1, LGN)]])]
-                 for neuron in cortex) - retinasize * (bleach + bleacher)}
-             ) for clazz, bleacher, cortex in cortices
+                 for neuron in cortex) - retinasize * (bleach + bleacher)
+              for clazz, bleacher, cortex in cortices})
             for name, sample_clazz, retina in samples]
 
     def run(self):
@@ -139,7 +139,7 @@ class Wisard:
         res = self.classify_samples()
         return res
 
-    def single(self, namer=-1, result=False):
+    def _single(self, namer=-1, result=False):
         global RND
         histo_classes = {clazz: [] for clazz in self.clazzes}
         clazzes = self.clazzes + ["U"]
@@ -257,31 +257,22 @@ class Wisard:
             return
         return 1.0 * total_conf / len(total)
 
-    def _single(self, namer=-1):
+    def single(self, namer=-1, print_result=False):
         res = self.run()
-        clazzes = self.clazzes + ["U"]
-        tot = {u[0]: {key: 0 if key != "U" else str(u[0]) + " " + str(u[1]) for key in clazzes} for u in
-               self.data}
-        [tot[name].update({cl: tot[name][cl] + s for cl, s in line.items()}) for name, _, line in res]
-        total = list(tot.keys())
-        total.sort()
         total_conf = 0
-        total_sec = 0
-        for line in total:
-            val = dict(tot[line])
-            user = val.pop("U")[namer:] if "U" in val else ""
-            val = list(val.items())
-            # print(val)
-            val.sort(key=operator.itemgetter(1), reverse=True)
-            first, sec, third = val[0][1], val[1][1], val[2][1]
+        for name, clz, line in res:
+            clz = clz[namer:] if clz else "?"
+            votes = [(clazz, vote) for clazz, vote in line.items()]
+            votes.sort(key=operator.itemgetter(1), reverse=True)
+            (clazz, first), (_, sec), *_ = votes
+            float_confidence = 100.0 * abs(first - sec) / max(abs(first), 1)
             confidence = min(100 * abs(first - sec) // max(abs(first), 1), 100)
-            conf = confidence if (user == val[0][0][namer:]) or ("e" == user) else -2 * confidence
-            secd = min(abs(sec // max(abs(first), 1)) * conf, 100)  # if (user == val[0][0]) or ("e" == user) else 0
-            # conf = 100 * abs(first-sec) // max(abs(first), abs(sec))
-            # conf = 100 * (max(first, 0)-max(sec, 0)) // first
+            conf = float_confidence if (clz == clazz[namer:]) or (clz == "?") else -2 * float_confidence
             total_conf += conf
-            total_sec += secd
-        return 1.0 * total_conf / len(total)
+            if print_result:
+                pvotes = "".join(["%s:%8.0f " % (a[-3:], b) for a, b in votes])
+                print("{name: >52} {clz: <1} {val} conf: {conf}".format(name=name, clz=clz, val=pvotes, conf=conf))
+        return 1.0 * total_conf / (len(res) * 1.0)
 
     def unsupervised_class(self, _=-1):
         self.reset_brain()
@@ -417,7 +408,7 @@ def gmain(ch="216501166744497073410"):
     # bleacher = dict(V=805, S=-6, E=81, F=154)
     # bleacher = dict(V=1485, S=-359, E=34, F=139) 199321270259550360019
     v, s, f, e, b, a, d =\
-        int(ch[:4]), int(ch[4:7]), int(ch[7:10]), int(ch[10:13]), int(ch[13:16]), int(ch[16:19]), int(ch[19:21])
+        int(ch[:4]), int(ch[4:7]), int(ch[7:10]), int(ch[10:13]), 0, 600, 10
     bleacher = dict(V=v, S=s, E=e, F=f)
     w = Wisard(data, 32 * endtime, bleach=b, mapper=bleacher, enf=a, sup=d)
     # bleacher = dict(V=893, S=-304, E=-48, F=25)
@@ -439,17 +430,18 @@ def main(_=0, unsupervised=False):
     print("Tabela gerada por rede neural sem peso para derivada segunda do tempo com prognóstico da carla")
     # bleacher = dict(V=805, S=-6, E=81, F=154)
     # 83.36 16.64 v:2165, s:11, f:667, e:422, b:970, a:734, d:10
-    bleacher = dict(V=1602, S=-15, E=59, F=165)  # 199321270259550360019
+    bleacher = dict(V=1202, S=-15, E=59, F=165)  # 199321270259550360019
     # bleacher = dict(V=1615, S=-15, E=42, F=169)  # 199321270259550360019
     # bleacher = dict(V=2531, S=169, E=634, F=856)
     # w = Wisard(data, 32 * endtime, bleach=913, mapper=bleacher, enf=609, sup=18, unsupervised=unsupervised)
-    w = Wisard(data, 32 * endtime, bleach=913, mapper=bleacher, enf=609, sup=18, unsupervised=unsupervised)
+    w = Wisard(data, 32 * endtime, bleach=913, mapper=bleacher, enf=600, sup=10, unsupervised=unsupervised)
     # bleacher = dict(V=893, S=-304, E=-48, F=25)
     # w = Wisard(data, 32 * endtime, bleach=995, mapper=bleacher, enf=452, sup=39, unsupervised=unsupervised)
     # bleacher = dict(V=603, S=0, E=81, F=154)
     # w = Wisard(data, 32 * endtime, bleach=600, mapper=bleacher, enf=110, sup=20)
     w.main()
     print(len(data[0][2:]))
+    print(w.single())
     """
     clazz_names = "V:Verdadeiro Sucesso,S:Sucesso Mínimo,E:Expulsão Simbólica,F:Falso Sucesso"
     clazz_name = {key: name for key, name in (kv.split(":") for kv in clazz_names.split(","))}
@@ -463,6 +455,7 @@ def main(_=0, unsupervised=False):
 
 if __name__ == '__main__':
     main()
+    gmain("0630627845771")
     # main("116208942029867439738")
     # main(DATA, unsupervised=False)
     # Wisard.sense_domain(DATA)
