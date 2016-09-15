@@ -1,6 +1,8 @@
 import random
+import operator
 from enplicow import Wisard
 import sys
+import math
 __author__ = "elek"
 __date__ = "$Dec 16, 2010 5:36:12 PM$"
 C, S = "0", "9"
@@ -23,9 +25,10 @@ def wwfitnesse(ch, _=0, result=False):
     bleacher = dict(V=v, S=s, E=e, F=f)
     # print(v, s, f, e, b, a, d, DATA[0])
     w = Wisard(DATA, 32 * 128, bleach=0, mapper=bleacher, enf=100, sup=10)
-    confidence = w.single(print_result=False)
+    confidence = w.single(print_result=result)
     print(confidence, 100 - confidence, "v:%d, s:%d, f:%d, e:%d" % (v, s, f, e))
     return 100 - confidence
+
 
 def wfitnesse(ch, _=0, result=False):
     v, s, f, e, b, a, d =\
@@ -36,6 +39,38 @@ def wfitnesse(ch, _=0, result=False):
     confidence = w.single(result)
     print(confidence, 100 - confidence, "v:%d, s:%d, f:%d, e:%d, b:%d, a:%d, d:%d" % (v, s, f, e, b, a, d))
     return 100 - confidence
+
+
+class SA:
+    genes = dict()
+    SA = None
+    SASample = None
+
+    def __init__(self, target, fitnesse_function, temperature_end=0, cooling_factor=0.9):
+        self.dnasize = len(target)
+        self.fitnesse = fitnesse_function
+        self.temperature_end,  self.cooling_factor = temperature_end, cooling_factor
+        self.best = ""
+        SA.SA = self
+
+        class Sample:
+            def __init__(self, fenotype=None):
+                self.fenotype = fenotype or "".join([chr(i) for i in random.sample(list(range(A, Z))*4, self.dnasize)])
+                self.fitness = SA.genes[fenotype] if fenotype in SA.genes else fitnesse_function(fenotype, target)
+                SA.genes[fenotype] = self
+        self.current_sample = Sample()
+
+        SA.SASample = Sample
+
+    def anneal(self):
+        temperature = 1000
+
+        while temperature > self.temperature_end:
+            new_sample = SA.SASample()
+            diff = new_sample.fitness - self.current_sample.fitness
+            if diff < 0 or math.exp(-diff / temperature) > random.random():
+                self.current_sample = new_sample
+            temperature *= self.cooling_factor
 
 
 class GA:
@@ -79,7 +114,7 @@ class GA:
             def mate(self, consort):
                 def mutate(gene, sequence):
                     return chr((ord(gene)-A+xover//2) % AZ + A)\
-                        if sequence == random.randint(-dnasize * 2, dnasize) else gene
+                        if sequence == random.randint(-dnasize // 2, dnasize) else gene
 
                 def cross_over(left, right, sequence):
                     return left if sequence < xover else right, sequence
@@ -93,7 +128,10 @@ class GA:
                         mutate(*cross_over(male, female, seq)) for seq, (male, female) in enumerate(zip(me, consort))))]
 
         self.population = ["".join([chr(i) for i in random.sample(list(range(A, Z))*4, self.dnasize)])
-                           for _ in range(popul)]
+                           for _ in range(popul*4)]
+        self.population = [(self.fitnesse(sample), sample) for sample in self.population]
+        self.population.sort(key=operator.itemgetter(0), reverse=True)
+        self.population = [name for _, name in self.population[:popul]]
         self.fit_population = [Gene(fenotype) for fenotype in self.population]
 
     def natural_selection(self):
@@ -124,6 +162,7 @@ class GA:
                     break
             except (KeyboardInterrupt, SystemExit):
                 print("Result: ", self.fit_population[0].fenotype)
+                print("Result: ", self.fitnesse(self.fit_population[0].fenotype, True))
                 sys.exit(0)
         print(len(GA.genes))
 

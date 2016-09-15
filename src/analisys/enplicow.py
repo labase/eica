@@ -55,6 +55,7 @@ class Wisard:
             def __init__(self, data_, clazz, bleaching):
                 self.data, self.clazz, self.bleacher, self.cortex = data_, clazz, bleaching, [{(0, 0): []}]
                 self.reset_cortex()
+                self.offset = len(self.data) * (bleach + self.bleacher)
 
             def reset_cortex(self):
                 lgn = list(range(retinasize))
@@ -73,7 +74,7 @@ class Wisard:
                     return
                 return {self.clazz: sum(
                     neuron[(retina[neuron[(0, LGN)]], retina[neuron[(1, LGN)]])]
-                    for neuron in self.cortex) - len(retina) * (self.bleach + self.bleacher)}
+                    for neuron in self.cortex) - self.offset}
 
         self.cortex = [Cortex(data, clazz, bleach) for clazz, bleach in mapper.items()]
         self.reset_brain()
@@ -266,7 +267,7 @@ class Wisard:
             votes.sort(key=operator.itemgetter(1), reverse=True)
             (clazz, first), (_, sec), *_ = votes
             float_confidence = 100.0 * abs(first - sec) / max(abs(first), 1)
-            confidence = min(100 * abs(first - sec) // max(abs(first), 1), 100)
+            float_confidence = min(100.0 * abs(first - sec) / max(abs(first), 1), 100)
             conf = float_confidence if (clz == clazz[namer:]) or (clz == "?") else -2 * float_confidence
             total_conf += conf
             if print_result:
@@ -455,7 +456,7 @@ def main(_=0, unsupervised=False):
 
 if __name__ == '__main__':
     main()
-    gmain("0630627845771")
+    gmain("0474199261230")
     # main("116208942029867439738")
     # main(DATA, unsupervised=False)
     # Wisard.sense_domain(DATA)

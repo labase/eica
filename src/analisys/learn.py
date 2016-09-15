@@ -49,7 +49,7 @@ class Learn:
             data = {key: val or "#" for key, val in name.items()}
             print(format_string.format(i, **data))
 
-    def build_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab", learn=False):
+    def build_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab", learn=0):
         """
         Gera um arquivo csv compatível com o Orange
 
@@ -57,6 +57,7 @@ class Learn:
         :param prog: Um dos possíveis prognosticos do banco: prog, nota, trans, sexo, idade, ano
         :param slicer: recorta eos dados neste tamanho
         :param filename: o nomo do aqrquivo que se quer gerar
+        :param learn: 0 - inclui todos; 1 - só os que tem calsse; -1 - só os que não tem classe
         :return:
         """
         def sigla(name):
@@ -70,7 +71,7 @@ class Learn:
             w.writerow(['d']+['d' if t == 0 else 'c' for t, _ in enumerate(data[1])])
             w.writerow(['m']+['c' if t == 0 else '' for t, _ in enumerate(data[1])])
             for line in data:
-                if line[1] is None and learn:
+                if (line[1] is None and (learn == 1)) or ((learn == -1) and line[1] is not None):
                     continue
                 print(line)
                 sz = len(line)
@@ -96,4 +97,4 @@ class Learn:
 if __name__ == '__main__':
     # Learn().report_user_data()
     # Learn().report_user_turn()
-    Learn().build_User_table_for_prog(slicer=128, learn=True)
+    Learn().build_User_table_for_prog(slicer=128, filename="/someeica14.tab", learn=1)  # , learn=True)
