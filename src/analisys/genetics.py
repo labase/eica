@@ -39,25 +39,30 @@ def wfitnesse(ch, _=0, result=False):
     confidence = w.single(result)
     print(confidence, 100 - confidence, "v:%d, s:%d, f:%d, e:%d, b:%d, a:%d, d:%d" % (v, s, f, e, b, a, d))
     return 100 - confidence
-
+CHOP = [0,4,7,10,13]
 
 class SA:
     genes = dict()
     SA = None
     SASample = None
 
-    def __init__(self, target, fitnesse_function, temperature_end=0, cooling_factor=0.9):
-        self.dnasize = len(target)
+    def __init__(self, target, fitnesse_function, temperature_end=10e-20, cooling_factor=0.999):
+        self.dnasize = dnasize = len(target)
         self.fitnesse = fitnesse_function
         self.temperature_end,  self.cooling_factor = temperature_end, cooling_factor
         self.best = ""
         SA.SA = self
 
         class Sample:
-            def __init__(self, fenotype=None):
-                self.fenotype = fenotype or "".join([chr(i) for i in random.sample(list(range(A, Z))*4, self.dnasize)])
-                self.fitness = SA.genes[fenotype] if fenotype in SA.genes else fitnesse_function(fenotype, target)
-                SA.genes[fenotype] = self
+            def __init__(self, fenotype=None, heat=500):
+                ch = fenotype or "".join([chr(i) for i in random.sample(list(range(A, Z))*3, dnasize)])
+                fenotype = "".join("%0d3"%((int(ch[a:b])+random.randint(0, heat)) % 10**(b-a)) for a, b in zip(CHOP, CHOP[1:]))
+
+                self.fenotype = fenotype
+                # self.fenotype = fenotype or "".join([chr(i) for i in random.sample(list(range(A, Z))*3, dnasize)])
+                # print(self.fenotype, target)
+                self.fitness = SA.genes[self.fenotype].fitness if fenotype in SA.genes else fitnesse_function(self.fenotype, target)
+                SA.genes[self.fenotype] = self
         self.current_sample = Sample()
 
         SA.SASample = Sample
@@ -66,11 +71,15 @@ class SA:
         temperature = 1000
 
         while temperature > self.temperature_end:
-            new_sample = SA.SASample()
+            new_sample = SA.SASample(self.current_sample.fenotype)
             diff = new_sample.fitness - self.current_sample.fitness
             if diff < 0 or math.exp(-diff / temperature) > random.random():
                 self.current_sample = new_sample
             temperature *= self.cooling_factor
+            print(temperature, self.current_sample.fenotype, self.current_sample.fitness)
+        re = [(a.fitness, a.fenotype) for a in SA.genes.values()]
+        re.sort()
+        print(re[:15])
 
 
 class GA:
@@ -181,7 +190,8 @@ def main():
                 for line in data]
 
 if __name__ == '__main__':
-    main()
-    ga = GA("0123456789987", wwfitnesse)  # , selection, crossover, mutation)
+    # main()
+    # ga = GA("0123456789987", wwfitnesse)  # , selection, crossover, mutation)
+    SA("0123456789987", fitnesse).anneal()
     # ga = GA("helloworld", fitnesse)  # , selection, crossover, mutation)
-    ga.life()
+    # ga.life()
