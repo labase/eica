@@ -39,7 +39,8 @@ def wfitnesse(ch, _=0, result=False):
     confidence = w.single(result)
     print(confidence, 100 - confidence, "v:%d, s:%d, f:%d, e:%d, b:%d, a:%d, d:%d" % (v, s, f, e, b, a, d))
     return 100 - confidence
-CHOP = [0,4,7,10,13]
+CHOP = [0, 4, 7, 10, 13]
+
 
 class SA:
     genes = dict()
@@ -56,25 +57,28 @@ class SA:
         class Sample:
             def __init__(self, fenotype=None, heat=500):
                 ch = fenotype or "".join([chr(i) for i in random.sample(list(range(A, Z))*3, dnasize)])
-                fenotype = "".join("%0d3"%((int(ch[a:b])+random.randint(0, heat)) % 10**(b-a)) for a, b in zip(CHOP, CHOP[1:]))
+                fenotype = "".join("%0d3" % ((int(ch[a:b])+random.randint(0, heat)) % 10**(b-a))
+                                   for a, b in zip(CHOP, CHOP[1:]))
 
                 self.fenotype = fenotype
                 # self.fenotype = fenotype or "".join([chr(i) for i in random.sample(list(range(A, Z))*3, dnasize)])
                 # print(self.fenotype, target)
-                self.fitness = SA.genes[self.fenotype].fitness if fenotype in SA.genes else fitnesse_function(self.fenotype, target)
+                self.fitness = SA.genes[self.fenotype].fitness if fenotype in SA.genes\
+                    else fitnesse_function(self.fenotype, target)
                 SA.genes[self.fenotype] = self
         self.current_sample = Sample()
 
         SA.SASample = Sample
 
     def anneal(self):
-        temperature = 1000
+        temperature = heat = 1000
 
         while temperature > self.temperature_end:
-            new_sample = SA.SASample(self.current_sample.fenotype)
+            new_sample = SA.SASample(self.current_sample.fenotype, heat//2)
             diff = new_sample.fitness - self.current_sample.fitness
             if diff < 0 or math.exp(-diff / temperature) > random.random():
                 self.current_sample = new_sample
+                heat -= 1 if heat > 10 else 0
             temperature *= self.cooling_factor
             print(temperature, self.current_sample.fenotype, self.current_sample.fitness)
         re = [(a.fitness, a.fenotype) for a in SA.genes.values()]
@@ -86,13 +90,13 @@ class GA:
     genes = dict()
     GA = None
 
-    def __init__(self, target, fitnesse_function, popul=15):
+    def __init__(self, target, fitnesse_function, popul=25):
         self.target = target
         self.fitnesse = fitnesse_function
         self.fit = lambda x: self.fitnesse(x, self.target)
         self.dnasize = dnasize = len(target)
         self.popul = popul
-        self.best = ""
+        self.last = []
         GA.GA = self
 
         class Gene:
@@ -160,10 +164,13 @@ class GA:
         self.fit_population.sort()
 
     def life(self):
-        for generation in range(390):
+        for generation in range(3):
             try:
                 self.natural_selection()
                 fitness, best = self.fit_population[0].parts()
+                self.last.append(fitness)
+                if len(self.last) > 10 and len(set(self.last[-10:])) == 1:
+                    break
                 # print([a.fitness for a in self.fit_population])
                 print([(a.fitness, a.fenotype) for a in self.fit_population])
                 print("{2}. generation --  best: {0} ({1})".format(best, fitness, generation))
@@ -171,9 +178,11 @@ class GA:
                     break
             except (KeyboardInterrupt, SystemExit):
                 print("Result: ", self.fit_population[0].fenotype)
-                print("Result: ", self.fitnesse(self.fit_population[0].fenotype, True))
-                sys.exit(0)
+                break
+                # sys.exit(0)
         print(len(GA.genes))
+        confidence = self.fitnesse(self.fit_population[0].fenotype, True)
+        print("Result: ", confidence)
 
 
 def main():
@@ -190,8 +199,8 @@ def main():
                 for line in data]
 
 if __name__ == '__main__':
-    # main()
-    # ga = GA("0123456789987", wwfitnesse)  # , selection, crossover, mutation)
-    SA("0123456789987", fitnesse).anneal()
-    # ga = GA("helloworld", fitnesse)  # , selection, crossover, mutation)
-    # ga.life()
+    main()
+    ga = GA("0123456789987", wwfitnesse)  # , selection, crossover, mutation)
+    # SA("0123456789987", fitnesse).anneal()
+    # ga = GA("helloworld", wwfitnesse)  # , selection, crossover, mutation)
+    ga.life()

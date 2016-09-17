@@ -456,7 +456,8 @@ def main(_=0, unsupervised=False):
 
 if __name__ == '__main__':
     main()
-    gmain("0474199261230")
+    gmain("0515238300268")
+    # gmain("0474199261230")
     # main("116208942029867439738")
     # main(DATA, unsupervised=False)
     # Wisard.sense_domain(DATA)
