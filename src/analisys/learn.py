@@ -26,6 +26,7 @@ class Learn:
     def __init__(self, path=JSONDB):
         self.banco = TinyDB(path)
         self.query = Query()
+        self.full_data = []
 
     def report_user_data(self):
         values = self.banco.all()
@@ -72,49 +73,63 @@ class Learn:
             clazz = max([(clazzes.count(umaclazz), umaclazz) for umaclazz in CARDS], key=operator.itemgetter(0))[1]
             return [clazz] + data[order: order + 32]
 
-        def sigla(name, order):
-            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "." for i, n in enumerate(name.split())) + \
-                   name[-1] + str(order)
-
-        jogo = [
-            [turn['ponto'] for turn in user["jogada"][:slicer]] for user in self.banco.all()]
-        data = [(float(turn[measure]) - float(turn0[measure]), user[prog], turn("ponto")) for user in self.banco.all()
-                for turn, turn0 in zip(user["jogada"][1:slicer], user["jogada"][:slicer])]
+        def sigla(name, order=""):
+            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
+                            for i, n in enumerate(name.split())) + name[-1] + str(order)
+        self.full_data = [(float(turn[measure]) - float(turn0[measure]), user[prog], turn["ponto"], user["user"])
+                          for user in self.banco.all()
+                          for turn, turn0 in zip(user["jogada"][1:], user["jogada"])]
         with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
             w = writer(writecsv, delimiter='\t')
             w.writerow(['n', 'CL'] + ['t%d' % t for t in range(32)])  # primeiro cabeçalho
-            print('cabs', len((['n', 'CL'] + ['t%d' % t for t in range(32)])))  # primeiro cabeçalho
+            print('cabs',len(self.full_data), len((['n', 'CL'] + ['t%d' % t for t in range(32)])))  # primeiro cabeçalho
 
             w.writerow(['d'] + ['d' if t == 0 else 'c' for t in range(33)])
             w.writerow(['m'] + ['c' if t == 0 else '' for t in range(33)])
-            for derivada, clazz, jogo in data:
+            while self.full_data:
 
                 def encontra_minucia():
                     order = 0
-                    clazzes = ' '.join(str(a) for a in jogo[order: order + 32])
-                    print([(clazzes.count(umaclazz), umaclazz) for umaclazz in CARDS], order, data[order: order + 32])
-                    claz = max([(clazzes.count(umaclazz), umaclazz) for umaclazz in CARDS], key=operator.itemgetter(0))[
-                        1]
-                    start = clazzes.index(claz)
-                    end = min(
-                        i if a == clazz != b else 2 ** 100 for i, (a, b) enumerate(zip(clazzes[:32], clazzes[1:32])))
-                    return [claz] + [d if i < end - start else 0.0 for i, d in enumerate(derivada[:32])]
+                    data = self.full_data[:32]
+                    derivada, clazzes, jogo, user = zip(*data)
+                    jogo = ('_',) + jogo + ('_',)
+                    jogo = [um_jogo if antes_jogo != depois_jogo else antes_jogo
+                            for antes_jogo, um_jogo, depois_jogo in zip(jogo, jogo[1:], jogo[2:])]
+                    jogostr = ' '.join(str(a) for a in jogo)
+                    jogostr = jogostr.replace('_MUNDO_', '_Mundo_')
+                    jogostr = jogostr.replace('_ABAS_', '_Chaves_')
+                    jogostr = jogostr.replace('_CHAVES_', '_Chaves_')
+                    jogostr = jogostr.replace('_LINGUA_', '_FALA_')
+                    jogo = jogostr.split()
+                    ojogo = max([(jogostr.count(umjogo), umjogo)
+                                for umjogo in CARDS], key=operator.itemgetter(0))[1]
+                    start = jogo.index(ojogo)
+                    ojogo = jogo[0]
+                    start = 0
+                    end = min(31, min(
+                        i if a == ojogo != b else 2 ** 100 for i, (a, b) in enumerate(zip(jogo[:32], jogo[1:32])))) + 1
+                    print(len(self.full_data), ojogo, start, end, [(jogostr.count(umaclazz), umaclazz) for umaclazz in CARDS], jogostr[:80])
+                    self.full_data = self.full_data[end:]
+                    clazz = clazzes[start] or "?"
+                    if (end - start) < 24:
+                        return None
+                    return [sigla(user[start])]+[ojogo+clazz] + [d if i < end - start else "?"
+                                                               for i, d in enumerate(derivada[:32])]
 
-                if clazz is None and learn:
+                minucia = encontra_minucia()
+                if not minucia:
                     continue
-                for order in range(1):
-                    minucia = encontra_minucia()
-                    rotulo = "TODO"
-                    row = [rotulo] +  minucia.pop(0)] + minucia
-                    print(row)
-                    sz = len(row)
+                rotulo = "TODO"
+                row = [minucia.pop(0),  minucia.pop(0)] + minucia
+                print(row)
+                sz = len(row)
 
-                    if sz < 3:
-                        continue
-                    row = ["none" if (i == 1 and row[i] is None) else row[i] if i < sz else 0.0 for i in range(34)]
-                    print(len(row))
-                    w.writerow(row)
-            return data
+                if sz < 3:
+                    continue
+                row = ["none" if (i == 1 and row[i] is None) else row[i] if i < sz else 0.0 for i in range(34)]
+                print(len(row))
+                w.writerow(row)
+            return self.full_data
 
     def build_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab", learn=False):
         """
@@ -124,12 +139,13 @@ class Learn:
         :param prog: Um dos possíveis prognosticos do banco: prog, nota, trans, sexo, idade, ano
         :param slicer: recorta eos dados neste tamanho
         :param filename: o nomo do aqrquivo que se quer gerar
+        :param learn: elimina linhas sem prognóstico
         :return:
         """
 
         def sigla(name):
-            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "." for i, n in enumerate(name.split())) + \
-                   name[-1]
+            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
+                            for i, n in enumerate(name.split())) + name[-1]
 
         data = [
             [sigla(user["user"]), user[prog]] +
