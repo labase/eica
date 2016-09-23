@@ -55,7 +55,7 @@ class Wisard:
             def __init__(self, data_, clazz, bleaching):
                 self.data, self.clazz, self.bleacher, self.cortex = data_, clazz, bleaching, [{(0, 0): []}]
                 self.reset_cortex()
-                self.offset = len(self.data) * (bleach + self.bleacher)
+                self.offset = len(self.data) * (self.bleacher)
 
             def reset_cortex(self):
                 lgn = list(range(retinasize))
@@ -72,9 +72,9 @@ class Wisard:
                 retina = self.data
                 if not retina:
                     return
-                return {self.clazz: sum(
-                    neuron[(retina[neuron[(0, LGN)]], retina[neuron[(1, LGN)]])]
-                    for neuron in self.cortex) - self.offset}
+                return {self.clazz: sum(1 if
+                    neuron[(retina[neuron[(0, LGN)]], retina[neuron[(1, LGN)]])] > bleach else 0
+                    for neuron in self.cortex)}
 
         self.cortex = [Cortex(data, clazz, bleach) for clazz, bleach in mapper.items()]
         self.reset_brain()
@@ -129,7 +129,7 @@ class Wisard:
             (name, sample_clazz,
              {clazz: sum(
                  neuron[(retina[neuron[(0, LGN)]], retina[neuron[(1, LGN)]])]
-                 for neuron in cortex) - retinasize * (bleach + bleacher)
+                 for neuron in cortex)  # - retinasize * (bleach + bleacher)
               for clazz, bleacher, cortex in cortices})
             for name, sample_clazz, retina in samples]
 
