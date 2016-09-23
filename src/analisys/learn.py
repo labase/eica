@@ -100,13 +100,14 @@ class Learn:
                     start = 0
                     end = min(31, min(
                         i if a == ojogo != b else 2 ** 100 for i, (a, b) in enumerate(zip(jogo[:32], jogo[1:32])))) + 1
-                    print(len(self.full_data), ojogo, start, end, [(jogostr.count(umaclazz), umaclazz) for umaclazz in CARDS], jogostr[:80])
+                    print(len(self.full_data), ojogo, start, end, [(jogostr.count(umaclazz), umaclazz)
+                                                                   for umaclazz in CARDS], jogostr[:80])
                     self.full_data = self.full_data[end:]
                     clazz = ojogo+clazzes[start] if clazzes[start] else NONE
                     if (end - start) < threshold:
                         return None
                     return [ojogo[1]+" "+sigla(user[start]), clazz] + [d if i < end - start else ""
-                                                           for i, d in enumerate(derivada[:32])]
+                                                                       for i, d in enumerate(derivada[:32])]
 
                 minucia = encontra_minucia()
                 if not minucia or learn and minucia[1] == NONE or (learn is None) and minucia[1] != NONE:
@@ -175,7 +176,7 @@ class Learn:
                 return [carta] if "_" not in carta else carta.split("_")
 
             items = [(set(carta for d in data if d["ponto"] == game for carta in parse_carta(d["carta"])
-                         ), game) for game in games]
+                          ), game) for game in games]
             return items
 
         self.full_data = [(float(turn[measure]) - float(turn0[measure]), user[prog], turn["ponto"], user["user"])
@@ -270,8 +271,8 @@ class Learn:
                 w.writerow(line)
             return data
 
-    def build_derivative_minutia_as_timeseries(self, measure="delta", prog="prog", slicer=128,
-                                               filename="/minutiatimeseries.tab", learn=False):
+    def build_derivative_minutia_as_timeseries(self, measure="delta", prog="prog", slicer=16,
+                                               filename="/minutiatimeseries.tab", threshold=6):
         """
         Gera um arquivo csv compatível com o Orange para analise harmônica de minucias de segunda ordem
 
@@ -283,15 +284,23 @@ class Learn:
         """
 
         def headed_data(dat, index):
-            if not dat or len(dat) < 34:
+            import pywt
+            if not dat or len(dat) < slicer:
                 return []
             print(len(dat))
-            return ["%s%0d3" % (dat.pop(0), index), "c", ""] + dat[1:]
+            mode = pywt.MODES.sp1
+
+            w = pywt.Wavelet('sym5')
+            _, wavelet = pywt.dwt(dat[2:], w, mode)
+            print(wavelet)
+            return ["%s%0d3" % (dat[0], index), "c", ""] + list(wavelet)
+        span = slicer*8
 
         self.full_data = [(float(turn[measure]) - float(turn0[measure]), user[prog], turn["ponto"], user["user"])
                           for user in self.banco.all()
-                          for turn, turn0 in zip(user["jogada"][1:slicer], user["jogada"][:slicer])]
-        data = [headed_data(self._encontra_minucia(), i) for i in range(len(self.full_data)) if self.full_data]
+                          for turn, turn0 in zip(user["jogada"][1:span], user["jogada"][:span])]
+        data = [headed_data(self._encontra_minucia(slicer=slicer, threshold=threshold), i)
+                for i in range(span) if self.full_data]
         data = [line for line in data if line]
         with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
             w = writer(writecsv, delimiter='\t')
@@ -388,4 +397,4 @@ if __name__ == '__main__':
     # Learn().train_classify_wnn()
     # Learn().plot_derivative_minutia()
     # Learn().build_User_table_as_timeseries()
-    Learn().build_derivative_minutia_as_timeseries()
+    Learn().build_derivative_minutia_as_timeseries(filename="/minutia16timeseries.tab")
