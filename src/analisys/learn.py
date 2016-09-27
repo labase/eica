@@ -21,6 +21,55 @@ TURN = {'tempo': 12, 'valor': 10, 'casa': 7, 'ponto': 8, 'carta': 12, 'delta': 1
 TURNLIST = 'tempo delta valor casa ponto carta'.split()
 TURNFORMAT = " ".join("{key}: {{{key}: <{val}}} ".format(key=key, val=TURN[key]) for key in TURNLIST)
 CARDS = "_Chaves_ _FALA_ _Mundo_".split()
+GAME_INDEX = dict(_Mundo_=1, _Chaves_=2, _FALA_=3)
+INDEX_GAME = {key+1: value for key, value in enumerate("_Mundo_ _Chaves_= _FALA_".split())}
+
+
+class User:
+    def __init__(self, user, sexo, idade, ano, hora, nota, prog, trans, jogada):
+        self.user, self.sexo, self.idade, self.ano, self.hora, self.nota, self.prog, self.trans, self.jogada =\
+            user, sexo, idade, ano, hora, nota, prog, trans, []
+        self.load_from_db(jogadas=jogada)
+
+    def load_from_db(self, jogadas):
+        self.jogada = [Jogada(**user_data) for user_data in jogadas if "0" not in user_data]
+        return self
+
+    def interpolate_deltas(self, delta=1):
+        from scipy.interpolate import interp1d, splev, splrep, UnivariateSpline
+        import numpy as np
+        interpolate_deltas = [(jogo.tempo, jogo.delta) for jogo in self.jogada][1:]
+        x, y = zip(*interpolate_deltas)
+        interpolating_function = interp1d(x, y)
+        linear_time_space = np.linspace(x[0], x[-1], (x[-1]-x[0])/delta)
+
+        return linear_time_space, interpolating_function(linear_time_space)
+
+    def interpolate_games(self, delta=1):
+        from scipy.interpolate import interp1d
+        import numpy as np
+        interpolate_deltas = [(jogo.tempo, jogo.ponto) for jogo in self.jogada][1:]
+        x, jogo = zip(*interpolate_deltas)
+        jogo = ('_',) + jogo + ('_',)
+        jogo = [um_jogo if antes_jogo != depois_jogo else antes_jogo
+                for antes_jogo, um_jogo, depois_jogo in zip(jogo, jogo[1:], jogo[2:])]
+        jogostr = ' '.join(str(a) for a in jogo)
+        jogostr = jogostr.replace('_MUNDO_', '_Mundo_')
+        jogostr = jogostr.replace('_HOMEM_', '_Mundo_')
+        jogostr = jogostr.replace('_ABAS_', '_Chaves_')
+        jogostr = jogostr.replace('_CHAVES_', '_Chaves_')
+        jogostr = jogostr.replace('_LINGUA_', '_FALA_')
+        y = [GAME_INDEX[jogo] for jogo in jogostr.split()]
+        interpolating_function = interp1d(x, y, kind='nearest')
+        linear_time_space = np.linspace(x[0], x[-1], (x[-1]-x[0])/delta)
+
+        return linear_time_space, interpolating_function(linear_time_space)
+
+
+class Jogada:
+    def __init__(self, tempo, delta, ponto, carta, casa, valor, move):
+        self.tempo,  self.delta,  self.ponto,  self.carta,  self.casa,  self.valor,  self.move =\
+            tempo, delta, ponto, carta, casa, valor, move
 
 
 class Learn:
@@ -29,6 +78,24 @@ class Learn:
         self.query = Query()
         self.full_data = []
         self.data = []
+        self.user = []
+
+    def load_from_db(self):
+        self.user = [User(**user_data) for user_data in self.banco.all()]
+        return self
+
+    def resample_user_deltas_games(self, new_delta=2):
+        _, delta = self.user[2].interpolate_deltas()
+        x, game = self.user[2].interpolate_games()
+        return x, delta, game
+
+    def resample_user_deltas(self, new_delta=2):
+        x, y = self.user[2].interpolate_games()
+        import matplotlib.pyplot as plt
+        plt.plot(x[:256], y[:256])
+        # plt.plot(x,y,xl,s2(xl[::-1]), xl, ynew)
+        plt.legend(['data'], loc='best')
+        plt.show()
 
     def report_user_data(self):
         values = self.banco.all()
@@ -148,6 +215,26 @@ class Learn:
         print(len(self.full_data), ojogo, start, end, [(jogostr.count(umaclazz), umaclazz)
                                                        for umaclazz in CARDS], jogostr[:80])
         self.full_data = self.full_data[end:]
+        clazz = ojogo + clazzes[start] if clazzes[start] else NONE
+        if (end - start) < threshold:
+            return []
+        return [ojogo[1] + " " + sigla(user[start]), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
+
+    def _encontra_minucia_interpolada(self, threshold=32, slicer=64):
+
+        def sigla(name, order=""):
+            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
+                            for i, n in enumerate(name.split())) + name[-1] + str(order)
+        data = self.full_data[:slicer]
+        tempo, derivada, clazzes, jogo, user = zip(*data)
+        ojogo = jogo[0]
+        start = 0
+        end = min(slicer-1, min(
+            i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo[:slicer], jogo[1:slicer]))) + 1
+        print(len(self.full_data), ojogo, start, end, [umaclazz
+                                                       for umaclazz in CARDS])
+        self.full_data = self.full_data[end:]
+        ojogo = INDEX_GAME[ojogo]
         clazz = ojogo + clazzes[start] if clazzes[start] else NONE
         if (end - start) < threshold:
             return []
@@ -310,6 +397,46 @@ class Learn:
                 w.writerow(line)
             return data
 
+    def build_interpolated_derivative_minutia_as_timeseries(
+            self, slicer=16, filename="/interpolatedminutiatimeseries.tab", threshold=6):
+        """
+        Gera um arquivo csv compatível com o Orange para analise harmônica de minucias de segunda ordem
+
+        :param measure: Um dos possiveis itens de medida do banco: tempo, delta, carta
+        :param slicer: recorta eos dados neste tamanho
+        :param filename: o nomo do aqrquivo que se quer gerar
+        :param learn: elimina linhas sem prognóstico
+        :return:
+        """
+
+        def headed_data(dat, index):
+            import pywt
+            if not dat or len(dat) < slicer:
+                return []
+            print(len(dat))
+            mode = pywt.MODES.sp1
+
+            w = pywt.Wavelet('sym5')
+            _, wavelet = pywt.dwt(dat[2:], w, mode)
+            print(wavelet)
+            return ["%s%0d3" % (dat[0], index), "c", ""] + list(wavelet)
+        span = slicer*8
+        time, delta, game = self.resample_user_deltas_games()
+
+        self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
+                          for user in self.user
+                          for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
+        data = [headed_data(self._encontra_minucia_interpolada(slicer=slicer, threshold=threshold), i)
+                for i in range(span) if self.full_data]
+        data = [line for line in data if line]
+        with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
+            w = writer(writecsv, delimiter='\t')
+            data = zip(*data)
+            for line in data:
+                print(line)
+                w.writerow(line)
+            return data
+
     def build_with_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab"):
         """
         Gera um arquivo csv compatível com o Orange
@@ -397,4 +524,6 @@ if __name__ == '__main__':
     # Learn().train_classify_wnn()
     # Learn().plot_derivative_minutia()
     # Learn().build_User_table_as_timeseries()
-    Learn().build_derivative_minutia_as_timeseries(filename="/minutia16timeseries.tab")
+    # Learn().build_derivative_minutia_as_timeseries(filename="/minutia16timeseries.tab")
+    Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries()
+    #Learn().load_from_db().resample_user_deltas()
