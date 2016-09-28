@@ -79,6 +79,7 @@ class Learn:
         self.full_data = []
         self.data = []
         self.user = []
+        self.iso_classes = []
 
     def load_from_db(self):
         self.user = [User(**user_data) for user_data in self.banco.all()]
@@ -235,10 +236,11 @@ class Learn:
                                                        for umaclazz in CARDS])
         self.full_data = self.full_data[end:]
         ojogo = INDEX_GAME[ojogo]
-        clazz = ojogo + clazzes[start] if clazzes[start] else NONE
+        clazz = "_%s_%s_" % (ojogo[1], clazzes[start]) if clazzes[start] else "_%s_._" % ojogo[1]
+        stubber = slicer-end if slicer-end > 0 else 0
         if (end - start) < threshold:
             return []
-        return [ojogo[1] + " " + sigla(user[start]), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
+        return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
 
     def build_user_table_for_transitive_minucia(self, measure="delta", prog="prog", slicer=128,
                                                 filename="/trasitiveminucias.tab", learn=False):
@@ -381,7 +383,7 @@ class Learn:
             _, wavelet = pywt.dwt(dat[2:], w, mode)
             print(wavelet)
             return ["%s%0d3" % (dat[0], index), "c", ""] + list(wavelet)
-        span = slicer*8
+        span = slicer*16
 
         self.full_data = [(float(turn[measure]) - float(turn0[measure]), user[prog], turn["ponto"], user["user"])
                           for user in self.banco.all()
@@ -397,15 +399,23 @@ class Learn:
                 w.writerow(line)
             return data
 
+    def normatize_for_isomorphic_classification(self, data):
+        data_scale = 20.0 / max(float(max(data)) - float(min(data)), 1)
+        data_floor = float(min(data))
+        print(data_scale, data)
+        data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
+                                           for datum in data).strip("0") or "000000"
+        self.iso_classes.append(data_isomorphism_lattice)
+        return data_isomorphism_lattice
+
     def build_interpolated_derivative_minutia_as_timeseries(
             self, slicer=16, filename="/interpolatedminutiatimeseries.tab", threshold=6):
         """
-        Gera um arquivo csv compatível com o Orange para analise harmônica de minucias de segunda ordem
+        Gera um arquivo tab do Orange para analise harmônica de minucias de segunda ordem interploadas no tempo.
 
-        :param measure: Um dos possiveis itens de medida do banco: tempo, delta, carta
         :param slicer: recorta eos dados neste tamanho
         :param filename: o nomo do aqrquivo que se quer gerar
-        :param learn: elimina linhas sem prognóstico
+        :param threshold: elimina linhas sem prognóstico
         :return:
         """
 
@@ -437,6 +447,51 @@ class Learn:
                 w.writerow(line)
             return data
 
+    def build_interpolated_derivative_minutia(
+            self, slicer=16, filename="/interpolatedminutia.tab", threshold=6):
+        """
+        Gera um arquivo tab do Orange para analise harmônica de minucias de segunda ordem interploadas no tempo.
+
+        :param slicer: recorta eos dados neste tamanho
+        :param filename: o nomo do aqrquivo que se quer gerar
+        :param threshold: elimina linhas sem prognóstico
+        :return:
+        """
+
+        def headed_data(dat, index):
+            import pywt
+            if not dat or len(dat) < slicer:
+                return []
+            print(len(dat))
+            mode = pywt.MODES.sp1
+
+            w = pywt.Wavelet('sym5')
+            _, wavelet = pywt.dwt(dat[2:], w, mode)
+            print(wavelet)
+            return ["%s%0d3" % (dat[0], index), dat[1]] + list(wavelet)
+        span = slicer*64
+        time, delta, game = self.resample_user_deltas_games()
+
+        self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
+                          for user in self.user
+                          for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
+        data = [headed_data(self._encontra_minucia_interpolada(slicer=slicer, threshold=threshold), i)
+                for i in range(span) if self.full_data]
+        data = [[name, self.normatize_for_isomorphic_classification(dat)] + dat for name, _, *dat in data if name]
+        print(len(set(self.iso_classes)))
+
+        with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
+            w = writer(writecsv, delimiter='\t')
+            w.writerow(['n', 'CL'] + ['t%d' % t for t in range(slicer)])  # primeiro cabeçalho
+            print('cabs', len(self.full_data), len((['n', 'CL'] + ['t%d' % t for t in range(32)])))
+
+            w.writerow(['d'] + ['d' if t == 0 else 'c' for t in range(slicer+1)])
+            w.writerow(['m'] + ['c' if t == 0 else '' for t in range(slicer+1)])
+            for line in data:
+                print(line)
+                w.writerow(line)
+            return data
+
     def build_with_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab"):
         """
         Gera um arquivo csv compatível com o Orange
@@ -449,8 +504,6 @@ class Learn:
         """
         data = [[user["user"], user[prog]] + [turn[measure] for turn in user["jogada"]][:slicer] for user in
                 self.banco.all()]
-        for line in data:
-            pass
         return data
 
     def train_classify_wnn(self, filename="/minucias.tab"):
@@ -525,5 +578,6 @@ if __name__ == '__main__':
     # Learn().plot_derivative_minutia()
     # Learn().build_User_table_as_timeseries()
     # Learn().build_derivative_minutia_as_timeseries(filename="/minutia16timeseries.tab")
-    Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries()
+    Learn().load_from_db().build_interpolated_derivative_minutia(slicer=4, threshold=3)
+    # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
     #Learn().load_from_db().resample_user_deltas()
