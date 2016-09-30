@@ -13,6 +13,7 @@ NONE = ""
 
 Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
 JSONDB = os.path.dirname(__file__) + '/eica_new.json'
+JSONSDB = os.path.dirname(__file__) + '/eica_sync.json'
 KEYS = {'ano': 3, 'user': 40, 'hora': 20,
         'trans': 8, 'sexo': 12, 'prog': 1, 'nota': 1, 'idade': 2}
 KEYLIST = 'user ano idade sexo trans prog nota hora'.split()
@@ -21,8 +22,8 @@ TURN = {'tempo': 12, 'valor': 10, 'casa': 7, 'ponto': 8, 'carta': 12, 'delta': 1
 TURNLIST = 'tempo delta valor casa ponto carta'.split()
 TURNFORMAT = " ".join("{key}: {{{key}: <{val}}} ".format(key=key, val=TURN[key]) for key in TURNLIST)
 CARDS = "_Chaves_ _FALA_ _Mundo_".split()
-GAME_INDEX = dict(_Mundo_=1, _Chaves_=2, _FALA_=3)
-INDEX_GAME = {key+1: value for key, value in enumerate("_Mundo_ _Chaves_= _FALA_".split())}
+GAME_INDEX = dict(_Mundo_=1, _Chaves_=2, _FALA_=3, __A_T_I_V_A__=4)
+INDEX_GAME = {key+1: value for key, value in enumerate("_Mundo_ _Chaves_ _FALA_ __A_T_I_V_A__".split())}
 
 
 class User:
@@ -30,6 +31,11 @@ class User:
         self.user, self.sexo, self.idade, self.ano, self.hora, self.nota, self.prog, self.trans, self.jogada =\
             user, sexo, idade, ano, hora, nota, prog, trans, []
         self.load_from_db(jogadas=jogada)
+
+    def write(self, db):
+        attrs = "user, sexo, idade, ano, hora, nota, prog, trans, jogada".split(", ")
+        db.insert({k: self.__dict__[k] if k != "jogada" else [jogada.read() for jogada in self.__dict__[k]]
+                   for k in dir(self) if k in attrs})
 
     def load_from_db(self, jogadas):
         self.jogada = [Jogada(**user_data) for user_data in jogadas if "0" not in user_data]
@@ -65,11 +71,42 @@ class User:
 
         return linear_time_space, interpolating_function(linear_time_space)
 
+    def interpolate_cards(self, delta=1):
+        from scipy.interpolate import interp1d
+        import numpy as np
+        str_index = {}
+        index_str = {}
+
+        def get_str_index(token):
+            index = len(str_index)
+            if token not in str_index:
+                str_index[token] = index
+                index_str[index] = token
+            return index
+
+        interpolate_deltas = [(jogo.tempo, get_str_index(jogo.carta)) for jogo in self.jogada][1:]
+        x, jogo = zip(*interpolate_deltas)
+        print(str_index)
+        print(index_str)
+        interpolating_function = interp1d(x, jogo, kind='nearest')
+        linear_time_space = np.linspace(x[0], x[-1], (x[-1]-x[0])/delta)
+
+        return linear_time_space, [index_str[int(index)-1] for index in interpolating_function(linear_time_space)]
+
 
 class Jogada:
     def __init__(self, tempo, delta, ponto, carta, casa, valor, move):
         self.tempo,  self.delta,  self.ponto,  self.carta,  self.casa,  self.valor,  self.move =\
             tempo, delta, ponto, carta, casa, valor, move
+
+    def read(self):
+        attrs = "tempo, delta, ponto, carta, casa, valor, move".split(", ")
+        return {k: self.__dict__[k] for k in dir(self) if k in attrs}
+
+    def update(self, **kwargs):
+        attrs = "tempo, delta, ponto, carta, casa, valor, move".split(", ")
+        [setattr(self, attr, value) for attr, value in kwargs.items() if attr in attrs]
+        return self
 
 
 class Learn:
@@ -81,8 +118,28 @@ class Learn:
         self.user = []
         self.iso_classes = []
 
+    def write_db(self, path=JSONSDB):
+        sdb = TinyDB(path)
+        [user.write(sdb) for user in self.user]
+        return self
+
     def load_from_db(self):
         self.user = [User(**user_data) for user_data in self.banco.all()]
+        return self
+
+    def replace_resampled_user_deltas_games_cards(self):
+        def interpolate(user):
+            try:
+                if len(user.jogada) < 1:
+                    return [[]]*4
+                _, delta = user.interpolate_deltas()
+                x, game = user.interpolate_games()
+                _, cards = user.interpolate_cards()
+                return zip(x, delta, game, cards)
+            except ValueError as _:
+                return [[0]*4]
+        [user.jogada[index].update(tempo=tempo, delta=delta, ponto=game, carta=card) for user in self.user
+         for index, (tempo, delta, game, card) in enumerate(interpolate(user)) if index < len(user.jogada) > 2]
         return self
 
     def resample_user_deltas_games(self, new_delta=2):
@@ -448,13 +505,14 @@ class Learn:
             return data
 
     def build_interpolated_derivative_minutia(
-            self, slicer=16, filename="/interpolatedminutia.tab", threshold=6):
+            self, slicer=16, filename="/interpolatedminutia.tab", threshold=6, span=0):
         """
         Gera um arquivo tab do Orange para analise harmônica de minucias de segunda ordem interploadas no tempo.
 
         :param slicer: recorta eos dados neste tamanho
         :param filename: o nomo do aqrquivo que se quer gerar
         :param threshold: elimina linhas sem prognóstico
+        :param span: intervalo onde a pesquisa da minucia será investigada
         :return:
         """
 
@@ -469,7 +527,7 @@ class Learn:
             _, wavelet = pywt.dwt(dat[2:], w, mode)
             print(wavelet)
             return ["%s%0d3" % (dat[0], index), dat[1]] + list(wavelet)
-        span = slicer*64
+        span = span or slicer*64
         time, delta, game = self.resample_user_deltas_games()
 
         self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
@@ -477,7 +535,7 @@ class Learn:
                           for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
         data = [headed_data(self._encontra_minucia_interpolada(slicer=slicer, threshold=threshold), i)
                 for i in range(span) if self.full_data]
-        data = [[name, self.normatize_for_isomorphic_classification(dat)] + dat for name, _, *dat in data if name]
+        data = [[name, self.normatize_for_isomorphic_classification(dat[:threshold])] + dat for name, _, *dat in data if name]
         print(len(set(self.iso_classes)))
 
         with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
@@ -578,6 +636,7 @@ if __name__ == '__main__':
     # Learn().plot_derivative_minutia()
     # Learn().build_User_table_as_timeseries()
     # Learn().build_derivative_minutia_as_timeseries(filename="/minutia16timeseries.tab")
-    Learn().load_from_db().build_interpolated_derivative_minutia(slicer=4, threshold=3)
+    # Learn().load_from_db().build_interpolated_derivative_minutia(slicer=4, threshold=3)
+    Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
     #Learn().load_from_db().resample_user_deltas()
