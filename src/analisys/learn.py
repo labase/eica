@@ -293,12 +293,10 @@ class Learn:
         start = 0
         end = min(slicer-1, min(
             i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo[:slicer], jogo[1:slicer]))) + 1
-        print(len(self.full_data), ojogo, start, end, [umaclazz
-                                                       for umaclazz in CARDS])
+        # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
         self.full_data = self.full_data[end:]
         ojogo = INDEX_GAME[ojogo]
         clazz = "_%s_%s_" % (ojogo[1], clazzes[start]) if clazzes[start] else "_%s_._" % ojogo[1]
-        stubber = slicer-end if slicer-end > 0 else 0
         if (end - start) < threshold:
             return []
         return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
@@ -308,10 +306,9 @@ class Learn:
         tempo, derivada, clazzes, jogo, user = zip(*data)
         ojogo = jogo[0]
         start = 0
-        end = min(
-            i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo, jogo[1:])) + 1
-        print(len(self.full_data), ojogo, start, end, [umaclazz
-                                                       for umaclazz in CARDS])
+        end = int(min(
+            i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo, jogo[1:]))) + 1
+        # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
         if (end - start) < threshold:
             return []
         current_game_slice = self.full_data[:end]
@@ -476,16 +473,18 @@ class Learn:
             return data
 
     def classify_by_normatized_isomorphism(self, data):
-        data_scale = 100.0 / max(float(max(data)) - float(min(data)), 1)
+        span = (float(max(data)) - float(min(data)))
+        data_scale = 100.0 / span if span else 1
         data_floor = float(min(data))
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
                                            for datum in data).strip("0") or "000000"
         return data_isomorphism_lattice in self.iso_classifier and self.iso_classifier[data_isomorphism_lattice]
 
     def normatize_for_isomorphic_classification(self, data):
-        data_scale = 100.0 / max(float(max(data)) - float(min(data)), 1)
+        span = (float(max(data)) - float(min(data)))
+        data_scale = 100.0 / span if span else 1
         data_floor = float(min(data))
-        print(data_scale, data)
+        print("normatize", data_scale, data)
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
                                            for datum in data).strip("0") or "000000"
         self.iso_classes.append(data_isomorphism_lattice)
@@ -607,20 +606,30 @@ class Learn:
         self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
                           for user in self.user
                           for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
-        # span = len(self.full_data)
         data = [headed_data(self._encontra_minucia_interpolada(slicer=slicer, threshold=threshold), i)
                 for i in range(span) if self.full_data]
+        data = [[name, self.normatize_for_isomorphic_classification(dat[:threshold])] + dat for name, _, *dat in data if name]
+
         self.progclazz_minutia_buckets = {c_clazz: 0 for c_clazz in 'VSFE'}
         self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
+        self.isoclazz_minutia_buckets[False] = 0
         # self.user_minutia_buckets = {user.user: 0 for user in self.banco.all()}
         self.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
-        data = [[name, self.normatize_for_isomorphic_classification(dat[:threshold])] + dat for name, _, *dat in data if name]
+
+        self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
+                          for user in self.user
+                          for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
+        print("len(self.full_data)", len(self.full_data), self.full_data[0], self.iso_classifier)
         while self.full_data:
-            for game_range in self._encontra_minucias_interpolada_em_jogo():
-                for time_slice in game_range:
-                    clazz = self.classify_by_normatized_isomorphism(headed_data(time_slice[:slicer], 0))
-                    self.isoclazz_minutia_buckets[clazz] += 1
+            time_slice = self._encontra_minucias_interpolada_em_jogo()
+            data = list(zip(*time_slice))[1]
+            while len(data) >= slicer:
+                print("time_slice", data[:slicer])
+                clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer], 0))
+                self.isoclazz_minutia_buckets[clazz] += 1
+                data = data[slicer:]
         print(self.isoclazz_minutia_buckets)
+        print({oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
 
     def build_with_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab"):
         """
@@ -709,7 +718,7 @@ if __name__ == '__main__':
     # Learn().build_User_table_as_timeseries()
     # Learn().build_derivative_minutia_as_timeseries(filename="/minutia16timeseries.tab")
     # Learn().load_from_db().build_interpolated_derivative_minutia(slicer=4, threshold=2, span=256)
-    Learn().load_from_db().scan_for_minutia_count_in_user_and_games(slicer=4, threshold=2, span=256)
+    Learn().load_from_db().scan_for_minutia_count_in_user_and_games(slicer=6, threshold=4, span=256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
     #Learn().load_from_db().resample_user_deltas()
