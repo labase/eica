@@ -473,16 +473,20 @@ class Learn:
             return data
 
     def classify_by_normatized_isomorphism(self, data):
+        data = data[:3]
         span = (float(max(data)) - float(min(data)))
-        data_scale = 100.0 / span if span else 1
+        data_scale = 26.0 / span if span else 1
         data_floor = float(min(data))
+        print("classify_by_normatized_isomorphism", data_scale, data)
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
                                            for datum in data).strip("0") or "000000"
-        return data_isomorphism_lattice in self.iso_classifier and self.iso_classifier[data_isomorphism_lattice]
+        if data_isomorphism_lattice not in self.iso_classifier:
+            self.iso_classifier[data_isomorphism_lattice] = data_isomorphism_lattice
+        return (data_isomorphism_lattice in self.iso_classifier) and self.iso_classifier[data_isomorphism_lattice]
 
     def normatize_for_isomorphic_classification(self, data):
         span = (float(max(data)) - float(min(data)))
-        data_scale = 100.0 / span if span else 1
+        data_scale = 26.0 / span if span else 1
         data_floor = float(min(data))
         print("normatize", data_scale, data)
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
@@ -593,20 +597,19 @@ class Learn:
             import pywt
             if not dat or len(dat) < slicer:
                 return []
-            print(len(dat))
             mode = pywt.MODES.sp1
 
             w = pywt.Wavelet('db3')
             # w = pywt.Wavelet('sym5')
-            _, wavelet = pywt.dwt(dat[2:], w, mode)
-            print(wavelet)
+            _, wavelet = pywt.dwt(dat, w, mode)
+            print("wavelet", len(dat), wavelet)
             return list(wavelet)
         time, delta, game = self.resample_user_deltas_games()
 
         self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
                           for user in self.user
                           for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
-        data = [headed_data(self._encontra_minucia_interpolada(slicer=slicer, threshold=threshold), i)
+        data = [headed_data(self._encontra_minucia_interpolada(slicer=slicer, threshold=threshold)[2:], i)
                 for i in range(span) if self.full_data]
         data = [[name, self.normatize_for_isomorphic_classification(dat[:threshold])] + dat for name, _, *dat in data if name]
 
@@ -626,9 +629,12 @@ class Learn:
             while len(data) >= slicer:
                 print("time_slice", data[:slicer])
                 clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer], 0))
-                self.isoclazz_minutia_buckets[clazz] += 1
+                if clazz not in self.isoclazz_minutia_buckets:
+                    self.isoclazz_minutia_buckets[clazz] = 0
+                else:
+                    self.isoclazz_minutia_buckets[clazz] += 1
                 data = data[slicer:]
-        print(self.isoclazz_minutia_buckets)
+        print(len(self.isoclazz_minutia_buckets), self.isoclazz_minutia_buckets)
         print({oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
 
     def build_with_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab"):
@@ -718,7 +724,7 @@ if __name__ == '__main__':
     # Learn().build_User_table_as_timeseries()
     # Learn().build_derivative_minutia_as_timeseries(filename="/minutia16timeseries.tab")
     # Learn().load_from_db().build_interpolated_derivative_minutia(slicer=4, threshold=2, span=256)
-    Learn().load_from_db().scan_for_minutia_count_in_user_and_games(slicer=6, threshold=4, span=256)
+    Learn().load_from_db().scan_for_minutia_count_in_user_and_games(slicer=6, threshold=4, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
     #Learn().load_from_db().resample_user_deltas()
