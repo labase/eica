@@ -22,8 +22,9 @@ TURN = {'tempo': 12, 'valor': 10, 'casa': 7, 'ponto': 8, 'carta': 12, 'delta': 1
 TURNLIST = 'tempo delta valor casa ponto carta'.split()
 TURNFORMAT = " ".join("{key}: {{{key}: <{val}}} ".format(key=key, val=TURN[key]) for key in TURNLIST)
 CARDS = "_Chaves_ _FALA_ _Mundo_".split()
-GAME_INDEX = dict(_Mundo_=1, _Chaves_=2, _FALA_=3, __A_T_I_V_A__=4)
-INDEX_GAME = {key+1: value for key, value in enumerate("_Mundo_ _Chaves_ _FALA_ __A_T_I_V_A__".split())}
+GAME_INDEX = dict(_Mundo_=2, _Chaves_=1, _FALA_=3, __A_T_I_V_A__=4)
+PROG_INDEX = {key: value for value, key in enumerate("VSFE")}
+INDEX_GAME = {key+1: value for key, value in enumerate("_Chaves_ _Mundo_ _FALA_ __A_T_I_V_A__".split())}
 
 
 class User:
@@ -117,7 +118,8 @@ class Learn:
         self.data = []
         self.user = []
         self.iso_classes = []
-        self.progclazz_minutia_buckets = {c_clazz: 0 for c_clazz in 'VSFE'}
+        self.progclazz_minutia_buckets = {}
+        self.user_timed_minutia_buckets = {}
         self.isoclazz_minutia_buckets = {}
         self.user_minutia_buckets = {}
         self.iso_classifier = {}
@@ -475,11 +477,11 @@ class Learn:
     def classify_by_normatized_isomorphism(self, data):
         data = data[:3]
         span = (float(max(data)) - float(min(data)))
-        data_scale = 26.0 / span if span else 1
+        data_scale = 29.0 / span if span else 1
         data_floor = float(min(data))
         print("classify_by_normatized_isomorphism", data_scale, data)
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
-                                           for datum in data).strip("0") or "000000"
+                                           for datum in data).strip("0") or "0"
         if data_isomorphism_lattice not in self.iso_classifier:
             self.iso_classifier[data_isomorphism_lattice] = data_isomorphism_lattice
         return (data_isomorphism_lattice in self.iso_classifier) and self.iso_classifier[data_isomorphism_lattice]
@@ -605,27 +607,20 @@ class Learn:
             print("wavelet", len(dat), wavelet)
             return list(wavelet)
         time, delta, game = self.resample_user_deltas_games()
-
-        self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
-                          for user in self.user
-                          for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
-        data = [headed_data(self._encontra_minucia_interpolada(slicer=slicer, threshold=threshold)[2:], i)
-                for i in range(span) if self.full_data]
-        data = [[name, self.normatize_for_isomorphic_classification(dat[:threshold])] + dat for name, _, *dat in data if name]
-
-        self.progclazz_minutia_buckets = {c_clazz: 0 for c_clazz in 'VSFE'}
+        self.user_timed_minutia_buckets = {
+            user: [[0 for _ in range(12)] for _ in range(4*3)] for user in self.banco.all()}
+        self.progclazz_minutia_buckets = [[0 for _ in range(12)] for _ in range(4*3)]
         self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
-        self.isoclazz_minutia_buckets[False] = 0
-        # self.user_minutia_buckets = {user.user: 0 for user in self.banco.all()}
         self.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
 
         self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
                           for user in self.user
                           for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
         print("len(self.full_data)", len(self.full_data), self.full_data[0], self.iso_classifier)
+        isoclazz = []
         while self.full_data:
             time_slice = self._encontra_minucias_interpolada_em_jogo()
-            data = list(zip(*time_slice))[1]
+            tempo, data, clazzes, jogo, user = list(zip(*time_slice))
             while len(data) >= slicer:
                 print("time_slice", data[:slicer])
                 clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer], 0))
@@ -633,9 +628,78 @@ class Learn:
                     self.isoclazz_minutia_buckets[clazz] = 0
                 else:
                     self.isoclazz_minutia_buckets[clazz] += 1
+                if clazz not in isoclazz:
+                    isoclazz.append(clazz)
+                if clazzes[0]:
+                    print("progclazz_minutia_buckets", clazzes[0], isoclazz.index(clazz), jogo[0])
+                    self.progclazz_minutia_buckets[3*PROG_INDEX[clazzes[0]]+int(jogo[0])-1][isoclazz.index(clazz)] += 1
                 data = data[slicer:]
+                clazzes = clazzes[slicer:]
+                jogo = jogo[slicer:]
+                user = user[slicer:]
         print(len(self.isoclazz_minutia_buckets), self.isoclazz_minutia_buckets)
         print({oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
+        print(self.progclazz_minutia_buckets)
+        self.plot_derivative_minutia_by_prognostics_games()
+        self.plot_derivative_minutia_by_user_prognostics_games()
+        return
+        # plt.imshow(zi, vmin=min(z), vmax=max(z), origin='lower',
+        #            extent=[min(x), max(x), min(y), max(y)])
+        # plt.scatter(x, y, c=z)
+        # plt.colorbar()
+        # plt.show()
+
+    def plot_derivative_minutia_by_prognostics_games(self):
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import scipy.interpolate
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        # Generate data:
+        x, y, z = zip(*[(x, y, self.progclazz_minutia_buckets[x][y]) for y in range(12) for x in range(4 * 3)])
+        # x, y, z = list(x), list(y), list(z)
+        # Set up a regular grid of interpolation points
+        # xi, yi = np.linspace(min(x), max(x), 12), np.linspace(min(y), max(y), 12)
+        xi, yi = np.linspace(0, 12, 12), np.linspace(0, 12, 12)
+        xi, yi = np.meshgrid(xi, yi)
+        # Interpolate
+        rbf = scipy.interpolate.Rbf(x, y, z, function='linear')
+        zi = rbf(xi, yi)
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        labels = "v.s. chaves,v.s. mundo,v.s. fala,s.m. chaves,s.m. mundo,s.m. fala," \
+                 "f.s. chaves,f.s. mundo,f.s. fala,e.s. chaves,e.s. mundo,e.s. fala,".split(",")
+        # ax.plot_trisurf(x, y, zi, cmap=cm.jet, linewidth=0.2)
+        plt.xticks(x, labels, rotation='vertical')
+        ax.plot_surface(xi[::-1], yi, zi, rstride=1, cstride=1, color='b', cmap=cm.coolwarm,
+                        linewidth=0, antialiased=False, shade=False)
+        plt.show()
+
+    def plot_derivative_minutia_by_user_prognostics_games(self):
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import scipy.interpolate
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        # Generate data:
+        x, y, z = zip(*[(x, y, self.progclazz_minutia_buckets[x][y]) for y in range(12) for x in range(4 * 3)])
+        # x, y, z = list(x), list(y), list(z)
+        # Set up a regular grid of interpolation points
+        # xi, yi = np.linspace(min(x), max(x), 12), np.linspace(min(y), max(y), 12)
+        xi, yi = np.linspace(0, 12, 12), np.linspace(0, 12, 12)
+        xi, yi = np.meshgrid(xi, yi)
+        # Interpolate
+        rbf = scipy.interpolate.Rbf(x, y, z, function='linear')
+        zi = rbf(xi, yi)
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        labels = "v.s. chaves,v.s. mundo,v.s. fala,s.m. chaves,s.m. mundo,s.m. fala," \
+                 "f.s. chaves,f.s. mundo,f.s. fala,e.s. chaves,e.s. mundo,e.s. fala,".split(",")
+        # ax.plot_trisurf(x, y, zi, cmap=cm.jet, linewidth=0.2)
+        plt.xticks(x, labels, rotation='vertical')
+        ax.plot_surface(xi[::-1], yi, zi, rstride=1, cstride=1, color='b', cmap=cm.coolwarm,
+                        linewidth=0, antialiased=False, shade=False)
+        plt.show()
 
     def build_with_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab"):
         """
