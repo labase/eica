@@ -607,8 +607,8 @@ class Learn:
             print("wavelet", len(dat), wavelet)
             return list(wavelet)
         time, delta, game = self.resample_user_deltas_games()
-        self.user_timed_minutia_buckets = {
-            user: [[0 for _ in range(12)] for _ in range(4*3)] for user in self.banco.all()}
+        user_index = {user["user"]: index for index, user in enumerate(self.banco.all())}
+        self.user_timed_minutia_buckets = [[0 for _ in range(100)] for user in range(25)]
         self.progclazz_minutia_buckets = [[0 for _ in range(12)] for _ in range(4*3)]
         self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
         self.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
@@ -624,6 +624,8 @@ class Learn:
             while len(data) >= slicer:
                 print("time_slice", data[:slicer])
                 clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer], 0))
+                if tempo[0] < 1000 and user_index[user[0]] < 25:
+                    self.user_timed_minutia_buckets[user_index[user[0]]][int(tempo[0])//10] = clazz
                 if clazz not in self.isoclazz_minutia_buckets:
                     self.isoclazz_minutia_buckets[clazz] = 0
                 else:
@@ -640,7 +642,7 @@ class Learn:
         print(len(self.isoclazz_minutia_buckets), self.isoclazz_minutia_buckets)
         print({oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
         print(self.progclazz_minutia_buckets)
-        self.plot_derivative_minutia_by_prognostics_games()
+        # self.plot_derivative_minutia_by_prognostics_games()
         self.plot_derivative_minutia_by_user_prognostics_games()
         return
         # plt.imshow(zi, vmin=min(z), vmax=max(z), origin='lower',
@@ -682,11 +684,11 @@ class Learn:
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
         # Generate data:
-        x, y, z = zip(*[(x, y, self.progclazz_minutia_buckets[x][y]) for y in range(12) for x in range(4 * 3)])
+        x, y, z = zip(*[(x, y, self.user_timed_minutia_buckets[x][y]) for y in range(100) for x in range(25)])
         # x, y, z = list(x), list(y), list(z)
         # Set up a regular grid of interpolation points
         # xi, yi = np.linspace(min(x), max(x), 12), np.linspace(min(y), max(y), 12)
-        xi, yi = np.linspace(0, 12, 12), np.linspace(0, 12, 12)
+        xi, yi = np.linspace(0, 1000, 1000), np.linspace(0, 70, 70)
         xi, yi = np.meshgrid(xi, yi)
         # Interpolate
         rbf = scipy.interpolate.Rbf(x, y, z, function='linear')
