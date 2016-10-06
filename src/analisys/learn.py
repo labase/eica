@@ -1,5 +1,5 @@
 # -*- coding: UTF8 -*-
-import operator
+# import operator
 from tinydb import TinyDB, Query
 import os
 from csv import writer
