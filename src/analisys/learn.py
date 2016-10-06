@@ -255,68 +255,6 @@ class Learn:
                 w.writerow(row)
             return self.full_data
 
-    def _encontra_minucia(self, threshold=32, slicer=64):
-
-        def sigla(name, order=""):
-            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
-                            for i, n in enumerate(name.split())) + name[-1] + str(order)
-        data = self.full_data[:slicer]
-        derivada, clazzes, jogo, user = zip(*data)
-        jogostr = ' '.join(str(a) for a in jogo)
-        jogostr = jogostr.replace('_MUNDO_', '_Mundo_')
-        jogostr = jogostr.replace('_HOMEM_', '_Mundo_')
-        jogostr = jogostr.replace('_ABAS_', '_Chaves_')
-        jogostr = jogostr.replace('_CHAVES_', '_Chaves_')
-        jogostr = jogostr.replace('_LINGUA_', '_FALA_')
-        jogo = jogostr.split()
-        jogo = ['_'] + jogo + ['_']
-        jogo = [um_jogo if antes_jogo != depois_jogo else antes_jogo
-                for antes_jogo, um_jogo, depois_jogo in zip(jogo, jogo[1:], jogo[2:])]
-        ojogo = jogo[0]
-        start = 0
-        end = min(slicer-1, min(
-            i if a == ojogo != b else 2 ** 100 for i, (a, b) in enumerate(zip(jogo[:slicer], jogo[1:slicer])))) + 1
-        print(len(self.full_data), ojogo, start, end, [(jogostr.count(umaclazz), umaclazz)
-                                                       for umaclazz in CARDS], jogostr[:80])
-        self.full_data = self.full_data[end:]
-        clazz = ojogo + clazzes[start] if clazzes[start] else NONE
-        if (end - start) < threshold:
-            return []
-        return [ojogo[1] + " " + sigla(user[start]), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
-
-    def _encontra_minucia_interpolada(self, threshold=32, slicer=64):
-
-        def sigla(name, order=""):
-            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
-                            for i, n in enumerate(name.split())) + name[-1] + str(order)
-        data = self.full_data[:slicer]
-        tempo, derivada, clazzes, jogo, user = zip(*data)
-        ojogo = jogo[0]
-        start = 0
-        end = min(slicer-1, min(
-            i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo[:slicer], jogo[1:slicer]))) + 1
-        # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
-        self.full_data = self.full_data[end:]
-        ojogo = INDEX_GAME[ojogo]
-        clazz = "_%s_%s_" % (ojogo[1], clazzes[start]) if clazzes[start] else "_%s_._" % ojogo[1]
-        if (end - start) < threshold:
-            return []
-        return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
-
-    def _encontra_minucias_interpolada_em_jogo(self, threshold=32, slicer=64):
-        data = self.full_data
-        tempo, derivada, clazzes, jogo, user = zip(*data)
-        ojogo = jogo[0]
-        start = 0
-        end = int(min(
-            i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo, jogo[1:]))) + 1
-        # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
-        if (end - start) < threshold:
-            return []
-        current_game_slice = self.full_data[:end]
-        self.full_data = self.full_data[end:]
-        return current_game_slice
-
     def build_user_table_for_transitive_minucia(self, measure="delta", prog="prog", slicer=128,
                                                 filename="/trasitiveminucias.tab", learn=False):
         """
@@ -474,17 +412,34 @@ class Learn:
                 w.writerow(line)
             return data
 
-    def classify_by_normatized_isomorphism(self, data):
-        data = data[:3]
-        span = (float(max(data)) - float(min(data)))
-        data_scale = 29.0 / span if span else 1
-        data_floor = float(min(data))
-        print("classify_by_normatized_isomorphism", data_scale, data)
-        data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
-                                           for datum in data).strip("0") or "0"
-        if data_isomorphism_lattice not in self.iso_classifier:
-            self.iso_classifier[data_isomorphism_lattice] = data_isomorphism_lattice
-        return (data_isomorphism_lattice in self.iso_classifier) and self.iso_classifier[data_isomorphism_lattice]
+    def _encontra_minucia(self, threshold=32, slicer=64):
+
+        def sigla(name, order=""):
+            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
+                            for i, n in enumerate(name.split())) + name[-1] + str(order)
+        data = self.full_data[:slicer]
+        derivada, clazzes, jogo, user = zip(*data)
+        jogostr = ' '.join(str(a) for a in jogo)
+        jogostr = jogostr.replace('_MUNDO_', '_Mundo_')
+        jogostr = jogostr.replace('_HOMEM_', '_Mundo_')
+        jogostr = jogostr.replace('_ABAS_', '_Chaves_')
+        jogostr = jogostr.replace('_CHAVES_', '_Chaves_')
+        jogostr = jogostr.replace('_LINGUA_', '_FALA_')
+        jogo = jogostr.split()
+        jogo = ['_'] + jogo + ['_']
+        jogo = [um_jogo if antes_jogo != depois_jogo else antes_jogo
+                for antes_jogo, um_jogo, depois_jogo in zip(jogo, jogo[1:], jogo[2:])]
+        ojogo = jogo[0]
+        start = 0
+        end = min(slicer-1, min(
+            i if a == ojogo != b else 2 ** 100 for i, (a, b) in enumerate(zip(jogo[:slicer], jogo[1:slicer])))) + 1
+        print(len(self.full_data), ojogo, start, end, [(jogostr.count(umaclazz), umaclazz)
+                                                       for umaclazz in CARDS], jogostr[:80])
+        self.full_data = self.full_data[end:]
+        clazz = ojogo + clazzes[start] if clazzes[start] else NONE
+        if (end - start) < threshold:
+            return []
+        return [ojogo[1] + " " + sigla(user[start]), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
 
     def normatize_for_isomorphic_classification(self, data):
         span = (float(max(data)) - float(min(data)))
@@ -583,6 +538,26 @@ class Learn:
             print(set(self.iso_classes))
             return data
 
+
+class Track:
+    def __init__(self, path=JSONDB):
+        self.banco = TinyDB(path)
+        self.query = Query()
+        self.full_data = []
+        self.data = []
+        self.user = []
+        self.iso_classes = []
+        self.progclazz_minutia_buckets = {}
+        self.user_timed_minutia_buckets = {}
+        self.isoclazz_minutia_buckets = {}
+        self.user_minutia_buckets = {}
+        self.iso_classifier = {}
+
+    def resample_user_deltas_games(self, new_delta=2):
+        _, delta = self.user[2].interpolate_deltas()
+        x, game = self.user[2].interpolate_games()
+        return x, delta, game
+
     def scan_for_minutia_count_in_user_and_games(
             self, slicer=16, filename="/interpolatedminutia.tab", threshold=6, span=0):
         """
@@ -607,9 +582,10 @@ class Learn:
             print("wavelet", len(dat), wavelet)
             return list(wavelet)
         time, delta, game = self.resample_user_deltas_games()
-        user_index = {user["user"]: index for index, user in enumerate(self.banco.all())}
-        self.user_timed_minutia_buckets = [[0 for _ in range(100)] for user in range(25)]
-        self.progclazz_minutia_buckets = [[0 for _ in range(12)] for _ in range(4*3)]
+        user_index = {user.user: index for index, user in enumerate(self.user)}
+        self.user_timed_minutia_buckets = [[0 for _ in range(300)] for _ in range(NUS)]
+        self.user_minutia_buckets = [[0 for _ in range(40)] for _ in range(70)]
+        self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4*3)]
         self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
         self.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
 
@@ -624,17 +600,19 @@ class Learn:
             while len(data) >= slicer:
                 print("time_slice", data[:slicer])
                 clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer], 0))
-                if tempo[0] < 1000 and user_index[user[0]] < 25:
-                    self.user_timed_minutia_buckets[user_index[user[0]]][int(tempo[0])//10] = clazz
+                if clazz not in isoclazz:
+                    isoclazz.append(clazz)
+                if tempo[0] < 300 and user_index[user[0]] < NUS:
+                    self.user_timed_minutia_buckets[user_index[user[0]]][int(tempo[0])//10] += isoclazz.index(clazz)
+                    self.user_minutia_buckets[user_index[user[0]]][isoclazz.index(clazz)] += 1
                 if clazz not in self.isoclazz_minutia_buckets:
                     self.isoclazz_minutia_buckets[clazz] = 0
                 else:
                     self.isoclazz_minutia_buckets[clazz] += 1
-                if clazz not in isoclazz:
-                    isoclazz.append(clazz)
                 if clazzes[0]:
                     print("progclazz_minutia_buckets", clazzes[0], isoclazz.index(clazz), jogo[0])
                     self.progclazz_minutia_buckets[3*PROG_INDEX[clazzes[0]]+int(jogo[0])-1][isoclazz.index(clazz)] += 1
+                slicer = 3
                 data = data[slicer:]
                 clazzes = clazzes[slicer:]
                 jogo = jogo[slicer:]
@@ -642,14 +620,79 @@ class Learn:
         print(len(self.isoclazz_minutia_buckets), self.isoclazz_minutia_buckets)
         print({oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
         print(self.progclazz_minutia_buckets)
+        print([u.user for u in self.user[:NUS]])
+        print(self.user_minutia_buckets)
+        for user, index in user_index.items():
+            print(user, self.user_minutia_buckets[index])
         # self.plot_derivative_minutia_by_prognostics_games()
-        self.plot_derivative_minutia_by_user_prognostics_games()
+        # self.plot_derivative_minutia_by_user_prognostics_games()
+        print(sum(count for user in self.user_minutia_buckets for count in user))
+        print(sum(1 for user in self.user_minutia_buckets if any(user)))
         return
         # plt.imshow(zi, vmin=min(z), vmax=max(z), origin='lower',
         #            extent=[min(x), max(x), min(y), max(y)])
         # plt.scatter(x, y, c=z)
         # plt.colorbar()
         # plt.show()
+
+    def normatize_for_isomorphic_classification(self, data):
+        span = (float(max(data)) - float(min(data)))
+        data_scale = 26.0 / span if span else 1
+        data_floor = float(min(data))
+        print("normatize", data_scale, data)
+        data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
+                                           for datum in data).strip("0") or "000000"
+        self.iso_classes.append(data_isomorphism_lattice)
+        return data_isomorphism_lattice
+
+    def classify_by_normatized_isomorphism(self, data):
+        data = data[:3]
+        span = (float(max(data)) - float(min(data)))
+        data_scale = 29.0 / span if span else 1
+        data_floor = float(min(data))
+        print("classify_by_normatized_isomorphism", data_scale, data)
+        data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
+                                           for datum in data).strip("0") or "0"
+        if data_isomorphism_lattice not in self.iso_classifier:
+            self.iso_classifier[data_isomorphism_lattice] = data_isomorphism_lattice
+        return (data_isomorphism_lattice in self.iso_classifier) and self.iso_classifier[data_isomorphism_lattice]
+
+    def load_from_db(self):
+        self.user = [User(**user_data) for user_data in self.banco.all()]
+        return self
+
+    def _encontra_minucia_interpolada(self, threshold=32, slicer=64):
+
+        def sigla(name, order=""):
+            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
+                            for i, n in enumerate(name.split())) + name[-1] + str(order)
+        data = self.full_data[:slicer]
+        tempo, derivada, clazzes, jogo, user = zip(*data)
+        ojogo = jogo[0]
+        start = 0
+        end = min(slicer-1, min(
+            i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo[:slicer], jogo[1:slicer]))) + 1
+        # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
+        self.full_data = self.full_data[end:]
+        ojogo = INDEX_GAME[ojogo]
+        clazz = "_%s_%s_" % (ojogo[1], clazzes[start]) if clazzes[start] else "_%s_._" % ojogo[1]
+        if (end - start) < threshold:
+            return []
+        return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
+
+    def _encontra_minucias_interpolada_em_jogo(self, threshold=32, slicer=64):
+        data = self.full_data
+        tempo, derivada, clazzes, jogo, user = zip(*data)
+        ojogo = jogo[0]
+        start = 0
+        end = int(min(
+            i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo, jogo[1:]))) + 1
+        # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
+        if (end - start) < threshold:
+            return []
+        current_game_slice = self.full_data[:end]
+        self.full_data = self.full_data[end:]
+        return current_game_slice
 
     def plot_derivative_minutia_by_prognostics_games(self):
         import numpy as np
@@ -684,11 +727,11 @@ class Learn:
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
         # Generate data:
-        x, y, z = zip(*[(x, y, self.user_timed_minutia_buckets[x][y]) for y in range(100) for x in range(25)])
+        x, y, z = zip(*[(x, y, self.user_timed_minutia_buckets[x][y]) for y in range(300) for x in range(NUS)])
         # x, y, z = list(x), list(y), list(z)
         # Set up a regular grid of interpolation points
         # xi, yi = np.linspace(min(x), max(x), 12), np.linspace(min(y), max(y), 12)
-        xi, yi = np.linspace(0, 1000, 1000), np.linspace(0, 70, 70)
+        xi, yi = np.linspace(0, 30, 30), np.linspace(0, NUS, NUS)
         xi, yi = np.meshgrid(xi, yi)
         # Interpolate
         rbf = scipy.interpolate.Rbf(x, y, z, function='linear')
@@ -698,88 +741,13 @@ class Learn:
         labels = "v.s. chaves,v.s. mundo,v.s. fala,s.m. chaves,s.m. mundo,s.m. fala," \
                  "f.s. chaves,f.s. mundo,f.s. fala,e.s. chaves,e.s. mundo,e.s. fala,".split(",")
         # ax.plot_trisurf(x, y, zi, cmap=cm.jet, linewidth=0.2)
-        plt.xticks(x, labels, rotation='vertical')
+        # plt.xticks(x, labels, rotation='vertical')
         ax.plot_surface(xi[::-1], yi, zi, rstride=1, cstride=1, color='b', cmap=cm.coolwarm,
                         linewidth=0, antialiased=False, shade=False)
         plt.show()
 
-    def build_with_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab"):
-        """
-        Gera um arquivo csv compatível com o Orange
-
-        :param measure: Um dos possiveis itens de medida do banco: tempo, delta, carta
-        :param prog: Um dos possíveis prognosticos do banco: prog, nota, trans, sexo, idade, ano
-        :param slicer: recorta eos dados neste tamanho
-        :param filename: o nomo do aqrquivo que se quer gerar
-        :return:
-        """
-        data = [[user["user"], user[prog]] + [turn[measure] for turn in user["jogada"]][:slicer] for user in
-                self.banco.all()]
-        return data
-
-    def train_classify_wnn(self, filename="/minucias.tab"):
-        from enplicow import Wisard
-        bleacher = dict(VM=0, SM=0, EM=0, FM=0, VC=0, SC=0, EC=0, FC=0, VF=0, SF=0, EF=0, FF=0)
-        # print(v, s, f, e, b, a, d, DATA[0])
-        data = self.read_csv_data(filename)
-        endtime = 34
-        print(data[0])
-        data = [(line[0], line[1][-1] + line[1][1],
-                 Wisard.retinify([float(t) + 10 for t in line[3:endtime]]))
-                for line in data]
-
-        w = Wisard(data, 32 * 32, bleach=800000, mapper=bleacher, enf=100, sup=10)
-        confidence = w.single(print_result=True, namer=-2)
-        print(confidence, 100 - confidence)
-        return 100 - confidence
-
-    def read_csv_data(self, filename):
-        import csv
-        with open(os.path.dirname(__file__) + filename, 'r') as csvfile:
-            spamreader = csv.reader(csvfile, delimiter='\t', quotechar='|')
-            self.data = [row for row in spamreader][3:]
-        return self.data
-
-    def plot_derivative_minutia(self, filename="/minucias.tab"):
-        import matplotlib.pyplot as plt
-        from math import pi
-        from enplicow import COLORS
-        max_len = 32
-        data = self.read_csv_data(filename)
-        clazzes = list(set([clazz for _, clazz, *_ in data]))
-        clazzes.sort()
-        data = {clazz: [cdata + [0.0]*(max_len - len(cdata))
-                        for _, aclazz, *cdata in data if aclazz == clazz][:8] for clazz in clazzes}
-        step = 2 * pi / 32
-        theta = [ang * step for ang in range(32)]
-
-        fig = plt.figure(figsize=(9, 9))
-        fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
-        for n, title in enumerate(clazzes):
-            case_data = data[title]
-            ax = fig.add_subplot(3, 4, n + 1, projection='polar')
-            # plt.rgrids([0.2, 0.4, 0.6, 0.8])
-            ax.set_title(title, weight='bold', size='medium', position=(0.5, 1.1),
-                         horizontalalignment='center', verticalalignment='center')
-            for color, line in zip(COLORS, case_data):
-                line = [float(dot) + 7.0 for dot in line]
-                print(len(theta), len(line))
-                ax.plot(theta, line, color=color, linewidth=2)
-
-            ax.set_rmax(15.0)
-            ax.grid(True)
-        # add legend relative to top-left plot
-        # plt.subplot(2, 2, 1)
-        # labels = ('Factor 1', 'Factor 2', 'Factor 3', 'Factor 4', 'Factor 5')
-        # legend = plt.legend(labels, loc=(0.9, .95), labelspacing=0.1)
-        # plt.setp(legend.get_texts(), fontsize='small')
-
-        plt.figtext(0.5, 0.965, 'Classes de minucias segundo  jogo x transitividade',
-                    ha='center', color='black', weight='bold', size='large')
-        plt.show()
-
-
-if __name__ == '__main__':
+NUS=30
+def _notmain():
     # Learn().report_user_data()
     # Learn().report_user_turn()
     # Learn().build_User_table_for_prog(slicer=128, learn=False, filename="/fullderivative.tab")
@@ -790,7 +758,11 @@ if __name__ == '__main__':
     # Learn().build_User_table_as_timeseries()
     # Learn().build_derivative_minutia_as_timeseries(filename="/minutia16timeseries.tab")
     # Learn().load_from_db().build_interpolated_derivative_minutia(slicer=4, threshold=2, span=256)
-    Learn().load_from_db().scan_for_minutia_count_in_user_and_games(slicer=6, threshold=4, span=1256)
+    pass
+
+
+if __name__ == '__main__':
+    Track().load_from_db().scan_for_minutia_count_in_user_and_games(slicer=6, threshold=4, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
     #Learn().load_from_db().resample_user_deltas()
