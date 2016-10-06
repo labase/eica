@@ -32,6 +32,14 @@ class User:
         self.user, self.sexo, self.idade, self.ano, self.hora, self.nota, self.prog, self.trans, self.jogada =\
             user, sexo, idade, ano, hora, nota, prog, trans, []
         self.load_from_db(jogadas=jogada)
+        # time, delta, game = self.resample_user_deltas_games()
+        # self.janela_jogadas = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
+        #                   for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
+        self.iso_classifier = {}
+        self.timed_minutia_buckets = [0]*300
+        self.minutia_buckets = [0]*40
+        self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4*3)]
+        self.janela_jogadas = []
 
     def write(self, db):
         attrs = "user, sexo, idade, ano, hora, nota, prog, trans, jogada".split(", ")
@@ -43,7 +51,7 @@ class User:
         return self
 
     def interpolate_deltas(self, delta=1):
-        from scipy.interpolate import interp1d, splev, splrep, UnivariateSpline
+        from scipy.interpolate import interp1d  # , splev, splrep, UnivariateSpline
         import numpy as np
         interpolate_deltas = [(jogo.tempo, jogo.delta) for jogo in self.jogada][1:]
         x, y = zip(*interpolate_deltas)
@@ -93,6 +101,77 @@ class User:
         linear_time_space = np.linspace(x[0], x[-1], (x[-1]-x[0])/delta)
 
         return linear_time_space, [index_str[int(index)-1] for index in interpolating_function(linear_time_space)]
+
+    def resample_user_deltas_games(self, span=2):
+        _, delta = self.interpolate_deltas()
+        time, game = self.interpolate_games()
+        return [(timer, float(turn) - float(turn0), self.prog, gamer, self.user)
+                for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
+
+    def encontra_minucias_interpolada_em_jogo(self, threshold=32):
+        # time, delta, game = self.resample_user_deltas_games()
+        data = self.janela_jogadas
+        tempo, derivada, clazzes, jogo, user = zip(*data)
+        ojogo = jogo[0]
+        start = 0
+        end = int(min(
+            i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo, jogo[1:]))) + 1
+        # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
+        if (end - start) < threshold:
+            return []
+        current_game_slice = self.janela_jogadas[:end]
+        self.janela_jogadas = self.janela_jogadas[end:]
+        return current_game_slice
+
+    def classify_by_normatized_isomorphism(self, data):
+        data = data[:3]
+        span = (float(max(data)) - float(min(data)))
+        data_scale = 29.0 / span if span else 1
+        data_floor = float(min(data))
+        print("classify_by_normatized_isomorphism", data_scale, data)
+        data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
+                                           for datum in data).strip("0") or "0"
+        if data_isomorphism_lattice not in self.iso_classifier:
+            self.iso_classifier[data_isomorphism_lattice] = data_isomorphism_lattice
+        return (data_isomorphism_lattice in self.iso_classifier) and self.iso_classifier[data_isomorphism_lattice]
+
+    def scan_resampled_minutia(self, isoclazz, slicer, user_index, isoclazz_minutia_buckets):
+        def headed_data(dat):
+            import pywt
+            if not dat or len(dat) < slicer:
+                return []
+            mode = pywt.MODES.sp1
+
+            w = pywt.Wavelet('db3')
+            # w = pywt.Wavelet('sym5')
+            _, wavelet = pywt.dwt(dat, w, mode)
+            print("wavelet", len(dat), wavelet)
+            return list(wavelet)
+
+        while self.janela_jogadas:
+            time_slice = self.encontra_minucias_interpolada_em_jogo()
+            tempo, data, clazzes, jogo, user = list(zip(*time_slice))
+            while len(data) >= slicer:
+                print("time_slice", data[:slicer])
+                clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer]))
+                if clazz not in isoclazz:
+                    isoclazz.append(clazz)
+                if tempo[0] < 300 and user_index[user[0]] < NUS:
+                    self.timed_minutia_buckets[int(tempo[0]) // 10] += isoclazz.index(clazz)
+                    self.minutia_buckets[isoclazz.index(clazz)] += 1
+                if clazz not in isoclazz_minutia_buckets:
+                    isoclazz_minutia_buckets[clazz] = 0
+                else:
+                    isoclazz_minutia_buckets[clazz] += 1
+                if clazzes[0]:
+                    print("progclazz_minutia_buckets", clazzes[0], isoclazz.index(clazz), jogo[0])
+                    self.progclazz_minutia_buckets[3 * PROG_INDEX[clazzes[0]] + int(jogo[0]) - 1][
+                        isoclazz.index(clazz)] += 1
+                slicer = 3
+                data = data[slicer:]
+                clazzes = clazzes[slicer:]
+                jogo = jogo[slicer:]
+                user = user[slicer:]
 
 
 class Jogada:
@@ -148,14 +227,14 @@ class Learn:
          for index, (tempo, delta, game, card) in enumerate(interpolate(user)) if index < len(user.jogada) > 2]
         return self
 
-    def resample_user_deltas_games(self, new_delta=2):
+    def resample_user_deltas_games(self, _=2):
         _, delta = self.user[2].interpolate_deltas()
         x, game = self.user[2].interpolate_games()
         return x, delta, game
 
-    def resample_user_deltas(self, new_delta=2):
-        x, y = self.user[2].interpolate_games()
+    def resample_user_deltas(self, _=2):
         import matplotlib.pyplot as plt
+        x, y = self.user[2].interpolate_games()
         plt.plot(x[:256], y[:256])
         # plt.plot(x,y,xl,s2(xl[::-1]), xl, ynew)
         plt.legend(['data'], loc='best')
@@ -269,17 +348,6 @@ class Learn:
         :param learn: imprime somente dados para aprendizagem
         :return:
         """
-        games = "_Chaves_ _FALA_ _Mundo_".split()
-
-        def get_trans_minutia(u_name):
-            data = self.banco.search(self.query.user == u_name)[0]["jogada"]
-
-            def parse_carta(carta):
-                return [carta] if "_" not in carta else carta.split("_")
-
-            items = [(set(carta for d in data if d["ponto"] == game for carta in parse_carta(d["carta"])
-                          ), game) for game in games]
-            return items
 
         self.full_data = [(float(turn[measure]) - float(turn0[measure]), user[prog], turn["ponto"], user["user"])
                           for user in self.banco.all()
@@ -308,7 +376,7 @@ class Learn:
                 w.writerow(row)
             return self.full_data
 
-    def build_User_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab", learn=False):
+    def build_user_table_for_prog(self, measure="delta", prog="prog", slicer=32, filename="/table.tab", learn=False):
         """
         Gera um arquivo csv compatível com o Orange
 
@@ -343,15 +411,13 @@ class Learn:
                 w.writerow(line)
             return data
 
-    def build_User_table_as_timeseries(self, measure="delta", slicer=128, filename="/timeseries.tab", learn=False):
+    def build_user_table_as_timeseries(self, measure="delta", slicer=128, filename="/timeseries.tab"):
         """
         Gera um arquivo csv compatível com o Orange
 
         :param measure: Um dos possiveis itens de medida do banco: tempo, delta, carta
-        :param prog: Um dos possíveis prognosticos do banco: prog, nota, trans, sexo, idade, ano
         :param slicer: recorta eos dados neste tamanho
         :param filename: o nomo do aqrquivo que se quer gerar
-        :param learn: elimina linhas sem prognóstico
         :return:
         """
 
@@ -378,10 +444,11 @@ class Learn:
         """
         Gera um arquivo csv compatível com o Orange para analise harmônica de minucias de segunda ordem
 
+        :param prog: Um dos possíveis prognosticos do banco: prog, nota, trans, sexo, idade, ano
+        :param threshold:
         :param measure: Um dos possiveis itens de medida do banco: tempo, delta, carta
         :param slicer: recorta eos dados neste tamanho
         :param filename: o nomo do aqrquivo que se quer gerar
-        :param learn: elimina linhas sem prognóstico
         :return:
         """
 
@@ -392,8 +459,8 @@ class Learn:
             print(len(dat))
             mode = pywt.MODES.sp1
 
-            w = pywt.Wavelet('sym5')
-            _, wavelet = pywt.dwt(dat[2:], w, mode)
+            wav = pywt.Wavelet('sym5')
+            _, wavelet = pywt.dwt(dat[2:], wav, mode)
             print(wavelet)
             return ["%s%0d3" % (dat[0], index), "c", ""] + list(wavelet)
         span = slicer*16
@@ -441,6 +508,25 @@ class Learn:
             return []
         return [ojogo[1] + " " + sigla(user[start]), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
 
+    def _encontra_minucia_interpolada(self, threshold=32, slicer=64):
+
+        def sigla(name, order=""):
+            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
+                            for i, n in enumerate(name.split())) + name[-1] + str(order)
+        data = self.full_data[:slicer]
+        tempo, derivada, clazzes, jogo, user = zip(*data)
+        ojogo = jogo[0]
+        start = 0
+        end = min(slicer-1, min(
+            i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo[:slicer], jogo[1:slicer]))) + 1
+        # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
+        self.full_data = self.full_data[end:]
+        ojogo = INDEX_GAME[ojogo]
+        clazz = "_%s_%s_" % (ojogo[1], clazzes[start]) if clazzes[start] else "_%s_._" % ojogo[1]
+        if (end - start) < threshold:
+            return []
+        return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
+
     def normatize_for_isomorphic_classification(self, data):
         span = (float(max(data)) - float(min(data)))
         data_scale = 26.0 / span if span else 1
@@ -450,45 +536,6 @@ class Learn:
                                            for datum in data).strip("0") or "000000"
         self.iso_classes.append(data_isomorphism_lattice)
         return data_isomorphism_lattice
-
-    def build_interpolated_derivative_minutia_as_timeseries(
-            self, slicer=16, filename="/interpolatedminutiatimeseries.tab", threshold=6):
-        """
-        Gera um arquivo tab do Orange para analise harmônica de minucias de segunda ordem interploadas no tempo.
-
-        :param slicer: recorta eos dados neste tamanho
-        :param filename: o nomo do aqrquivo que se quer gerar
-        :param threshold: elimina linhas sem prognóstico
-        :return:
-        """
-
-        def headed_data(dat, index):
-            import pywt
-            if not dat or len(dat) < slicer:
-                return []
-            print(len(dat))
-            mode = pywt.MODES.sp1
-
-            w = pywt.Wavelet('sym5')
-            _, wavelet = pywt.dwt(dat[2:], w, mode)
-            print(wavelet)
-            return ["%s%0d3" % (dat[0], index), "c", ""] + list(wavelet)
-        span = slicer*8
-        time, delta, game = self.resample_user_deltas_games()
-
-        self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
-                          for user in self.user
-                          for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
-        data = [headed_data(self._encontra_minucia_interpolada(slicer=slicer, threshold=threshold), i)
-                for i in range(span) if self.full_data]
-        data = [line for line in data if line]
-        with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
-            w = writer(writecsv, delimiter='\t')
-            data = zip(*data)
-            for line in data:
-                print(line)
-                w.writerow(line)
-            return data
 
     def build_interpolated_derivative_minutia(
             self, slicer=16, filename="/interpolatedminutia.tab", threshold=6, span=0):
@@ -509,9 +556,9 @@ class Learn:
             print(len(dat))
             mode = pywt.MODES.sp1
 
-            w = pywt.Wavelet('db3')
+            wav = pywt.Wavelet('db3')
             # w = pywt.Wavelet('sym5')
-            _, wavelet = pywt.dwt(dat[2:], w, mode)
+            _, wavelet = pywt.dwt(dat[2:], wav, mode)
             print(wavelet)
             return ["%s%0d3" % (dat[0], index), dat[1]] + list(wavelet)
         span = span or slicer*64
@@ -522,7 +569,8 @@ class Learn:
                           for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
         data = [headed_data(self._encontra_minucia_interpolada(slicer=slicer, threshold=threshold), i)
                 for i in range(span) if self.full_data]
-        data = [[name, self.normatize_for_isomorphic_classification(dat[:threshold])] + dat for name, _, *dat in data if name]
+        data = [[name, self.normatize_for_isomorphic_classification(dat[:threshold])] + dat
+                for name, _, *dat in data if name]
 
         with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
             w = writer(writecsv, delimiter='\t')
@@ -553,24 +601,22 @@ class Track:
         self.user_minutia_buckets = {}
         self.iso_classifier = {}
 
-    def resample_user_deltas_games(self, new_delta=2):
+    def resample_user_deltas_games(self, _=2):
         _, delta = self.user[2].interpolate_deltas()
         x, game = self.user[2].interpolate_games()
         return x, delta, game
 
-    def scan_for_minutia_count_in_user_and_games(
-            self, slicer=16, filename="/interpolatedminutia.tab", threshold=6, span=0):
+    def scan_full_data_for_minutia_count_in_user_and_games(
+            self, slicer=16, span=4):
         """
         Gera um arquivo tab do Orange para analise harmônica de minucias de segunda ordem interploadas no tempo.
 
         :param slicer: recorta eos dados neste tamanho
-        :param filename: o nomo do aqrquivo que se quer gerar
-        :param threshold: elimina linhas sem prognóstico
         :param span: intervalo onde a pesquisa da minucia será investigada
         :return:
         """
 
-        def headed_data(dat, index):
+        def headed_data(dat):
             import pywt
             if not dat or len(dat) < slicer:
                 return []
@@ -599,7 +645,7 @@ class Track:
             tempo, data, clazzes, jogo, user = list(zip(*time_slice))
             while len(data) >= slicer:
                 print("time_slice", data[:slicer])
-                clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer], 0))
+                clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer]))
                 if clazz not in isoclazz:
                     isoclazz.append(clazz)
                 if tempo[0] < 300 and user_index[user[0]] < NUS:
@@ -617,6 +663,41 @@ class Track:
                 clazzes = clazzes[slicer:]
                 jogo = jogo[slicer:]
                 user = user[slicer:]
+        print(len(self.isoclazz_minutia_buckets), self.isoclazz_minutia_buckets)
+        print({oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
+        print(self.progclazz_minutia_buckets)
+        print([u.user for u in self.user[:NUS]])
+        print(self.user_minutia_buckets)
+        for user, index in user_index.items():
+            print(user, self.user_minutia_buckets[index])
+        # self.plot_derivative_minutia_by_prognostics_games()
+        self.plot_derivative_minutia_by_user_prognostics_games()
+        print(sum(count for user in self.user_minutia_buckets for count in user))
+        print(sum(1 for user in self.user_minutia_buckets if any(user)))
+        return
+        # plt.imshow(zi, vmin=min(z), vmax=max(z), origin='lower',
+        #            extent=[min(x), max(x), min(y), max(y)])
+        # plt.scatter(x, y, c=z)
+        # plt.colorbar()
+        # plt.show()
+
+    def scan_for_minutia_count_in_user_and_games(
+            self, slicer=16):
+        """
+        Gera um arquivo tab do Orange para analise harmônica de minucias de segunda ordem interploadas no tempo.
+
+        :param slicer: recorta eos dados neste tamanho
+        :return:
+        """
+        user_index = {user.user: index for index, user in enumerate(self.user)}
+        self.user_timed_minutia_buckets = [[0 for _ in range(300)] for _ in range(NUS)]
+        self.user_minutia_buckets = [[0 for _ in range(40)] for _ in range(70)]
+        self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4*3)]
+        self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
+        self.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
+        isoclazz = []
+        for user in self.user:
+            user.scan_resampled_minutia(isoclazz, slicer, user, user_index, self.isoclazz_minutia_buckets)
         print(len(self.isoclazz_minutia_buckets), self.isoclazz_minutia_buckets)
         print({oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
         print(self.progclazz_minutia_buckets)
@@ -648,7 +729,7 @@ class Track:
     def classify_by_normatized_isomorphism(self, data):
         data = data[:3]
         span = (float(max(data)) - float(min(data)))
-        data_scale = 29.0 / span if span else 1
+        data_scale = 27.0 / span if span else 1
         data_floor = float(min(data))
         print("classify_by_normatized_isomorphism", data_scale, data)
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
@@ -680,7 +761,7 @@ class Track:
             return []
         return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
 
-    def _encontra_minucias_interpolada_em_jogo(self, threshold=32, slicer=64):
+    def _encontra_minucias_interpolada_em_jogo(self, threshold=32):
         data = self.full_data
         tempo, derivada, clazzes, jogo, user = zip(*data)
         ojogo = jogo[0]
@@ -699,6 +780,7 @@ class Track:
         import matplotlib.pyplot as plt
         import scipy.interpolate
         from mpl_toolkits.mplot3d import Axes3D
+        assert Axes3D
         from matplotlib import cm
         # Generate data:
         x, y, z = zip(*[(x, y, self.progclazz_minutia_buckets[x][y]) for y in range(12) for x in range(4 * 3)])
@@ -725,6 +807,7 @@ class Track:
         import matplotlib.pyplot as plt
         import scipy.interpolate
         from mpl_toolkits.mplot3d import Axes3D
+        assert Axes3D
         from matplotlib import cm
         # Generate data:
         x, y, z = zip(*[(x, y, self.user_timed_minutia_buckets[x][y]) for y in range(300) for x in range(NUS)])
@@ -738,15 +821,17 @@ class Track:
         zi = rbf(xi, yi)
         fig = plt.figure()
         ax = fig.gca(projection='3d')
-        labels = "v.s. chaves,v.s. mundo,v.s. fala,s.m. chaves,s.m. mundo,s.m. fala," \
-                 "f.s. chaves,f.s. mundo,f.s. fala,e.s. chaves,e.s. mundo,e.s. fala,".split(",")
+        # labels = "v.s. chaves,v.s. mundo,v.s. fala,s.m. chaves,s.m. mundo,s.m. fala," \
+        #          "f.s. chaves,f.s. mundo,f.s. fala,e.s. chaves,e.s. mundo,e.s. fala,".split(",")
         # ax.plot_trisurf(x, y, zi, cmap=cm.jet, linewidth=0.2)
         # plt.xticks(x, labels, rotation='vertical')
         ax.plot_surface(xi[::-1], yi, zi, rstride=1, cstride=1, color='b', cmap=cm.coolwarm,
                         linewidth=0, antialiased=False, shade=False)
         plt.show()
 
-NUS=30
+NUS = 30
+
+
 def _notmain():
     # Learn().report_user_data()
     # Learn().report_user_turn()
@@ -762,7 +847,7 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    Track().load_from_db().scan_for_minutia_count_in_user_and_games(slicer=6, threshold=4, span=1256)
+    Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
-    #Learn().load_from_db().resample_user_deltas()
+    # Learn().load_from_db().resample_user_deltas()
