@@ -28,6 +28,8 @@ INDEX_GAME = {key+1: value for key, value in enumerate("_Chaves_ _Mundo_ _FALA_ 
 
 
 class User:
+    iso_classifier = {}
+
     def __init__(self, user, sexo, idade, ano, hora, nota, prog, trans, jogada):
         self.user, self.sexo, self.idade, self.ano, self.hora, self.nota, self.prog, self.trans, self.jogada =\
             user, sexo, idade, ano, hora, nota, prog, trans, []
@@ -102,13 +104,14 @@ class User:
 
         return linear_time_space, [index_str[int(index)-1] for index in interpolating_function(linear_time_space)]
 
-    def resample_user_deltas_games(self, span=2):
+    def resample_user_deltas_games(self, span=20000):
         _, delta = self.interpolate_deltas()
         time, game = self.interpolate_games()
-        return [(timer, float(turn) - float(turn0), self.prog, gamer, self.user)
-                for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
+        self.janela_jogadas = [(timer, float(turn) - float(turn0), self.prog, gamer, self.user)
+                               for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
+        return self.janela_jogadas
 
-    def encontra_minucias_interpolada_em_jogo(self, threshold=32):
+    def encontra_minucias_interpolada_em_jogo(self, threshold=8):
         # time, delta, game = self.resample_user_deltas_games()
         data = self.janela_jogadas
         tempo, derivada, clazzes, jogo, user = zip(*data)
@@ -128,14 +131,14 @@ class User:
         span = (float(max(data)) - float(min(data)))
         data_scale = 29.0 / span if span else 1
         data_floor = float(min(data))
-        print("classify_by_normatized_isomorphism", data_scale, data)
+        print("classify_by_normatized_isomorphism", data_scale, data, self.user)
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
                                            for datum in data).strip("0") or "0"
-        if data_isomorphism_lattice not in self.iso_classifier:
-            self.iso_classifier[data_isomorphism_lattice] = data_isomorphism_lattice
-        return (data_isomorphism_lattice in self.iso_classifier) and self.iso_classifier[data_isomorphism_lattice]
+        if data_isomorphism_lattice not in User.iso_classifier:
+            User.iso_classifier[data_isomorphism_lattice] = data_isomorphism_lattice
+        return (data_isomorphism_lattice in User.iso_classifier) and User.iso_classifier[data_isomorphism_lattice]
 
-    def scan_resampled_minutia(self, isoclazz, slicer, user_index, isoclazz_minutia_buckets):
+    def scan_resampled_minutia(self, isoclazz, slicer, isoclazz_minutia_buckets):
         def headed_data(dat):
             import pywt
             if not dat or len(dat) < slicer:
@@ -150,14 +153,17 @@ class User:
 
         while self.janela_jogadas:
             time_slice = self.encontra_minucias_interpolada_em_jogo()
+            if not time_slice:
+                break
             tempo, data, clazzes, jogo, user = list(zip(*time_slice))
+            slicer = 4
             while len(data) >= slicer:
                 print("time_slice", data[:slicer])
                 clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer]))
                 if clazz not in isoclazz:
                     isoclazz.append(clazz)
-                if tempo[0] < 300 and user_index[user[0]] < NUS:
-                    self.timed_minutia_buckets[int(tempo[0]) // 10] += isoclazz.index(clazz)
+                if tempo[0] < 300:
+                    self.timed_minutia_buckets[int(tempo[0]) // 10] += (isoclazz.index(clazz) + 1)
                     self.minutia_buckets[isoclazz.index(clazz)] += 1
                 if clazz not in isoclazz_minutia_buckets:
                     isoclazz_minutia_buckets[clazz] = 0
@@ -620,12 +626,17 @@ class Track:
             import pywt
             if not dat or len(dat) < slicer:
                 return []
+            dat = dat[:4]
             mode = pywt.MODES.sp1
+            data_span = (float(max(dat)) - float(min(dat)))
+            data_scale = 1000.0 / data_span if data_span else 1
+            data_floor = float(min(dat))
+            scaled_data = [int(((datum - data_floor) * data_scale) // 10) for datum in dat]
 
-            w = pywt.Wavelet('db3')
+            w = pywt.Wavelet('bior1.5')
             # w = pywt.Wavelet('sym5')
-            _, wavelet = pywt.dwt(dat, w, mode)
-            print("wavelet", len(dat), wavelet)
+            _, wavelet = pywt.dwt(scaled_data, w, mode)
+            print("fan in wavelet", len(scaled_data), wavelet)
             return list(wavelet)
         time, delta, game = self.resample_user_deltas_games()
         user_index = {user.user: index for index, user in enumerate(self.user)}
@@ -633,12 +644,12 @@ class Track:
         self.user_minutia_buckets = [[0 for _ in range(40)] for _ in range(70)]
         self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4*3)]
         self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
-        self.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
+        User.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
 
         self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
                           for user in self.user
                           for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
-        print("len(self.full_data)", len(self.full_data), self.full_data[0], self.iso_classifier)
+        print("len(self.full_data)", len(self.full_data), self.full_data[0], User.iso_classifier)
         isoclazz = []
         while self.full_data:
             time_slice = self._encontra_minucias_interpolada_em_jogo()
@@ -671,9 +682,9 @@ class Track:
         for user, index in user_index.items():
             print(user, self.user_minutia_buckets[index])
         # self.plot_derivative_minutia_by_prognostics_games()
-        self.plot_derivative_minutia_by_user_prognostics_games()
         print(sum(count for user in self.user_minutia_buckets for count in user))
         print(sum(1 for user in self.user_minutia_buckets if any(user)))
+        self.plot_derivative_minutia_by_user_prognostics_games()
         return
         # plt.imshow(zi, vmin=min(z), vmax=max(z), origin='lower',
         #            extent=[min(x), max(x), min(y), max(y)])
@@ -689,26 +700,29 @@ class Track:
         :param slicer: recorta eos dados neste tamanho
         :return:
         """
-        user_index = {user.user: index for index, user in enumerate(self.user)}
         self.user_timed_minutia_buckets = [[0 for _ in range(300)] for _ in range(NUS)]
         self.user_minutia_buckets = [[0 for _ in range(40)] for _ in range(70)]
         self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4*3)]
         self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
-        self.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
+        User.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
         isoclazz = []
         for user in self.user:
-            user.scan_resampled_minutia(isoclazz, slicer, user, user_index, self.isoclazz_minutia_buckets)
-        print(len(self.isoclazz_minutia_buckets), self.isoclazz_minutia_buckets)
-        print({oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
-        print(self.progclazz_minutia_buckets)
-        print([u.user for u in self.user[:NUS]])
-        print(self.user_minutia_buckets)
-        for user, index in user_index.items():
-            print(user, self.user_minutia_buckets[index])
+            if len(user.jogada) < 4:
+                continue
+            user.resample_user_deltas_games()
+            user.scan_resampled_minutia(isoclazz, slicer, self.isoclazz_minutia_buckets)
+        print("isoclazz_minutia_buckets", len(self.isoclazz_minutia_buckets), self.isoclazz_minutia_buckets)
+        print("iso_classes", {oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
+        print("progclazz_minutia_buckets", self.progclazz_minutia_buckets)
+        print("iso_classifier", User.iso_classifier)
+        print("user", [u.user for u in self.user[:NUS]])
+        print("user_minutia_buckets", self.user_minutia_buckets)
+        for user in self.user:
+            print(user.user, user.minutia_buckets)
         # self.plot_derivative_minutia_by_prognostics_games()
-        # self.plot_derivative_minutia_by_user_prognostics_games()
-        print(sum(count for user in self.user_minutia_buckets for count in user))
-        print(sum(1 for user in self.user_minutia_buckets if any(user)))
+        print("countuser_minutia_buckets", sum(count for user in self.user for count in user.minutia_buckets))
+        print("sumuser_minutia_buckets", sum(1 for user in self.user if any(user.minutia_buckets)))
+        self.plot_derivative_minutia_by_user()
         return
         # plt.imshow(zi, vmin=min(z), vmax=max(z), origin='lower',
         #            extent=[min(x), max(x), min(y), max(y)])
@@ -829,6 +843,35 @@ class Track:
                         linewidth=0, antialiased=False, shade=False)
         plt.show()
 
+    def plot_derivative_minutia_by_user(self):
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import scipy.interpolate
+        from mpl_toolkits.mplot3d import Axes3D
+        assert Axes3D
+        from matplotlib import cm
+        # Generate data:
+        x, y, z = zip(*[(x, y, user.timed_minutia_buckets[y])
+                        for y in range(300) for x, user in enumerate(self.user[:NUS])])
+        # x, y, z = list(x), list(y), list(z)
+        # Set up a regular grid of interpolation points
+        # xi, yi = np.linspace(min(x), max(x), 12), np.linspace(min(y), max(y), 12)
+        xi, yi = np.linspace(0, 30, 30), np.linspace(0, NUS, NUS)
+        xi, yi = np.meshgrid(xi, yi)
+        # Interpolate
+        rbf = scipy.interpolate.Rbf(x, y, z, function='linear')
+        zi = rbf(xi, yi)
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.set_zlim(0, 300)
+        # labels = "v.s. chaves,v.s. mundo,v.s. fala,s.m. chaves,s.m. mundo,s.m. fala," \
+        #          "f.s. chaves,f.s. mundo,f.s. fala,e.s. chaves,e.s. mundo,e.s. fala,".split(",")
+        # ax.plot_trisurf(x, y, zi, cmap=cm.jet, linewidth=0.2)
+        # plt.xticks(x, labels, rotation='vertical')
+        ax.plot_surface(xi[::-1], yi, zi, rstride=1, cstride=1, color='b', cmap=cm.coolwarm,
+                        linewidth=0, antialiased=False, shade=False)
+        plt.show()
+
 NUS = 30
 
 
@@ -847,7 +890,8 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
+    Track().load_from_db().scan_for_minutia_count_in_user_and_games(slicer=6)
+    # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
     # Learn().load_from_db().resample_user_deltas()
