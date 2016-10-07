@@ -52,10 +52,10 @@ class User:
         self.jogada = [Jogada(**user_data) for user_data in jogadas if "0" not in user_data]
         return self
 
-    def interpolate_deltas(self, delta=1):
+    def interpolate_deltas(self, delta=0.5):
         from scipy.interpolate import interp1d  # , splev, splrep, UnivariateSpline
         import numpy as np
-        interpolate_deltas = [(jogo.tempo, jogo.delta) for jogo in self.jogada][1:]
+        interpolate_deltas = [(jogo.tempo, jogo.delta) for jogo in self.jogada][1:100]
         x, y = zip(*interpolate_deltas)
         interpolating_function = interp1d(x, y)
         linear_time_space = np.linspace(x[0], x[-1], (x[-1]-x[0])/delta)
@@ -127,18 +127,19 @@ class User:
         return current_game_slice
 
     def classify_by_normatized_isomorphism(self, data):
+        # print("classify_by_normatized_isomorphism", data)
         data = data[:3]
         span = (float(max(data)) - float(min(data)))
         data_scale = 29.0 / span if span else 1
         data_floor = float(min(data))
-        print("classify_by_normatized_isomorphism", data_scale, data, self.user)
+        # print("classify_by_normatized_isomorphism", data_scale, data, self.user)
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
                                            for datum in data).strip("0") or "0"
         if data_isomorphism_lattice not in User.iso_classifier:
             User.iso_classifier[data_isomorphism_lattice] = data_isomorphism_lattice
         return (data_isomorphism_lattice in User.iso_classifier) and User.iso_classifier[data_isomorphism_lattice]
 
-    def scan_resampled_minutia(self, isoclazz, slicer, isoclazz_minutia_buckets):
+    def old_scan_resampled_minutia(self, isoclazz, slicer, isoclazz_minutia_buckets, compute_timed_minutia):
         def headed_data(dat):
             import pywt
             if not dat or len(dat) < slicer:
@@ -148,7 +149,7 @@ class User:
             w = pywt.Wavelet('db3')
             # w = pywt.Wavelet('sym5')
             _, wavelet = pywt.dwt(dat, w, mode)
-            print("wavelet", len(dat), wavelet)
+            # print("wavelet", len(dat), wavelet)
             return list(wavelet)
 
         while self.janela_jogadas:
@@ -158,19 +159,18 @@ class User:
             tempo, data, clazzes, jogo, user = list(zip(*time_slice))
             slicer = 4
             while len(data) >= slicer:
-                print("time_slice", data[:slicer])
+                # print("time_slice", data[:slicer])
                 clazz = self.classify_by_normatized_isomorphism(headed_data(data[:slicer]))
                 if clazz not in isoclazz:
                     isoclazz.append(clazz)
                 if tempo[0] < 300:
-                    self.timed_minutia_buckets[int(tempo[0]) // 10] += (isoclazz.index(clazz) + 1)
-                    self.minutia_buckets[isoclazz.index(clazz)] += 1
+                    compute_timed_minutia(clazz, isoclazz, tempo)
                 if clazz not in isoclazz_minutia_buckets:
                     isoclazz_minutia_buckets[clazz] = 0
                 else:
                     isoclazz_minutia_buckets[clazz] += 1
                 if clazzes[0]:
-                    print("progclazz_minutia_buckets", clazzes[0], isoclazz.index(clazz), jogo[0])
+                    # print("progclazz_minutia_buckets", clazzes[0], isoclazz.index(clazz), jogo[0])
                     self.progclazz_minutia_buckets[3 * PROG_INDEX[clazzes[0]] + int(jogo[0]) - 1][
                         isoclazz.index(clazz)] += 1
                 slicer = 3
@@ -178,6 +178,59 @@ class User:
                 clazzes = clazzes[slicer:]
                 jogo = jogo[slicer:]
                 user = user[slicer:]
+
+    def scan_resampled_minutia(self, isoclazz, slicer, isoclazz_minutia_buckets, compute_timed_minutia):
+        def headed_data(dat):
+            import pywt
+            mode = pywt.MODES.sp1
+
+            w = pywt.Wavelet('db3')
+            # w = pywt.Wavelet('sym5')
+            _, wavelet = pywt.dwt(dat, w, mode)
+            # print("wavelet", len(dat), wavelet)
+            return list(wavelet)
+
+        for time_slice in zip(*(iter(self.janela_jogadas),) * 4):
+            if len(time_slice) < 3:
+                break
+            tempo, data, clazzes, jogo, user = list(zip(*time_slice))
+            # print("time_slice", data[:slicer])
+            clazz = self.classify_by_normatized_isomorphism(headed_data(data))
+            if clazz not in isoclazz:
+                isoclazz.append(clazz)
+            if tempo[0] < 300:
+                compute_timed_minutia(clazz, isoclazz, tempo)
+            if clazz not in isoclazz_minutia_buckets:
+                isoclazz_minutia_buckets[clazz] = 0
+            else:
+                isoclazz_minutia_buckets[clazz] += 1
+            if clazzes[0]:
+                # print("progclazz_minutia_buckets", clazzes[0], isoclazz.index(clazz), jogo[0])
+                self.progclazz_minutia_buckets[3 * PROG_INDEX[clazzes[0]] + int(jogo[0]) - 1][
+                    isoclazz.index(clazz)] += 1
+
+    def compute_minutia_count(self, clazz, isoclazz, tempo):
+        """
+        Soma as ocorrências de minúcias em um intervalode 10 segundos.
+
+        :param clazz: classe identificadora da minucia
+        :param isoclazz: lista para converter a classe identificadora em um índice inteiro
+        :param tempo: selo de tempo onde a minúcia ocorre
+        :return:
+        """
+        self.timed_minutia_buckets[int(tempo[0]) // 10] += (isoclazz.index(clazz) + 1)
+        self.minutia_buckets[isoclazz.index(clazz)] += 1
+
+    def track_minutia_event(self, clazz, isoclazz, tempo):
+        """
+        Rastreia a ocorrência de minúcias e armazena os tempos de seus eventos.
+
+        :param clazz: classe identificadora da minucia
+        :param isoclazz: lista para converter a classe identificadora em um índice inteiro
+        :param tempo: selo de tempo onde a minúcia ocorre
+        :return:
+        """
+        self.minutia_buckets[isoclazz.index(clazz)].append(int(tempo[0]))
 
 
 class Jogada:
@@ -695,7 +748,7 @@ class Track:
     def scan_for_minutia_count_in_user_and_games(
             self, slicer=16):
         """
-        Gera um arquivo tab do Orange para analise harmônica de minucias de segunda ordem interploadas no tempo.
+        Rastreia a série temporal de cada usuário para identificar as minúcias derivativas.
 
         :param slicer: recorta eos dados neste tamanho
         :return:
@@ -710,7 +763,7 @@ class Track:
             if len(user.jogada) < 4:
                 continue
             user.resample_user_deltas_games()
-            user.scan_resampled_minutia(isoclazz, slicer, self.isoclazz_minutia_buckets)
+            user.scan_resampled_minutia(isoclazz, slicer, self.isoclazz_minutia_buckets, user.compute_minutia_count)
         print("isoclazz_minutia_buckets", len(self.isoclazz_minutia_buckets), self.isoclazz_minutia_buckets)
         print("iso_classes", {oc: sum(1 for c in self.iso_classes if c == oc) for oc in set(self.iso_classes)})
         print("progclazz_minutia_buckets", self.progclazz_minutia_buckets)
@@ -722,7 +775,7 @@ class Track:
         # self.plot_derivative_minutia_by_prognostics_games()
         print("countuser_minutia_buckets", sum(count for user in self.user for count in user.minutia_buckets))
         print("sumuser_minutia_buckets", sum(1 for user in self.user if any(user.minutia_buckets)))
-        self.plot_derivative_minutia_by_user()
+        # self.plot_derivative_minutia_by_user()
         return
         # plt.imshow(zi, vmin=min(z), vmax=max(z), origin='lower',
         #            extent=[min(x), max(x), min(y), max(y)])
@@ -872,6 +925,45 @@ class Track:
                         linewidth=0, antialiased=False, shade=False)
         plt.show()
 
+
+class MinutiaStats(Track):
+
+    def scan_for_minutia_stats_in_users(
+            self, slicer=16):
+        """
+        Rastreia a série temporal de cada usuário e levanta estatísticas sobre as minúcias derivativas.
+
+        :param slicer: recorta eos dados neste tamanho
+        :return:
+        """
+        self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
+        User.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
+        isoclazz = []
+        for user in self.user:
+            if len(user.jogada) < 4:
+                continue
+            user.minutia_buckets = {minutia_id: [] for minutia_id in range(40)}
+            user.resample_user_deltas_games()
+            user.scan_resampled_minutia(isoclazz, slicer, self.isoclazz_minutia_buckets, user.track_minutia_event)
+        for user in self.user:
+            if len(user.jogada) < 4:
+                continue
+            # print(user.user, user.minutia_buckets)
+            ub = user.minutia_buckets
+            fm = "{:<40}: dmt:{:<3} cm0:{:<3} tm0:{:<3} dm0:{:<3}"
+            print(fm.format(user.user[:39], max(min(m) if m else 0 for m in ub.values()), len(ub[0]), int(sum(ub[0])/len(ub[0])), min(ub[0])))
+        # self.plot_derivative_minutia_by_prognostics_games()
+        print("countuser_minutia_buckets", sum(count for user in self.user for count in user.minutia_buckets))
+        print("sumuser_minutia_buckets", sum(1 for user in self.user if any(user.minutia_buckets)))
+        # self.plot_derivative_minutia_by_user()
+        return
+        # plt.imshow(zi, vmin=min(z), vmax=max(z), origin='lower',
+        #            extent=[min(x), max(x), min(y), max(y)])
+        # plt.scatter(x, y, c=z)
+        # plt.colorbar()
+        # plt.show()
+
+
 NUS = 30
 
 
@@ -890,7 +982,7 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    Track().load_from_db().scan_for_minutia_count_in_user_and_games(slicer=6)
+    MinutiaStats().load_from_db().scan_for_minutia_stats_in_users(slicer=6)
     # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
