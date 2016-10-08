@@ -133,7 +133,7 @@ def htmltable(data=WNN, head=HEAD, foot=FOOT, filename="stats_table.html", capti
     # print(data)
     summary = caption
     templater = template(formater, caption=caption, summary=caption, foot=foot, header=head, table=data, cols=len(head))
-    print(templater)
+    # print(templater)
     with open(filename, 'w') as hfile:
         hfile.write(templater)
 

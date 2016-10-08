@@ -940,10 +940,11 @@ class MinutiaStats(Track):
         def sigla(name, order=""):
             return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
                             for i, n in enumerate(name.split()))[:10]
-        self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
-        User.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
-        isoclazz = []
         alldata = []
+        printdata = []
+        self.isoclazz_minutia_buckets = {}
+        User.iso_classifier = {}
+        isoclazz = []
         for user in self.user:
             if len(user.jogada) < 4:
                 continue
@@ -960,27 +961,51 @@ class MinutiaStats(Track):
             _ = "{:<40}: dmt:{:<3} cm0:{:<3} tm0:{:<3} dm0:{:<3}"
             mfm = "{:<10}: dmt:{:<3} "+"".join(["cm%d:{:<3} dm%d:{:<3} wv%d:{:<3} " % ((i,)*3) for i in range(8)])
             data = [[len(mt), min(mt)if len(mt) else 0, wavelenght(mt)] for mt in ub.values()]
-            # mfm = "{:<40}: dmt:{:<3} "+"".join(["cm%d:{:<3} tm%d:{:<3} dm%d:{:<3} wv%d:{:<3} " % ((i,)*4) for i in range(4)])
-            # data = [[len(mt), int(sum(mt)/len(mt))if len(mt) else 0, min(mt)if len(mt) else 0, wavelenght(mt)] for mt in ub.values()]
-            ndata = [sigla(user.user), max(min(m) if m else 0 for m in ub.values())]
+            ndata = []
             for d in data[:8]:
                 ndata.extend(d)
             # if all(len(mt)>1 for i, mt in ub.items() if i <6):
             alldata.append(ndata)
+            ndata = [sigla(user.user), max(min(m) if m else 0 for m in ub.values())] + ndata
+            printdata.append(ndata)
             print(mfm.format(*ndata))
         # self.plot_derivative_minutia_by_prognostics_games()
-        collums = zip(*alldata)
-        stats = [sum(st)//len(st) for i, st in enumerate(collums) if i > 0]
-        stats2 = [(sum(st)//len(st), i) for i, st in enumerate(collums) if i > 0]
-        print("stats2", stats2)
-        # stats2.sort()
-        alldata.append(["total"]+stats)
+        columns = zip(*alldata)
+        stats = [sum(st)//len(st) for i, st in enumerate(columns) if i > 0]
+        columns = zip(*alldata)
+        conta = [(sum(count)//len(count), i) for i, (count, delay, wave) in enumerate(list(zip(*(iter(columns),)*3)))]
+        conta.sort(reverse=True)
+        print("contagem de minúcias", conta)
+        columns = zip(*alldata)
+        atraso = [(sum(delay)//len(delay), i) for i, (count, delay, wave) in enumerate(list(zip(*(iter(columns),)*3)))]
+        atraso.sort()
+        print("atraso para aparecer a minúcia", atraso)
+        columns = zip(*alldata)
+        onda = [(sum(wave)//len(wave), i) for i, (count, delay, wave) in enumerate(list(zip(*(iter(columns),)*3)))]
+        onda.sort()
+        print("distância (comprimento de onda) em tempo entre mesma minúcia", onda)
+        printdata.append(["total"]+stats)
+        reordena_minucias_por_atraso = [delay[1] for delay in atraso]
+        columns = zip(*alldata)
+        estatisticas_ordenadas = list(zip(*(iter(columns),)*3))
+        print("reordena_minucias_por_atraso", reordena_minucias_por_atraso, len(estatisticas_ordenadas))
+        estatisticas_ordenadas = [estatisticas_ordenadas[sort_order] for sort_order in reordena_minucias_por_atraso]
+        estatisticas = zip(*estatisticas_ordenadas)
+        contagems = [contagem for contagem, atraso, _ in estatisticas_ordenadas]
+        atrasos = [atraso for _, atraso, _ in estatisticas_ordenadas]
+        wavelenghts = [wavelenght for _, atraso, wavelenght in estatisticas_ordenadas]
+        estatisticas_ordenadas = [contagems, atrasos, wavelenghts]
+        minucia = atrasos[0]
+        print()
+        self.boxplot_de_caracteristicas(estatisticas)
+        # self.boxplot_de_caracteristicas(atraso)
+        return
         import invariant as inv
         # head = "aluno,atr,"+"".join(["cm%d,tm%d,dm%d,wv%d," % ((i,)*4) for i in range(4)])
-        # inv.htmltable(data=alldata, head=head.split(","), foot="", caption="Estatísticas de minúcias", filename="stats_minutia.html")
         head = "aluno,atr,"+"".join(["cm%d,dm%d,wv%d," % ((i,)*3) for i in range(8)])
-        alldata.append(head.split(","))
-        inv.htmltable(data=alldata, head=head.split(","), foot="", caption="Estatísticas de minúcias", filename="stats_minutia.html")
+        printdata.append(head.split(","))
+        inv.htmltable(data=printdata, head=head.split(","), foot="",
+                      caption="Contagem, atraso e intervalo de minúcias", filename="stats_minutia.html")
         print("countuser_minutia_buckets", sum(count for user in self.user for count in user.minutia_buckets))
         print("sumuser_minutia_buckets", sum(1 for user in self.user if any(user.minutia_buckets)))
         # self.plot_derivative_minutia_by_user()
@@ -991,8 +1016,25 @@ class MinutiaStats(Track):
         # plt.colorbar()
         # plt.show()
 
+    def boxplot_de_caracteristicas(self, data):
+        from statistics import median, median_high, median_low, stdev
+        import matplotlib.pyplot as plt
+        import numpy as np
+        plt.figure(1)
+        for prop, caracteristic in enumerate(data):
+            plt.subplot(311+prop)
+            plt.boxplot(caracteristic)
+
+        plt.show()
+
 
 NUS = 30
+
+
+class MinutiaConnections(Track):
+    def generate_connecion_table(self):
+        for user in self.user:
+            pass
 
 
 def _notmain():
