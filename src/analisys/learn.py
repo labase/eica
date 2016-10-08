@@ -1,5 +1,6 @@
 # -*- coding: UTF8 -*-
 # import operator
+import itertools
 from tinydb import TinyDB, Query
 import os
 from csv import writer
@@ -928,17 +929,21 @@ class Track:
 
 class MinutiaStats(Track):
 
-    def scan_for_minutia_stats_in_users(
-            self, slicer=16):
+    def scan_for_minutia_stats_in_users(self, slicer=16):
         """
         Rastreia a série temporal de cada usuário e levanta estatísticas sobre as minúcias derivativas.
 
         :param slicer: recorta eos dados neste tamanho
         :return:
         """
+
+        def sigla(name, order=""):
+            return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
+                            for i, n in enumerate(name.split()))[:10]
         self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
         User.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
         isoclazz = []
+        alldata = []
         for user in self.user:
             if len(user.jogada) < 4:
                 continue
@@ -950,9 +955,32 @@ class MinutiaStats(Track):
                 continue
             # print(user.user, user.minutia_buckets)
             ub = user.minutia_buckets
-            fm = "{:<40}: dmt:{:<3} cm0:{:<3} tm0:{:<3} dm0:{:<3}"
-            print(fm.format(user.user[:39], max(min(m) if m else 0 for m in ub.values()), len(ub[0]), int(sum(ub[0])/len(ub[0])), min(ub[0])))
+            # wavelenght=[sum(b-a for a, b in zip(mt, mt[1:]))/len(mt) if mt else 0 for mt in ub.values()]
+            wavelenght = lambda mt: int(10*sum(b-a for a, b in zip(mt, mt[1:]))/max(len(mt), 1)) if len(mt) else 0
+            _ = "{:<40}: dmt:{:<3} cm0:{:<3} tm0:{:<3} dm0:{:<3}"
+            mfm = "{:<10}: dmt:{:<3} "+"".join(["cm%d:{:<3} dm%d:{:<3} wv%d:{:<3} " % ((i,)*3) for i in range(8)])
+            data = [[len(mt), min(mt)if len(mt) else 0, wavelenght(mt)] for mt in ub.values()]
+            # mfm = "{:<40}: dmt:{:<3} "+"".join(["cm%d:{:<3} tm%d:{:<3} dm%d:{:<3} wv%d:{:<3} " % ((i,)*4) for i in range(4)])
+            # data = [[len(mt), int(sum(mt)/len(mt))if len(mt) else 0, min(mt)if len(mt) else 0, wavelenght(mt)] for mt in ub.values()]
+            ndata = [sigla(user.user), max(min(m) if m else 0 for m in ub.values())]
+            for d in data[:8]:
+                ndata.extend(d)
+            # if all(len(mt)>1 for i, mt in ub.items() if i <6):
+            alldata.append(ndata)
+            print(mfm.format(*ndata))
         # self.plot_derivative_minutia_by_prognostics_games()
+        collums = zip(*alldata)
+        stats = [sum(st)//len(st) for i, st in enumerate(collums) if i > 0]
+        stats2 = [(sum(st)//len(st), i) for i, st in enumerate(collums) if i > 0]
+        print("stats2", stats2)
+        # stats2.sort()
+        alldata.append(["total"]+stats)
+        import invariant as inv
+        # head = "aluno,atr,"+"".join(["cm%d,tm%d,dm%d,wv%d," % ((i,)*4) for i in range(4)])
+        # inv.htmltable(data=alldata, head=head.split(","), foot="", caption="Estatísticas de minúcias", filename="stats_minutia.html")
+        head = "aluno,atr,"+"".join(["cm%d,dm%d,wv%d," % ((i,)*3) for i in range(8)])
+        alldata.append(head.split(","))
+        inv.htmltable(data=alldata, head=head.split(","), foot="", caption="Estatísticas de minúcias", filename="stats_minutia.html")
         print("countuser_minutia_buckets", sum(count for user in self.user for count in user.minutia_buckets))
         print("sumuser_minutia_buckets", sum(1 for user in self.user if any(user.minutia_buckets)))
         # self.plot_derivative_minutia_by_user()
