@@ -1,13 +1,41 @@
 import numpy as np
-LINE_WIDTH = 0.05
-LINE_WIDTH_S = 0.045
+from bottle import template
+
+LINE_WIDTH = 0.005 * 2
+LINE_WIDTH_S = 0.0045 * 2
 PI = np.pi
 
-matrix = np.array([[16, 3, 28, 0, 18],
-                   [18, 0, 12, 5, 29],
-                   [9, 11, 17, 27, 0],
-                   [19, 0, 31, 11, 12],
-                   [23, 17, 10, 0, 34]], dtype=int)
+matrix = np.array(
+    [[668, 582, 209, 110, 63, 34, 25, 21],
+     [600, 432, 147, 101, 43, 20, 10, 16],
+     [198, 148, 67, 27, 17, 8, 4, 6],
+     [115, 106, 19, 19, 0, 6, 6, 2],
+     [60, 43, 10, 10, 54, 2, 1, 3],
+     [25, 23, 10, 7, 3, 3, 3, 0],
+     [25, 13, 10, 0, 2, 0, 0, 0],
+     [25, 15, 4, 1, 1, 0, 1, 0]
+     ]
+    , dtype=int)
+matrix[0] = matrix[0] / 2.5
+matrix[1] = matrix[1] // 2
+#
+# matrix = np.array([[16, 3, 28, 0, 18],
+#                    [18, 0, 12, 5, 29],
+#                    [9, 11, 17, 27, 0],
+#                    [19, 0, 31, 11, 12],
+#                    [23, 17, 10, 0, 34]], dtype=int)
+
+
+labels = ['Emma', 'Isabella', 'Ava', 'Olivia', 'Sophia', 'Isabella', 'Ava', 'Olivia']
+# ideo_colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen', 'lightblue', 'cyan', 'purple']
+ideo_colors = ['rgba(255, 100, 100, 0.75)',
+               'rgba(253, 174, 97, 0.75)',
+               'rgba(254, 254, 139, 0.75)',
+               'rgba(217, 239, 139, 0.75)',
+               'rgba(97, 183, 183, 0.75)',
+               'rgba(97, 186, 254, 0.75)',
+               'rgba(184, 97, 254, 0.75)',
+               'rgba(254, 0, 184, 0.75)']  # brewer colors with alpha set on 0.75
 
 
 def check_data(data_matrix):
@@ -35,7 +63,7 @@ def test_2PI(x):
 row_sum = [np.sum(matrix[k, :]) for k in range(L)]
 
 # set the gap between two consecutive ideograms
-gap = 2 * PI * 0.005
+gap = 2 * PI * 0.0005 * 2
 ideogram_length = 2 * PI * np.asarray(row_sum) / sum(row_sum) - gap * np.ones(L)
 
 
@@ -123,13 +151,6 @@ def ctrl_rib_chords(l, r, radius):
         raise ValueError('the arc ends must be elements in a list of len 2')
     return [control_pts([l[j], (l[j] + r[j]) / 2, r[j]], radius) for j in range(2)]
 
-
-labels = ['Emma', 'Isabella', 'Ava', 'Olivia', 'Sophia']
-ideo_colors = ['rgba(244, 109, 67, 0.75)',
-               'rgba(253, 174, 97, 0.75)',
-               'rgba(254, 224, 139, 0.75)',
-               'rgba(217, 239, 139, 0.75)',
-               'rgba(166, 217, 106, 0.75)']  # brewer colors with alpha set on 0.75
 
 ribbon_color = [L * [ideo_colors[k]] for k in range(L)]
 
@@ -256,7 +277,7 @@ def invPerm(perm):
 
 layout = []
 
-radii_sribb = [0.4, 0.30, 0.35, 0.39, 0.12]  # these value are set after a few trials
+radii_sribb = [0.4, 0.40, 0.35, 0.39, 0.12, 0.30, 0.35, 0.39, 0.12]  # these value are set after a few trials
 
 ribbon_info = []
 for k in range(L):
@@ -352,7 +373,7 @@ for d in layout:
 SVG = '''<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="15cm" height="15cm" viewBox="-12 -12 24 24"
+<svg width="25cm" height="25cm" viewBox="-12 -12 24 24"
      xmlns="http://www.w3.org/2000/svg" version="1.1">
   <title>Ideograma de transição de estados EICA</title>
   <desc>Ideograma de transição de estados EICA</desc>
@@ -364,12 +385,15 @@ SVG = '''<?xml version="1.0" standalone="no"?>
     % end
   </g>
 </svg> '''
-from bottle import template
+
+
 # layout = [{'fillcolor': 0, 'line': 0, 'type': 0, 'path': 0}]
 
 
 def scale(v):
-    return " ".join(l if l.isalpha() else str(float(l)*10) for l in v.split())
+    return " ".join(l if l.isalpha() else str(float(l) * 10) for l in v.split())
+
+
 intlayout = [{k: v if k != "path" else scale(v) for k, v in shape.items()} for shape in layout]
 templater = template(SVG, layout=intlayout)
 filename = "ideogram.svg"

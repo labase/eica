@@ -1004,7 +1004,7 @@ class MinutiaStats(Track):
         estatisticas_ordenadas = [contagems, atrasos, wavelenghts]
         minucia = atrasos[0]
         estatisticas = estatisticas_ordenadas
-        print()
+        # print(mfm.format(*[x for line in estatisticas_ordenadas for x in line]))
         self.boxplot_de_caracteristicas(estatisticas)
         # self.boxplot_de_caracteristicas(atraso)
         import invariant as inv
@@ -1058,6 +1058,10 @@ class MinutiaConnections(Track):
             user.scan_resampled_minutia(isoclazz, slicer, self.isoclazz_minutia_buckets, user.track_minutia_event)
             for from_minutia, to_minutia in zip(user.labeled_minutia_events, user.labeled_minutia_events[1:]):
                 transitions[minutia_map[from_minutia]][minutia_map[to_minutia]+1] += 1
+        mfm = "[" +("[" + "{:>3}, "*7 + "{:>3}" + "],\n")*8 + "]\n"
+        print(mfm)
+        print(*[x for _, *line in transitions for x in line])
+        print(mfm.format(*[x for _, *line in transitions for x in line]))
         import invariant as inv
         # head = "aluno,atr,"+"".join(["cm%d,tm%d,dm%d,wv%d," % ((i,)*4) for i in range(4)])
         head = range(9)
@@ -1081,8 +1085,8 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    # MinutiaConnections().load_from_db().generate_connecion_table()
-    MinutiaStats().load_from_db().scan_for_minutia_stats_in_users()
+    MinutiaConnections().load_from_db().generate_connecion_table()
+    # MinutiaStats().load_from_db().scan_for_minutia_stats_in_users()
     # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
