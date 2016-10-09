@@ -1,8 +1,8 @@
 import numpy as np
 from bottle import template
 
-LINE_WIDTH = 0.005 * 2
-LINE_WIDTH_S = 0.0045 * 2
+LINE_WIDTH = 0.005 * 20
+LINE_WIDTH_S = 0.0045 * 20
 PI = np.pi
 
 matrix = np.array(
@@ -16,8 +16,9 @@ matrix = np.array(
      [25, 15, 4, 1, 1, 0, 1, 0]
      ]
     , dtype=int)
-matrix[0] = matrix[0] / 2.5
-matrix[1] = matrix[1] // 2
+matrix[0] = matrix[0] / 3.5
+matrix[1] = matrix[1] // 3
+matrix[2] = matrix[2] // 2
 #
 # matrix = np.array([[16, 3, 28, 0, 18],
 #                    [18, 0, 12, 5, 29],
@@ -31,7 +32,7 @@ labels = ['Emma', 'Isabella', 'Ava', 'Olivia', 'Sophia', 'Isabella', 'Ava', 'Oli
 ideo_colors = ['rgba(255, 100, 100, 0.75)',
                'rgba(253, 174, 97, 0.75)',
                'rgba(254, 254, 139, 0.75)',
-               'rgba(217, 239, 139, 0.75)',
+               'rgba(97, 254, 139, 0.75)',
                'rgba(97, 183, 183, 0.75)',
                'rgba(97, 186, 254, 0.75)',
                'rgba(184, 97, 254, 0.75)',
@@ -373,7 +374,7 @@ for d in layout:
 SVG = '''<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="25cm" height="25cm" viewBox="-12 -12 24 24"
+<svg width="25cm" height="26cm" viewBox="-120 -120 240 255"
      xmlns="http://www.w3.org/2000/svg" version="1.1">
   <title>Ideograma de transição de estados EICA</title>
   <desc>Ideograma de transição de estados EICA</desc>
@@ -383,6 +384,11 @@ SVG = '''<?xml version="1.0" standalone="no"?>
         <path id="line{{sid}}" d="{{shape["path"]}}" stroke="{{shape["line"]["color"]}}"
         stroke-width="{{shape["line"]["width"]}}" fill="{{shape["fillcolor"]}}" />
     % end
+    % for sid, label in enumerate(labels):
+        <rect id="cue{{sid}}" x="{{sid*26 - 105}}" y="120" width="10" height="10"
+        stroke-width="{{label["width"]*4}}" fill="{{label["fillcolor"]}}" />
+        <text id="cue{{sid}}"  x="{{sid*26+10 - 105}}" y="126" font-size="4" fill="black">EICA{{sid}}</text>
+    % end
   </g>
 </svg> '''
 
@@ -391,11 +397,11 @@ SVG = '''<?xml version="1.0" standalone="no"?>
 
 
 def scale(v):
-    return " ".join(l if l.isalpha() else str(float(l) * 10) for l in v.split())
+    return " ".join(l if l.isalpha() else str(float(l) * 100) for l in v.split())
 
 
 intlayout = [{k: v if k != "path" else scale(v) for k, v in shape.items()} for shape in layout]
-templater = template(SVG, layout=intlayout)
+templater = template(SVG, layout=intlayout, labels=[dict(width=LINE_WIDTH, fillcolor=color) for color in ideo_colors])
 filename = "ideogram.svg"
 with open(filename, 'w') as hfile:
     hfile.write(templater)

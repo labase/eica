@@ -25,24 +25,24 @@ TURNFORMAT = " ".join("{key}: {{{key}: <{val}}} ".format(key=key, val=TURN[key])
 CARDS = "_Chaves_ _FALA_ _Mundo_".split()
 GAME_INDEX = dict(_Mundo_=2, _Chaves_=1, _FALA_=3, __A_T_I_V_A__=4)
 PROG_INDEX = {key: value for value, key in enumerate("VSFE")}
-INDEX_GAME = {key+1: value for key, value in enumerate("_Chaves_ _Mundo_ _FALA_ __A_T_I_V_A__".split())}
+INDEX_GAME = {key + 1: value for key, value in enumerate("_Chaves_ _Mundo_ _FALA_ __A_T_I_V_A__".split())}
 
 
 class User:
     iso_classifier = {}
 
     def __init__(self, user, sexo, idade, ano, hora, nota, prog, trans, jogada):
-        self.user, self.sexo, self.idade, self.ano, self.hora, self.nota, self.prog, self.trans, self.jogada =\
+        self.user, self.sexo, self.idade, self.ano, self.hora, self.nota, self.prog, self.trans, self.jogada = \
             user, sexo, idade, ano, hora, nota, prog, trans, []
         self.load_from_db(jogadas=jogada)
         # time, delta, game = self.resample_user_deltas_games()
         # self.janela_jogadas = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
         #                   for timer, turn, turn0, gamer in zip(time, delta[1:span], delta[:span], game)]
         self.iso_classifier = {}
-        self.timed_minutia_buckets = [0]*300
+        self.timed_minutia_buckets = [0] * 300
         self.labeled_minutia_events = []
-        self.minutia_buckets = [0]*40
-        self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4*3)]
+        self.minutia_buckets = [0] * 40
+        self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4 * 3)]
         self.janela_jogadas = []
 
     def write(self, db):
@@ -60,7 +60,7 @@ class User:
         interpolate_deltas = [(jogo.tempo, jogo.delta) for jogo in self.jogada][1:100]
         x, y = zip(*interpolate_deltas)
         interpolating_function = interp1d(x, y)
-        linear_time_space = np.linspace(x[0], x[-1], (x[-1]-x[0])/delta)
+        linear_time_space = np.linspace(x[0], x[-1], (x[-1] - x[0]) / delta)
 
         return linear_time_space, interpolating_function(linear_time_space)
 
@@ -80,7 +80,7 @@ class User:
         jogostr = jogostr.replace('_LINGUA_', '_FALA_')
         y = [GAME_INDEX[jogo] for jogo in jogostr.split()]
         interpolating_function = interp1d(x, y, kind='nearest')
-        linear_time_space = np.linspace(x[0], x[-1], (x[-1]-x[0])/delta)
+        linear_time_space = np.linspace(x[0], x[-1], (x[-1] - x[0]) / delta)
 
         return linear_time_space, interpolating_function(linear_time_space)
 
@@ -102,9 +102,9 @@ class User:
         print(str_index)
         print(index_str)
         interpolating_function = interp1d(x, jogo, kind='nearest')
-        linear_time_space = np.linspace(x[0], x[-1], (x[-1]-x[0])/delta)
+        linear_time_space = np.linspace(x[0], x[-1], (x[-1] - x[0]) / delta)
 
-        return linear_time_space, [index_str[int(index)-1] for index in interpolating_function(linear_time_space)]
+        return linear_time_space, [index_str[int(index) - 1] for index in interpolating_function(linear_time_space)]
 
     def resample_user_deltas_games(self, span=20000):
         _, delta = self.interpolate_deltas()
@@ -238,7 +238,7 @@ class User:
 
 class Jogada:
     def __init__(self, tempo, delta, ponto, carta, casa, valor, move):
-        self.tempo,  self.delta,  self.ponto,  self.carta,  self.casa,  self.valor,  self.move =\
+        self.tempo, self.delta, self.ponto, self.carta, self.casa, self.valor, self.move = \
             tempo, delta, ponto, carta, casa, valor, move
 
     def read(self):
@@ -278,13 +278,14 @@ class Learn:
         def interpolate(user):
             try:
                 if len(user.jogada) < 1:
-                    return [[]]*4
+                    return [[]] * 4
                 _, delta = user.interpolate_deltas()
                 x, game = user.interpolate_games()
                 _, cards = user.interpolate_cards()
                 return zip(x, delta, game, cards)
             except ValueError as _:
-                return [[0]*4]
+                return [[0] * 4]
+
         [user.jogada[index].update(tempo=tempo, delta=delta, ponto=game, carta=card) for user in self.user
          for index, (tempo, delta, game, card) in enumerate(interpolate(user)) if index < len(user.jogada) > 2]
         return self
@@ -344,6 +345,7 @@ class Learn:
         def sigla(name, order=""):
             return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
                             for i, n in enumerate(name.split())) + name[-1] + str(order)
+
         self.full_data = [(float(turn[measure]) - float(turn0[measure]), user[prog], turn["ponto"], user["user"])
                           for user in self.banco.all()
                           for turn, turn0 in zip(user["jogada"][1:slicer], user["jogada"][:slicer])]
@@ -375,17 +377,17 @@ class Learn:
                     print(len(self.full_data), ojogo, start, end, [(jogostr.count(umaclazz), umaclazz)
                                                                    for umaclazz in CARDS], jogostr[:80])
                     self.full_data = self.full_data[end:]
-                    clazz = ojogo+clazzes[start] if clazzes[start] else NONE
+                    clazz = ojogo + clazzes[start] if clazzes[start] else NONE
                     if (end - start) < threshold:
                         return None
-                    return [ojogo[1]+" "+sigla(user[start]), clazz] + [d if i < end - start else ""
-                                                                       for i, d in enumerate(derivada[:32])]
+                    return [ojogo[1] + " " + sigla(user[start]), clazz] + [d if i < end - start else ""
+                                                                           for i, d in enumerate(derivada[:32])]
 
                 minucia = encontra_minucia()
                 if not minucia or learn and minucia[1] == NONE or (learn is None) and minucia[1] != NONE:
                     continue
 
-                row = [minucia.pop(0),  minucia.pop(0)] + minucia
+                row = [minucia.pop(0), minucia.pop(0)] + minucia
                 print(row)
                 sz = len(row)
 
@@ -427,7 +429,7 @@ class Learn:
                 if not minucia or learn and minucia[1] == NONE or (learn is None) and minucia[1] != NONE:
                     continue
 
-                row = [minucia.pop(0),  minucia.pop(0)] + minucia
+                row = [minucia.pop(0), minucia.pop(0)] + minucia
                 print(row)
                 sz = len(row)
 
@@ -491,7 +493,7 @@ class Learn:
             [sigla(user["user"]), 'c', ''] +
             [float(turn[measure]) - float(turn0[measure]) for turn, turn0 in
              zip(user["jogada"][1:slicer], user["jogada"][:slicer])] for user in self.banco.all()]
-        data = [line + [0.0]*(slicer - len(line)) for line in data]
+        data = [line + [0.0] * (slicer - len(line)) for line in data]
         with open(os.path.dirname(__file__) + filename, "wt") as writecsv:
             print(JSONDB, self.banco.all())
             w = writer(writecsv, delimiter='\t')
@@ -525,7 +527,8 @@ class Learn:
             _, wavelet = pywt.dwt(dat[2:], wav, mode)
             print(wavelet)
             return ["%s%0d3" % (dat[0], index), "c", ""] + list(wavelet)
-        span = slicer*16
+
+        span = slicer * 16
 
         self.full_data = [(float(turn[measure]) - float(turn0[measure]), user[prog], turn["ponto"], user["user"])
                           for user in self.banco.all()
@@ -546,6 +549,7 @@ class Learn:
         def sigla(name, order=""):
             return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
                             for i, n in enumerate(name.split())) + name[-1] + str(order)
+
         data = self.full_data[:slicer]
         derivada, clazzes, jogo, user = zip(*data)
         jogostr = ' '.join(str(a) for a in jogo)
@@ -560,7 +564,7 @@ class Learn:
                 for antes_jogo, um_jogo, depois_jogo in zip(jogo, jogo[1:], jogo[2:])]
         ojogo = jogo[0]
         start = 0
-        end = min(slicer-1, min(
+        end = min(slicer - 1, min(
             i if a == ojogo != b else 2 ** 100 for i, (a, b) in enumerate(zip(jogo[:slicer], jogo[1:slicer])))) + 1
         print(len(self.full_data), ojogo, start, end, [(jogostr.count(umaclazz), umaclazz)
                                                        for umaclazz in CARDS], jogostr[:80])
@@ -568,18 +572,19 @@ class Learn:
         clazz = ojogo + clazzes[start] if clazzes[start] else NONE
         if (end - start) < threshold:
             return []
-        return [ojogo[1] + " " + sigla(user[start]), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
+        return [ojogo[1] + " " + sigla(user[start]), clazz] + list(derivada[:end]) + [0.0] * (slicer - end)
 
     def _encontra_minucia_interpolada(self, threshold=32, slicer=64):
 
         def sigla(name, order=""):
             return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
                             for i, n in enumerate(name.split())) + name[-1] + str(order)
+
         data = self.full_data[:slicer]
         tempo, derivada, clazzes, jogo, user = zip(*data)
         ojogo = jogo[0]
         start = 0
-        end = min(slicer-1, min(
+        end = min(slicer - 1, min(
             i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo[:slicer], jogo[1:slicer]))) + 1
         # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
         self.full_data = self.full_data[end:]
@@ -587,7 +592,7 @@ class Learn:
         clazz = "_%s_%s_" % (ojogo[1], clazzes[start]) if clazzes[start] else "_%s_._" % ojogo[1]
         if (end - start) < threshold:
             return []
-        return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
+        return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0] * (slicer - end)
 
     def normatize_for_isomorphic_classification(self, data):
         span = (float(max(data)) - float(min(data)))
@@ -623,7 +628,8 @@ class Learn:
             _, wavelet = pywt.dwt(dat[2:], wav, mode)
             print(wavelet)
             return ["%s%0d3" % (dat[0], index), dat[1]] + list(wavelet)
-        span = span or slicer*64
+
+        span = span or slicer * 64
         time, delta, game = self.resample_user_deltas_games()
 
         self.full_data = [(timer, float(turn) - float(turn0), user.prog, gamer, user.user)
@@ -639,8 +645,8 @@ class Learn:
             w.writerow(['n', 'CL'] + ['t%d' % t for t in range(slicer)])  # primeiro cabeçalho
             print('cabs', len(self.full_data), len((['n', 'CL'] + ['t%d' % t for t in range(32)])))
 
-            w.writerow(['d'] + ['d' if t == 0 else 'c' for t in range(slicer+1)])
-            w.writerow(['m'] + ['c' if t == 0 else '' for t in range(slicer+1)])
+            w.writerow(['d'] + ['d' if t == 0 else 'c' for t in range(slicer + 1)])
+            w.writerow(['m'] + ['c' if t == 0 else '' for t in range(slicer + 1)])
             for line in data:
                 print(line)
                 w.writerow(line)
@@ -694,11 +700,12 @@ class Track:
             _, wavelet = pywt.dwt(scaled_data, w, mode)
             print("fan in wavelet", len(scaled_data), wavelet)
             return list(wavelet)
+
         time, delta, game = self.resample_user_deltas_games()
         user_index = {user.user: index for index, user in enumerate(self.user)}
         self.user_timed_minutia_buckets = [[0 for _ in range(300)] for _ in range(NUS)]
         self.user_minutia_buckets = [[0 for _ in range(40)] for _ in range(70)]
-        self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4*3)]
+        self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4 * 3)]
         self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
         User.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
 
@@ -716,7 +723,7 @@ class Track:
                 if clazz not in isoclazz:
                     isoclazz.append(clazz)
                 if tempo[0] < 300 and user_index[user[0]] < NUS:
-                    self.user_timed_minutia_buckets[user_index[user[0]]][int(tempo[0])//10] += isoclazz.index(clazz)
+                    self.user_timed_minutia_buckets[user_index[user[0]]][int(tempo[0]) // 10] += isoclazz.index(clazz)
                     self.user_minutia_buckets[user_index[user[0]]][isoclazz.index(clazz)] += 1
                 if clazz not in self.isoclazz_minutia_buckets:
                     self.isoclazz_minutia_buckets[clazz] = 0
@@ -724,7 +731,8 @@ class Track:
                     self.isoclazz_minutia_buckets[clazz] += 1
                 if clazzes[0]:
                     print("progclazz_minutia_buckets", clazzes[0], isoclazz.index(clazz), jogo[0])
-                    self.progclazz_minutia_buckets[3*PROG_INDEX[clazzes[0]]+int(jogo[0])-1][isoclazz.index(clazz)] += 1
+                    self.progclazz_minutia_buckets[3 * PROG_INDEX[clazzes[0]] + int(jogo[0]) - 1][
+                        isoclazz.index(clazz)] += 1
                 slicer = 3
                 data = data[slicer:]
                 clazzes = clazzes[slicer:]
@@ -758,7 +766,7 @@ class Track:
         """
         self.user_timed_minutia_buckets = [[0 for _ in range(300)] for _ in range(NUS)]
         self.user_minutia_buckets = [[0 for _ in range(40)] for _ in range(70)]
-        self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4*3)]
+        self.progclazz_minutia_buckets = [[0 for _ in range(40)] for _ in range(4 * 3)]
         self.isoclazz_minutia_buckets = {i_clazz: 0 for i_clazz in set(self.iso_classes)}
         User.iso_classifier = {clazz: clazz for clazz in set(self.iso_classes)}
         isoclazz = []
@@ -817,11 +825,12 @@ class Track:
         def sigla(name, order=""):
             return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
                             for i, n in enumerate(name.split())) + name[-1] + str(order)
+
         data = self.full_data[:slicer]
         tempo, derivada, clazzes, jogo, user = zip(*data)
         ojogo = jogo[0]
         start = 0
-        end = min(slicer-1, min(
+        end = min(slicer - 1, min(
             i if a == ojogo != b else 2 ** 100 for i, a, b in zip(tempo, jogo[:slicer], jogo[1:slicer]))) + 1
         # print(len(self.full_data), ojogo, start, end, [umaclazz for umaclazz in CARDS])
         self.full_data = self.full_data[end:]
@@ -829,7 +838,7 @@ class Track:
         clazz = "_%s_%s_" % (ojogo[1], clazzes[start]) if clazzes[start] else "_%s_._" % ojogo[1]
         if (end - start) < threshold:
             return []
-        return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0]*(slicer-end)
+        return [sigla(user[start], clazz), clazz] + list(derivada[:end]) + [0.0] * (slicer - end)
 
     def _encontra_minucias_interpolada_em_jogo(self, threshold=32):
         data = self.full_data
@@ -930,7 +939,6 @@ class Track:
 
 
 class MinutiaStats(Track):
-
     def scan_for_minutia_stats_in_users(self, slicer=16):
         """
         Rastreia a série temporal de cada usuário e levanta estatísticas sobre as minúcias derivativas.
@@ -943,6 +951,7 @@ class MinutiaStats(Track):
         def sigla(name, order=""):
             return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
                             for i, n in enumerate(name.split()))[:10]
+
         alldata = []
         printdata = []
         self.isoclazz_minutia_buckets = {}
@@ -960,10 +969,10 @@ class MinutiaStats(Track):
             # print(user.user, user.minutia_buckets)
             ub = user.minutia_buckets
             # wavelenght=[sum(b-a for a, b in zip(mt, mt[1:]))/len(mt) if mt else 0 for mt in ub.values()]
-            wavelenght = lambda mt: int(sum(b-a for a, b in zip(mt, mt[1:]))/max(len(mt), 1)) if len(mt) else np.nan
+            wavelenght = lambda mt: int(sum(b - a for a, b in zip(mt, mt[1:])) / max(len(mt), 1)) if len(mt) else np.nan
             _ = "{:<40}: dmt:{:<3} cm0:{:<3} tm0:{:<3} dm0:{:<3}"
-            mfm = "{:<10}: dmt:{:<3} "+"".join(["cm%d:{:<3} dm%d:{:<3} wv%d:{:<3} " % ((i,)*3) for i in range(8)])
-            data = [[len(mt), min(mt)if len(mt) else np.nan, wavelenght(mt)] for mt in ub.values()]
+            mfm = "{:<10}: dmt:{:<3} " + "".join(["cm%d:{:<3} dm%d:{:<3} wv%d:{:<3} " % ((i,) * 3) for i in range(8)])
+            data = [[len(mt), min(mt) if len(mt) else np.nan, wavelenght(mt)] for mt in ub.values()]
             ndata = []
             for d in data[:8]:
                 ndata.extend(d)
@@ -974,24 +983,26 @@ class MinutiaStats(Track):
             print(mfm.format(*ndata))
         # self.plot_derivative_minutia_by_prognostics_games()
         columns = zip(*alldata)
-        stats = [sum(st)//len(st) for i, st in enumerate(columns) if i > 0]
+        stats = [sum(st) // len(st) for i, st in enumerate(columns) if i > 0]
         columns = zip(*alldata)
-        conta = [(sum(count)//len(count), i) for i, (count, delay, wave) in enumerate(list(zip(*(iter(columns),)*3)))]
+        conta = [(sum(count) // len(count), i) for i, (count, delay, wave) in
+                 enumerate(list(zip(*(iter(columns),) * 3)))]
         conta.sort(reverse=True)
         print("contagem de minúcias", conta)
         columns = zip(*alldata)
-        atraso = [(sum(delay)//len(delay), i) for i, (count, delay, wave) in enumerate(list(zip(*(iter(columns),)*3)))]
+        atraso = [(sum(delay) // len(delay), i) for i, (count, delay, wave) in
+                  enumerate(list(zip(*(iter(columns),) * 3)))]
         atraso.sort()
         print("atraso para aparecer a minúcia", atraso)
         columns = zip(*alldata)
-        onda = [(sum(wave)//len(wave), i) for i, (count, delay, wave) in enumerate(list(zip(*(iter(columns),)*3)))]
+        onda = [(sum(wave) // len(wave), i) for i, (count, delay, wave) in enumerate(list(zip(*(iter(columns),) * 3)))]
         onda.sort()
         print("distância (comprimento de onda) em tempo entre mesma minúcia", onda)
-        printdata.append(["total"]+stats)
+        printdata.append(["total"] + stats)
         reordena_minucias_por_atraso = [delay[1] for delay in atraso]
         reordena_minucias_por_atraso = [0, 2, 3, 1, 5, 4, 6, 7]
         columns = zip(*alldata)
-        estatisticas_ordenadas = list(zip(*(iter(columns),)*3))
+        estatisticas_ordenadas = list(zip(*(iter(columns),) * 3))
         print("reordena_minucias_por_atraso", reordena_minucias_por_atraso, len(estatisticas_ordenadas))
         # return
         estatisticas_ordenadas = [estatisticas_ordenadas[sort_order] for sort_order in reordena_minucias_por_atraso]
@@ -1009,7 +1020,7 @@ class MinutiaStats(Track):
         # self.boxplot_de_caracteristicas(atraso)
         import invariant as inv
         # head = "aluno,atr,"+"".join(["cm%d,tm%d,dm%d,wv%d," % ((i,)*4) for i in range(4)])
-        head = "aluno,atr,"+"".join(["cm%d,dm%d,wv%d," % ((i,)*3) for i in range(8)])
+        head = "aluno,atr," + "".join(["cm%d,dm%d,wv%d," % ((i,) * 3) for i in range(8)])
         printdata.append(head.split(","))
         inv.htmltable(data=printdata, head=head.split(","), foot="",
                       caption="Contagem, atraso e intervalo de minúcias", filename="stats_minutia.html")
@@ -1023,13 +1034,12 @@ class MinutiaStats(Track):
         # plt.colorbar()
         # plt.show()
 
-    def boxplot_de_caracteristicas(self, data):
-        from statistics import median, median_high, median_low, stdev
+    def _boxplot_de_caracteristicas(self, data):
         import matplotlib.pyplot as plt
         import numpy as np
         plt.figure(1)
         for prop, caracteristic in enumerate(data):
-            plt.subplot(311+prop)
+            plt.subplot(311 + prop)
 
             box = plt.boxplot(caracteristic, notch=True, patch_artist=True)
 
@@ -1040,13 +1050,68 @@ class MinutiaStats(Track):
 
         plt.show()
 
+    def _violinplot_de_caracteristicas(self, data):
+        import matplotlib.pyplot as plt
+        import numpy as np
+        plt.figure(1)
+        for prop, caracteristic in enumerate(data):
+            plt.subplot(311 + prop)
+
+            box = plt.boxplot(caracteristic, notch=True, patch_artist=True)
+
+            colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
+            colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen', 'lightblue', 'cyan', 'purple']
+            for patch, color in zip(box['boxes'], colors):
+                patch.set_facecolor(color)
+
+        plt.show()
+
+    def boxplot_de_caracteristicas(self, data):
+        import matplotlib.pyplot as plt
+        labels = 'Contagem de estados,Latência de estados,Intervalo entre estados'.split(",")
+        titles = [lb + " para todos os participantes" for lb in labels]
+
+        fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(8, 12))
+        # fig.tight_layout()
+        for prop, (caracteristic, ax, label) in enumerate(zip(data, axes, labels)):
+            # plt.subplot(311+prop)
+
+            box = ax.violinplot(caracteristic, showmeans=False, showmedians=True)
+            ax.yaxis.grid(True)
+            ax.set_xticks([y + 1 for y in range(len(data))])
+            ax.set_xlabel('Índices dos estados eica')
+            ax.set_title(label + ' para todos os participantes')
+            ax.set_ylabel(label)
+
+            # colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
+            colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen', 'lightblue', 'cyan', 'purple']
+            edges = ['maroon', 'red', 'orangered', 'goldenrod', 'green', 'blue', 'deepskyblue', 'darkviolet']
+            _colors = ['rgba(255, 100, 100, 0.75)',
+                      'rgba(253, 174, 97, 0.75)',
+                      'rgba(254, 254, 139, 0.75)',
+                      'rgba(217, 239, 139, 0.75)',
+                      'rgba(97, 183, 183, 0.75)',
+                      'rgba(97, 186, 254, 0.75)',
+                      'rgba(184, 97, 254, 0.75)',
+                      'rgba(254, 0, 184, 0.75)']  # brewer colors with alpha set on 0.75
+            for patch, edge, color in zip(box['bodies'], edges, colors):
+                patch.set_facecolor(color)
+                patch.set_edgecolor(edge)
+                patch.set_linewidth(3)
+        plt.subplots_adjust(hspace=0.5)
+        plt.setp(axes, xticks=[y + 1 for y in range(8)],
+                 xticklabels=['eica%d' % estado for estado in range(8)])
+
+        plt.show()
+
 
 NUS = 30
 
 
 class MinutiaConnections(Track):
     def generate_connecion_table(self):
-        transitions = [[0 if from_minutia > 0 else to_minutia+1 for from_minutia in range(9)] for to_minutia in range(8)]
+        transitions = [[0 if from_minutia > 0 else to_minutia + 1 for from_minutia in range(9)] for to_minutia in
+                       range(8)]
         slicer = 16
         isoclazz = []
         minutia_map = {key: value for value, key in enumerate([0, 2, 3, 1, 5, 4, 6, 7])}
@@ -1057,8 +1122,8 @@ class MinutiaConnections(Track):
             user.resample_user_deltas_games()
             user.scan_resampled_minutia(isoclazz, slicer, self.isoclazz_minutia_buckets, user.track_minutia_event)
             for from_minutia, to_minutia in zip(user.labeled_minutia_events, user.labeled_minutia_events[1:]):
-                transitions[minutia_map[from_minutia]][minutia_map[to_minutia]+1] += 1
-        mfm = "[" +("[" + "{:>3}, "*7 + "{:>3}" + "],\n")*8 + "]\n"
+                transitions[minutia_map[from_minutia]][minutia_map[to_minutia] + 1] += 1
+        mfm = "[" + ("[" + "{:>3}, " * 7 + "{:>3}" + "],\n") * 8 + "]\n"
         print(mfm)
         print(*[x for _, *line in transitions for x in line])
         print(mfm.format(*[x for _, *line in transitions for x in line]))
@@ -1085,8 +1150,8 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    MinutiaConnections().load_from_db().generate_connecion_table()
-    # MinutiaStats().load_from_db().scan_for_minutia_stats_in_users()
+    # MinutiaConnections().load_from_db().generate_connecion_table()
+    MinutiaStats().load_from_db().scan_for_minutia_stats_in_users()
     # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
