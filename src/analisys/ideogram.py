@@ -1,5 +1,6 @@
 import numpy as np
-
+LINE_WIDTH = 0.05
+LINE_WIDTH_S = 0.045
 PI = np.pi
 
 matrix = np.array([[16, 3, 28, 0, 18],
@@ -206,7 +207,7 @@ def make_ideo_shape(path, line_color, fill_color):
     return dict(
         line=dict(
             color=line_color,
-            width=0.45
+            width=LINE_WIDTH_S
         ),
 
         path=path,
@@ -224,9 +225,9 @@ def make_ribbon(l, r, line_color, fill_color, radius=0.2):
 
     return dict(
         line=dict(
-            color=line_color, width=0.5
+            color=line_color, width=LINE_WIDTH
         ),
-        path=make_q_bezier(b) + make_ribbon_arc(r[0], r[1]) + make_q_bezier(c[::-1]) + make_ribbon_arc(l[1], l[0])+' z',
+        path=make_q_bezier(b) + make_ribbon_arc(r[0], r[1]) + make_q_bezier(c[::-1]) + make_ribbon_arc(l[1], l[0]),
         type='path',
         fillcolor=fill_color,
     )
@@ -237,7 +238,7 @@ def make_self_rel(l, line_color, fill_color, radius):
     b = control_pts([l[0], (l[0] + l[1]) / 2, l[1]], radius)
     return dict(
         line=dict(
-            color=line_color, width=0.5
+            color=line_color, width=LINE_WIDTH
         ),
         path=make_q_bezier(b) + make_ribbon_arc(l[1], l[0]),
         type='path',
@@ -351,7 +352,7 @@ for d in layout:
 SVG = '''<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200cm" height="200cm" viewBox="0 0 1500 1500"
+<svg width="15cm" height="15cm" viewBox="-12 -12 24 24"
      xmlns="http://www.w3.org/2000/svg" version="1.1">
   <title>Ideograma de transição de estados EICA</title>
   <desc>Ideograma de transição de estados EICA</desc>
@@ -368,7 +369,7 @@ from bottle import template
 
 
 def scale(v):
-    return " ".join(l if l.isalpha() else str(int(float(l)*600+700)) for l in v.split())
+    return " ".join(l if l.isalpha() else str(float(l)*10) for l in v.split())
 intlayout = [{k: v if k != "path" else scale(v) for k, v in shape.items()} for shape in layout]
 templater = template(SVG, layout=intlayout)
 filename = "ideogram.svg"
