@@ -128,7 +128,8 @@ class User:
         self.janela_jogadas = self.janela_jogadas[end:]
         return current_game_slice
 
-    def classify_by_normatized_isomorphism(self, data):
+    @staticmethod
+    def classify_by_normatized_isomorphism(data):
         # print("classify_by_normatized_isomorphism", data)
         data = data[:3]
         span = (float(max(data)) - float(min(data)))
@@ -181,7 +182,7 @@ class User:
                 jogo = jogo[slicer:]
                 user = user[slicer:]
 
-    def scan_resampled_minutia(self, isoclazz, slicer, isoclazz_minutia_buckets, compute_timed_minutia):
+    def scan_resampled_minutia(self, isoclazz, _, isoclazz_minutia_buckets, compute_timed_minutia):
         def headed_data(dat):
             import pywt
             mode = pywt.MODES.sp1
@@ -948,9 +949,20 @@ class MinutiaStats(Track):
         """
         import numpy as np
 
-        def sigla(name, order=""):
+        def sigla(name, _=""):
             return ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
                             for i, n in enumerate(name.split()))[:10]
+
+        def wavelenght(mt):
+            if not mt:
+                return np.nan
+            minutia_events = mt[:]
+            minutia_intervals = [j - i for i, j in zip(minutia_events, minutia_events[1:]) if j - i >= 4]
+            minutia_events = [minutia_events[0] - 4] + minutia_events + [minutia_events[-1] + 4]
+            end_start_pairs = [(i, j) for i, j in zip(minutia_events, minutia_events[1:]) if j - i >= 4]
+            minutia_durations = [b - a + 4 for (_, a), (b, _) in zip(end_start_pairs, end_start_pairs[1:])]
+            print(minutia_intervals, minutia_durations)
+            return sum(minutia_intervals) / len(minutia_intervals) if minutia_intervals else np.nan
 
         alldata = []
         printdata = []
@@ -969,7 +981,6 @@ class MinutiaStats(Track):
             # print(user.user, user.minutia_buckets)
             ub = user.minutia_buckets
             # wavelenght=[sum(b-a for a, b in zip(mt, mt[1:]))/len(mt) if mt else 0 for mt in ub.values()]
-            wavelenght = lambda mt: int(sum(b - a for a, b in zip(mt, mt[1:])) / max(len(mt), 1)) if len(mt) else np.nan
             _ = "{:<40}: dmt:{:<3} cm0:{:<3} tm0:{:<3} dm0:{:<3}"
             mfm = "{:<10}: dmt:{:<3} " + "".join(["cm%d:{:<3} dm%d:{:<3} wv%d:{:<3} " % ((i,) * 3) for i in range(8)])
             data = [[len(mt), min(mt) if len(mt) else np.nan, wavelenght(mt)] for mt in ub.values()]
@@ -999,7 +1010,7 @@ class MinutiaStats(Track):
         onda.sort()
         print("distância (comprimento de onda) em tempo entre mesma minúcia", onda)
         printdata.append(["total"] + stats)
-        reordena_minucias_por_atraso = [delay[1] for delay in atraso]
+        # reordena_minucias_por_atraso = [delay[1] for delay in atraso]
         reordena_minucias_por_atraso = [0, 2, 3, 1, 5, 4, 6, 7]
         columns = zip(*alldata)
         estatisticas_ordenadas = list(zip(*(iter(columns),) * 3))
@@ -1013,7 +1024,6 @@ class MinutiaStats(Track):
         wavelenghts = [[w for w in wavelenght if w is not np.nan] for _, atraso, wavelenght in estatisticas_ordenadas]
         print("reordena_minucias_por_atraso wavelenghts", wavelenghts[-1], np.nan not in wavelenghts[-1])
         estatisticas_ordenadas = [contagems, atrasos, wavelenghts]
-        minucia = atrasos[0]
         estatisticas = estatisticas_ordenadas
         # print(mfm.format(*[x for line in estatisticas_ordenadas for x in line]))
         self.boxplot_de_caracteristicas(estatisticas)
@@ -1034,42 +1044,41 @@ class MinutiaStats(Track):
         # plt.colorbar()
         # plt.show()
 
-    def _boxplot_de_caracteristicas(self, data):
+    @staticmethod
+    def _boxplot_de_caracteristicas(data):
         import matplotlib.pyplot as plt
-        import numpy as np
         plt.figure(1)
         for prop, caracteristic in enumerate(data):
             plt.subplot(311 + prop)
 
             box = plt.boxplot(caracteristic, notch=True, patch_artist=True)
 
-            colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
             colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen', 'lightblue', 'cyan', 'purple']
             for patch, color in zip(box['boxes'], colors):
                 patch.set_facecolor(color)
 
         plt.show()
 
-    def _violinplot_de_caracteristicas(self, data):
+    @staticmethod
+    def _violinplot_de_caracteristicas(data):
         import matplotlib.pyplot as plt
-        import numpy as np
         plt.figure(1)
         for prop, caracteristic in enumerate(data):
             plt.subplot(311 + prop)
 
             box = plt.boxplot(caracteristic, notch=True, patch_artist=True)
 
-            colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
+            # colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
             colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen', 'lightblue', 'cyan', 'purple']
             for patch, color in zip(box['boxes'], colors):
                 patch.set_facecolor(color)
 
         plt.show()
 
-    def boxplot_de_caracteristicas(self, data):
+    @staticmethod
+    def boxplot_de_caracteristicas(data):
         import matplotlib.pyplot as plt
         labels = 'Contagem de estados,Latência de estados,Intervalo entre estados'.split(",")
-        titles = [lb + " para todos os participantes" for lb in labels]
 
         fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(8, 12))
         # fig.tight_layout()
@@ -1086,14 +1095,6 @@ class MinutiaStats(Track):
             # colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
             colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen', 'lightblue', 'cyan', 'purple']
             edges = ['maroon', 'red', 'orangered', 'goldenrod', 'green', 'blue', 'deepskyblue', 'darkviolet']
-            _colors = ['rgba(255, 100, 100, 0.75)',
-                      'rgba(253, 174, 97, 0.75)',
-                      'rgba(254, 254, 139, 0.75)',
-                      'rgba(217, 239, 139, 0.75)',
-                      'rgba(97, 183, 183, 0.75)',
-                      'rgba(97, 186, 254, 0.75)',
-                      'rgba(184, 97, 254, 0.75)',
-                      'rgba(254, 0, 184, 0.75)']  # brewer colors with alpha set on 0.75
             for patch, edge, color in zip(box['bodies'], edges, colors):
                 patch.set_facecolor(color)
                 patch.set_edgecolor(edge)
