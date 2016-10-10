@@ -4,7 +4,7 @@ from bottle import template
 LINE_WIDTH = 0.005 * 20
 LINE_WIDTH_S = 0.0045 * 20
 PI = np.pi
-
+''''''
 matrix = np.array(
     [[668, 582, 209, 110, 63, 34, 25, 21],
      [600, 432, 147, 101, 43, 20, 10, 16],
@@ -29,14 +29,14 @@ matrix[2] = matrix[2] // 2
 
 labels = ['Emma', 'Isabella', 'Ava', 'Olivia', 'Sophia', 'Isabella', 'Ava', 'Olivia']
 # ideo_colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen', 'lightblue', 'cyan', 'purple']
-ideo_colors = ['rgba(255, 100, 100, 0.75)',
-               'rgba(253, 174, 97, 0.75)',
-               'rgba(254, 254, 139, 0.75)',
-               'rgba(97, 254, 139, 0.75)',
-               'rgba(97, 183, 183, 0.75)',
-               'rgba(97, 186, 254, 0.75)',
-               'rgba(184, 97, 254, 0.75)',
-               'rgba(254, 0, 184, 0.75)']  # brewer colors with alpha set on 0.75
+ideo_colors = ['rgb(255, 100, 100)',
+               'rgb(253, 174, 97)',
+               'rgb(254, 254, 139)',
+               'rgb(97, 254, 139)',
+               'rgb(97, 183, 183)',
+               'rgb(97, 186, 254)',
+               'rgb(184, 97, 254)',
+               'rgb(254, 0, 184)']  # brewer colors with alpha set on 0.75
 
 
 def check_data(data_matrix):
@@ -61,13 +61,6 @@ def test_2PI(x):
     return 0 <= x < 2 * PI
 
 
-row_sum = [np.sum(matrix[k, :]) for k in range(L)]
-
-# set the gap between two consecutive ideograms
-gap = 2 * PI * 0.0005 * 2
-ideogram_length = 2 * PI * np.asarray(row_sum) / sum(row_sum) - gap * np.ones(L)
-
-
 def get_ideogram_ends(ideogram_len, gap):
     ideo_ends = []
     left = 0
@@ -78,8 +71,21 @@ def get_ideogram_ends(ideogram_len, gap):
     return ideo_ends
 
 
-ideo_ends = get_ideogram_ends(ideogram_length, gap)
-print(ideo_ends)
+def make_ends():
+    global k, row_sum, ideogram_length, ideo_ends, idx_sort, ribbon_ends
+    row_sum = [np.sum(matrix[k, :]) for k in range(L)]
+    # set the gap between two consecutive ideograms
+    gap = 2 * PI * 0.0005 * 2
+    ideogram_length = 2 * PI * np.asarray(row_sum) / sum(row_sum) - gap * np.ones(L)
+    ideo_ends = get_ideogram_ends(ideogram_length, gap)
+    print(ideo_ends)
+
+    mapped_data = map_data(matrix, row_sum, ideogram_length)
+    idx_sort = np.argsort(mapped_data, axis=1)
+
+    ribbon_ends = make_ribbon_ends(mapped_data, ideo_ends, idx_sort)
+    print('ribbon ends starting from the ideogram[2]\n', ribbon_ends[2])
+
 
 
 def make_ideogram_arc(R, phi, a=50):
@@ -110,9 +116,6 @@ def map_data(data_matrix, row_value, ideogram_length):
     return mapped
 
 
-mapped_data = map_data(matrix, row_sum, ideogram_length)
-idx_sort = np.argsort(mapped_data, axis=1)
-
 
 def make_ribbon_ends(mapped_data, ideo_ends, idx_sort):
     L = mapped_data.shape[0]
@@ -126,9 +129,6 @@ def make_ribbon_ends(mapped_data, ideo_ends, idx_sort):
             start = ribbon_boundary[k][j]
     return [[(ribbon_boundary[k][j], ribbon_boundary[k][j + 1]) for j in range(L)] for k in range(L)]
 
-
-ribbon_ends = make_ribbon_ends(mapped_data, ideo_ends, idx_sort)
-print('ribbon ends starting from the ideogram[2]\n', ribbon_ends[2])
 
 
 def control_pts(angle, radius):
@@ -281,91 +281,103 @@ layout = []
 radii_sribb = [0.4, 0.40, 0.35, 0.39, 0.12, 0.30, 0.35, 0.39, 0.12]  # these value are set after a few trials
 
 ribbon_info = []
-for k in range(L):
 
-    sigma = idx_sort[k]
-    sigma_inv = invPerm(sigma)
-    for j in range(k, L):
-        if matrix[k][j] == 0 and matrix[j][k] == 0:
-            continue
-        eta = idx_sort[j]
-        eta_inv = invPerm(eta)
-        l = ribbon_ends[k][sigma_inv[j]]
 
-        if j == k:
-            layout.append(make_self_rel(l, 'rgb(175,175,175)',
-                                        ideo_colors[k], radius=radii_sribb[k]))
-            z = 0.9 * np.exp(1j * (l[0] + l[1]) / 2)
-            # the text below will be displayed when hovering the mouse over the ribbon
-            text = labels[k] + ' commented on ' + '{:d}'.format(matrix[k][k]) + ' of ' + 'herself Fb posts',
-            # ribbon_info.append(Scatter(x=z.real,
-            #                            y=z.imag,
-            #                            mode='markers',
-            #                            marker=Marker(size=0.5, color=ideo_colors[k]),
-            #                            text=text,
-            #                            hoverinfo='text'
-            #                            )
-            #                    )
-        else:
-            r = ribbon_ends[j][eta_inv[k]]
-            zi = 0.9 * np.exp(1j * (l[0] + l[1]) / 2)
-            zf = 0.9 * np.exp(1j * (r[0] + r[1]) / 2)
-            # texti and textf are the strings that will be displayed when hovering the mouse
-            # over the two ribbon ends
-            texti = labels[k] + ' commented on ' + '{:d}'.format(matrix[k][j]) + ' of ' + \
-                    labels[j] + ' Fb posts',
+def prelayout():
+    global k, z, zi
+    for k in range(L):
 
-            textf = labels[j] + ' commented on ' + '{:d}'.format(matrix[j][k]) + ' of ' + \
-                    labels[k] + ' Fb posts',
-            # ribbon_info.append(Scatter(x=zi.real,
-            #                            y=zi.imag,
-            #                            mode='markers',
-            #                            marker=Marker(size=0.5, color=ribbon_color[k][j]),
-            #                            text=texti,
-            #                            hoverinfo='text'
-            #                            )
-            #                    ),
-            # ribbon_info.append(Scatter(x=zf.real,
-            #                            y=zf.imag,
-            #                            mode='markers',
-            #                            marker=Marker(size=0.5, color=ribbon_color[k][j]),
-            #                            text=textf,
-            #                            hoverinfo='text'
-            #                            )
-            #                    )
-            r = (r[1], r[0])  # IMPORTANT!!!  Reverse these arc ends because otherwise you get
-            # a twisted ribbon
-            # append the ribbon shape
-            layout.append(make_ribbon(l, r, 'rgb(175,175,175)', ribbon_color[k][j]))
+        sigma = idx_sort[k]
+        sigma_inv = invPerm(sigma)
+        for j in range(k, L):
+            if matrix[k][j] == 0 and matrix[j][k] == 0:
+                continue
+            eta = idx_sort[j]
+            eta_inv = invPerm(eta)
+            l = ribbon_ends[k][sigma_inv[j]]
 
-ideograms = []
-for k in range(len(ideo_ends)):
-    z = make_ideogram_arc(1.1, ideo_ends[k])
-    zi = make_ideogram_arc(1.0, ideo_ends[k])
-    m = len(z)
-    n = len(zi)
-    # ideograms.append(Scatter(x=z.real,
-    #                          y=z.imag,
-    #                          mode='lines',
-    #                          line=Line(color=ideo_colors[k], shape='spline', width=0.25),
-    #                          text=labels[k] + '<br>' + '{:d}'.format(row_sum[k]),
-    #                          hoverinfo='text'
-    #                          )
-    #                  )
+            if j == k:
+                layout.append(make_self_rel(l, 'rgb(175,175,175)',
+                                            ideo_colors[k], radius=radii_sribb[k]))
+                z = 0.9 * np.exp(1j * (l[0] + l[1]) / 2)
+                # the text below will be displayed when hovering the mouse over the ribbon
+                text = labels[k] + ' commented on ' + '{:d}'.format(matrix[k][k]) + ' of ' + 'herself Fb posts',
+                # ribbon_info.append(Scatter(x=z.real,
+                #                            y=z.imag,
+                #                            mode='markers',
+                #                            marker=Marker(size=0.5, color=ideo_colors[k]),
+                #                            text=text,
+                #                            hoverinfo='text'
+                #                            )
+                #                    )
+            else:
+                r = ribbon_ends[j][eta_inv[k]]
+                zi = 0.9 * np.exp(1j * (l[0] + l[1]) / 2)
+                zf = 0.9 * np.exp(1j * (r[0] + r[1]) / 2)
+                # texti and textf are the strings that will be displayed when hovering the mouse
+                # over the two ribbon ends
+                texti = labels[k] + ' commented on ' + '{:d}'.format(matrix[k][j]) + ' of ' + \
+                        labels[j] + ' Fb posts',
 
-    path = 'M '
-    for s in range(m):
-        path += str(z.real[s]) + ' ' + str(z.imag[s]) + ' L '
+                textf = labels[j] + ' commented on ' + '{:d}'.format(matrix[j][k]) + ' of ' + \
+                        labels[k] + ' Fb posts',
+                # ribbon_info.append(Scatter(x=zi.real,
+                #                            y=zi.imag,
+                #                            mode='markers',
+                #                            marker=Marker(size=0.5, color=ribbon_color[k][j]),
+                #                            text=texti,
+                #                            hoverinfo='text'
+                #                            )
+                #                    ),
+                # ribbon_info.append(Scatter(x=zf.real,
+                #                            y=zf.imag,
+                #                            mode='markers',
+                #                            marker=Marker(size=0.5, color=ribbon_color[k][j]),
+                #                            text=textf,
+                #                            hoverinfo='text'
+                #                            )
+                #                    )
+                r = (r[1], r[0])  # IMPORTANT!!!  Reverse these arc ends because otherwise you get
+                # a twisted ribbon
+                # append the ribbon shape
+                layout.append(make_ribbon(l, r, 'rgb(175,175,175)', ribbon_color[k][j]))
 
-    Zi = np.array(zi.tolist()[::-1])
 
-    for s in range(m):
-        path += str(Zi.real[s]) + ' ' + str(Zi.imag[s]) + ' L '
-    path += str(z.real[0]) + ' ' + str(z.imag[0])
 
-    layout.append(make_ideo_shape(path, 'rgb(150,150,150)', ideo_colors[k]))
 
-data = (ideograms + ribbon_info)
+def dolayout():
+    global ideograms, k, z, zi
+    ideograms = []
+    for k in range(len(ideo_ends)):
+        z = make_ideogram_arc(1.1, ideo_ends[k])
+        zi = make_ideogram_arc(1.0, ideo_ends[k])
+        m = len(z)
+        n = len(zi)
+        # ideograms.append(Scatter(x=z.real,
+        #                          y=z.imag,
+        #                          mode='lines',
+        #                          line=Line(color=ideo_colors[k], shape='spline', width=0.25),
+        #                          text=labels[k] + '<br>' + '{:d}'.format(row_sum[k]),
+        #                          hoverinfo='text'
+        #                          )
+        #                  )
+
+        path = 'M '
+        for s in range(m):
+            path += str(z.real[s]) + ' ' + str(z.imag[s]) + ' L '
+
+        Zi = np.array(zi.tolist()[::-1])
+
+        for s in range(m):
+            path += str(Zi.real[s]) + ' ' + str(Zi.imag[s]) + ' L '
+        path += str(z.real[0]) + ' ' + str(z.imag[0])
+
+        layout.append(make_ideo_shape(path, 'rgb(150,150,150)', ideo_colors[k]))
+
+
+# dolayout()
+
+# data = (ideograms + ribbon_info)
 
 # print(layout)
 for d in layout:
@@ -382,11 +394,11 @@ SVG = '''<?xml version="1.0" standalone="no"?>
      id="layer1">
     % for sid, shape in enumerate(layout):
         <path id="line{{sid}}" d="{{shape["path"]}}" stroke="{{shape["line"]["color"]}}"
-        stroke-width="{{shape["line"]["width"]}}" fill="{{shape["fillcolor"]}}" />
+        stroke-width="{{shape["line"]["width"]}}" fill="{{shape["fillcolor"]}}" fill-opacity="0.75"/>
     % end
     % for sid, label in enumerate(labels):
         <rect id="cue{{sid}}" x="{{sid*26 - 105}}" y="120" width="10" height="10"
-        stroke-width="{{label["width"]*4}}" fill="{{label["fillcolor"]}}" />
+        stroke-width="{{label["width"]*4}}" fill="{{label["fillcolor"]}}"  fill-opacity="0.75"/>
         <text id="cue{{sid}}"  x="{{sid*26+10 - 105}}" y="126" font-size="4" fill="black">EICA{{sid}}</text>
     % end
   </g>
@@ -400,12 +412,22 @@ def scale(v):
     return " ".join(l if l.isalpha() else str(float(l) * 100) for l in v.split())
 
 
-intlayout = [{k: v if k != "path" else scale(v) for k, v in shape.items()} for shape in layout]
-templater = template(SVG, layout=intlayout, labels=[dict(width=LINE_WIDTH, fillcolor=color) for color in ideo_colors])
-filename = "ideogram.svg"
-with open(filename, 'w') as hfile:
-    hfile.write(templater)
+def main(filename="ideogram", inmatrix=None):
+    global matrix
+    if inmatrix is not None:
+        matrix = inmatrix
 
-# fig = Figure(data=data, layout=layout)
-#
-# url = py.plot(fig, filename='chord-diagram-Fb')
+    make_ends()
+    prelayout()
+    dolayout()
+    intlayout = [{k: v if k != "path" else scale(v) for k, v in shape.items()} for shape in layout]
+    templater = template(SVG, layout=intlayout, labels=[dict(width=LINE_WIDTH, fillcolor=color) for color in ideo_colors])
+    with open(filename+".svg", 'w') as hfile:
+        hfile.write(templater)
+    import os
+    os.system('convert %s.svg %s.jpg' % (filename, filename))
+    # fig = Figure(data=data, layout=layout)
+    #
+    # url = py.plot(fig, filename='chord-diagram-Fb')
+if __name__ == '__main__':
+    main()

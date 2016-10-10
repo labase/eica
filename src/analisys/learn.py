@@ -955,14 +955,16 @@ class MinutiaStats(Track):
 
         def wavelenght(mt):
             if not mt:
-                return np.nan
+                return [np.nan, np.nan]
             minutia_events = mt[:]
             minutia_intervals = [j - i for i, j in zip(minutia_events, minutia_events[1:]) if j - i >= 4]
             minutia_events = [minutia_events[0] - 4] + minutia_events + [minutia_events[-1] + 4]
-            end_start_pairs = [(i, j) for i, j in zip(minutia_events, minutia_events[1:]) if j - i >= 4]
+            end_start_pairs = [(i, j) for i, j in zip(minutia_events, minutia_events[1:]) if j - i >= 5]
             minutia_durations = [b - a + 4 for (_, a), (b, _) in zip(end_start_pairs, end_start_pairs[1:])]
             print(minutia_intervals, minutia_durations)
-            return sum(minutia_intervals) / len(minutia_intervals) if minutia_intervals else np.nan
+            duration_average = sum(minutia_durations) / len(minutia_durations) if minutia_durations else np.nan
+            interval_average = sum(minutia_intervals) / len(minutia_intervals) if minutia_intervals else np.nan
+            return [interval_average, duration_average]
 
         alldata = []
         printdata = []
@@ -983,7 +985,7 @@ class MinutiaStats(Track):
             # wavelenght=[sum(b-a for a, b in zip(mt, mt[1:]))/len(mt) if mt else 0 for mt in ub.values()]
             _ = "{:<40}: dmt:{:<3} cm0:{:<3} tm0:{:<3} dm0:{:<3}"
             mfm = "{:<10}: dmt:{:<3} " + "".join(["cm%d:{:<3} dm%d:{:<3} wv%d:{:<3} " % ((i,) * 3) for i in range(8)])
-            data = [[len(mt), min(mt) if len(mt) else np.nan, wavelenght(mt)] for mt in ub.values()]
+            data = [[len(mt), min(mt) if len(mt) else np.nan, *wavelenght(mt)] for mt in ub.values()]
             ndata = []
             for d in data[:8]:
                 ndata.extend(d)
@@ -993,6 +995,7 @@ class MinutiaStats(Track):
             printdata.append(ndata)
             print(mfm.format(*ndata))
         # self.plot_derivative_minutia_by_prognostics_games()
+        """
         columns = zip(*alldata)
         stats = [sum(st) // len(st) for i, st in enumerate(columns) if i > 0]
         columns = zip(*alldata)
@@ -1011,22 +1014,26 @@ class MinutiaStats(Track):
         print("distância (comprimento de onda) em tempo entre mesma minúcia", onda)
         printdata.append(["total"] + stats)
         # reordena_minucias_por_atraso = [delay[1] for delay in atraso]
+        """
         reordena_minucias_por_atraso = [0, 2, 3, 1, 5, 4, 6, 7]
         columns = zip(*alldata)
-        estatisticas_ordenadas = list(zip(*(iter(columns),) * 3))
+        estatisticas_ordenadas = list(zip(*(iter(columns),) * 4))
         print("reordena_minucias_por_atraso", reordena_minucias_por_atraso, len(estatisticas_ordenadas))
         # return
         estatisticas_ordenadas = [estatisticas_ordenadas[sort_order] for sort_order in reordena_minucias_por_atraso]
-        contagems = [contagem for contagem, atraso, _ in estatisticas_ordenadas]
+        contagems = [contagem for contagem, atraso, _, _ in estatisticas_ordenadas]
         print("reordena_minucias_por_atraso contagems", contagems[-1])
-        atrasos = [[w for w in atraso if w is not np.nan] for _, atraso, _ in estatisticas_ordenadas]
+        atrasos = [[w for w in atraso if w is not np.nan] for _, atraso, _, _ in estatisticas_ordenadas]
         print("reordena_minucias_por_atraso atrasos", atrasos[-1])
-        wavelenghts = [[w for w in wavelenght if w is not np.nan] for _, atraso, wavelenght in estatisticas_ordenadas]
-        print("reordena_minucias_por_atraso wavelenghts", wavelenghts[-1], np.nan not in wavelenghts[-1])
-        estatisticas_ordenadas = [contagems, atrasos, wavelenghts]
+        intervals = [[w for w in wavelenght if w is not np.nan] for _, atraso, wavelenght, _ in estatisticas_ordenadas]
+        duration = [[w for w in wavelenght if w is not np.nan] for _, atraso, _, wavelenght in estatisticas_ordenadas]
+        print("reordena_minucias_por_atraso wavelenghts", intervals[-1], np.nan not in intervals[-1])
+        estatisticas_ordenadas = [contagems, atrasos, intervals, duration]
+
         estatisticas = estatisticas_ordenadas
         # print(mfm.format(*[x for line in estatisticas_ordenadas for x in line]))
-        self.boxplot_de_caracteristicas(estatisticas)
+        labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
+        self.boxplot_de_caracteristicas(estatisticas, labels)
         # self.boxplot_de_caracteristicas(atraso)
         import invariant as inv
         # head = "aluno,atr,"+"".join(["cm%d,tm%d,dm%d,wv%d," % ((i,)*4) for i in range(4)])
@@ -1044,8 +1051,80 @@ class MinutiaStats(Track):
         # plt.colorbar()
         # plt.show()
 
+    def scan_for_minutia_stats_for_each_user(self, slicer=16):
+        """
+        Rastreia a série temporal de cada usuário e levanta estatísticas sobre as minúcias derivativas.
+
+        :param slicer: recorta eos dados neste tamanho
+        :return:
+        """
+        import numpy as np
+
+        def sigla(name, _=""):
+            return '_'.join(n.capitalize() if i == 0 else n.capitalize()[0] + "_"
+                            for i, n in enumerate(name.split()))[:10]
+
+        def wavelenght(mt):
+            empty = [0, 1]
+            if not mt:
+                return empty*2
+            minutia_events = mt[:]
+            minutia_intervals = [j - i for i, j in zip(minutia_events, minutia_events[1:]) if j - i >= 4]
+            minutia_events = [minutia_events[0] - 4] + minutia_events + [minutia_events[-1] + 4]
+            end_start_pairs = [(i, j) for i, j in zip(minutia_events, minutia_events[1:]) if j - i >= 5]
+            minutia_durations = [b - a + 4 for (_, a), (b, _) in zip(end_start_pairs, end_start_pairs[1:])]
+            print("minutia_intervals", minutia_intervals, minutia_durations)
+            minutia_intervals += empty * (2-len(minutia_intervals))
+            minutia_durations += empty * (2-len(minutia_durations))
+            minutia_latency = [0, min(minutia_events)]
+            minutia_count = [0, len(minutia_events)]
+            return [minutia_count, minutia_latency, minutia_intervals, minutia_durations]
+
+        printdata = []
+        self.isoclazz_minutia_buckets = {}
+        User.iso_classifier = {}
+        isoclazz = []
+        reordena_minucias_por_atraso = [0, 2, 3, 1, 5, 4, 6, 7]
+        for user in self.user:
+            if len(user.jogada) < 4:
+                continue
+            user.minutia_buckets = {minutia_id: [] for minutia_id in range(40)}
+            user.resample_user_deltas_games()
+            user.scan_resampled_minutia(isoclazz, slicer, self.isoclazz_minutia_buckets, user.track_minutia_event)
+        for user in self.user:
+            alldata = []
+            if len(user.jogada) < 4:
+                continue
+            # print(user.user, user.minutia_buckets)
+            ub = user.minutia_buckets
+            data = [wavelenght(mt) for mt in ub.values()]
+            ndata = []
+            for d in data[:8]:
+                ndata.extend(d)
+            # if all(len(mt)>1 for i, mt in ub.items() if i <6):
+            data = [data[sort_order] for sort_order in reordena_minucias_por_atraso if sort_order < len(data)]
+            columns = zip(*data)
+            estatisticas_ordenadas = list(zip(*(iter(columns),) * 2))
+            print("reordena_minucias_por_atraso", reordena_minucias_por_atraso, len(estatisticas_ordenadas))
+            # return
+            estatisticas_ordenadas = [estatisticas_ordenadas[sort_order] for sort_order in reordena_minucias_por_atraso
+                                      if sort_order in estatisticas_ordenadas]
+            intervals = [[w for w in wavelenght if w is not np.nan] for wavelenght, _ in estatisticas_ordenadas]
+            print("reordena_minucias_por_atraso atrasos", intervals)
+            duration = [[w for w in wavelenght if w is not np.nan] for _, wavelenght in estatisticas_ordenadas]
+            print("reordena_minucias_por_atraso wavelenghts", duration)
+            estatisticas_ordenadas = [intervals if len(intervals) > 1 else [0, 1],
+                                      duration or [0]if len(duration) > 1 else [0, 1]]
+
+            estatisticas = list(zip(*data))
+            print(data)
+            labels = 'Intervalo entre estados,Permanência no estado'.split(",")
+            labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
+            # print(mfm.format(*[x for line in estatisticas_ordenadas for x in line]))
+            self.boxplot_de_caracteristicas(estatisticas, labels, "violin/"+sigla(user.user))
+
     @staticmethod
-    def _boxplot_de_caracteristicas(data):
+    def _boxplot_de_caracteristicas(data, filename=None):
         import matplotlib.pyplot as plt
         plt.figure(1)
         for prop, caracteristic in enumerate(data):
@@ -1056,11 +1135,13 @@ class MinutiaStats(Track):
             colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen', 'lightblue', 'cyan', 'purple']
             for patch, color in zip(box['boxes'], colors):
                 patch.set_facecolor(color)
-
-        plt.show()
+        if filename:
+            plt.savefig(filename+".png")
+        else:
+            plt.show()
 
     @staticmethod
-    def _violinplot_de_caracteristicas(data):
+    def _violinplot_de_caracteristicas(data, filename=None):
         import matplotlib.pyplot as plt
         plt.figure(1)
         for prop, caracteristic in enumerate(data):
@@ -1076,11 +1157,11 @@ class MinutiaStats(Track):
         plt.show()
 
     @staticmethod
-    def boxplot_de_caracteristicas(data):
+    def boxplot_de_caracteristicas(data,labels, filename=None):
         import matplotlib.pyplot as plt
-        labels = 'Contagem de estados,Latência de estados,Intervalo entre estados'.split(",")
+        # labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
 
-        fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(8, 12))
+        fig, axes = plt.subplots(nrows=len(labels), ncols=1, figsize=(8, 12))
         # fig.tight_layout()
         for prop, (caracteristic, ax, label) in enumerate(zip(data, axes, labels)):
             # plt.subplot(311+prop)
@@ -1102,8 +1183,10 @@ class MinutiaStats(Track):
         plt.subplots_adjust(hspace=0.5)
         plt.setp(axes, xticks=[y + 1 for y in range(8)],
                  xticklabels=['eica%d' % estado for estado in range(8)])
-
-        plt.show()
+        if filename:
+            plt.savefig(filename+".png")
+        else:
+            plt.show()
 
 
 NUS = 30
@@ -1135,6 +1218,34 @@ class MinutiaConnections(Track):
         inv.htmltable(data=transitions, head=head, foot="",
                       caption="Contagem, atraso e intervalo de minúcias", filename="trasition_minutia.html")
 
+    def generate_connecion_table_for_user(self):
+        from ideogram import main
+        import numpy as np
+
+        def sigla(name):
+            return '_'.join(n.capitalize() if i == 0 else n.capitalize()[0] + "_"
+                            for i, n in enumerate(name.split())) + name[-1]
+        transitions = [[0 if from_minutia > 0 else to_minutia + 1 for from_minutia in range(9)] for to_minutia in
+                       range(8)]
+        slicer = 16
+        isoclazz = []
+        minutia_map = {key: value for value, key in enumerate([0, 2, 3, 1, 5, 4, 6, 7])}
+        for user in self.user:
+            transitions = [[0 if from_minutia > 0 else to_minutia + 1
+                            for from_minutia in range(8)] for to_minutia in range(8)]
+            if len(user.jogada) < 4:
+                continue
+            user.minutia_buckets = {minutia_id: [] for minutia_id in range(40)}
+            user.labeled_minutia_events = []
+            user.resample_user_deltas_games()
+            user.scan_resampled_minutia(isoclazz, slicer, self.isoclazz_minutia_buckets, user.track_minutia_event)
+            for from_minutia, to_minutia in zip(user.labeled_minutia_events, user.labeled_minutia_events[1:]):
+                if from_minutia < 9 > to_minutia:
+                    transitions[minutia_map[from_minutia]][minutia_map[to_minutia]] += 1
+            matrix = np.array(transitions, dtype=int)
+            print("ideo", user.user, matrix)
+            main("ideo/"+sigla(user.user), matrix)
+
 
 def _notmain():
     # Learn().report_user_data()
@@ -1151,8 +1262,8 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    # MinutiaConnections().load_from_db().generate_connecion_table()
-    MinutiaStats().load_from_db().scan_for_minutia_stats_in_users()
+    # MinutiaConnections().load_from_db().generate_connecion_table_for_user()
+    MinutiaStats().load_from_db().scan_for_minutia_stats_for_each_user()
     # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
