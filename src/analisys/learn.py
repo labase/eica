@@ -4,6 +4,7 @@ import itertools
 from tinydb import TinyDB, Query
 import os
 from csv import writer
+import pywt
 
 # import operator
 # from datetime import datetime as dt
@@ -26,6 +27,9 @@ CARDS = "_Chaves_ _FALA_ _Mundo_".split()
 GAME_INDEX = dict(_Mundo_=2, _Chaves_=1, _FALA_=3, __A_T_I_V_A__=4)
 PROG_INDEX = {key: value for value, key in enumerate("VSFE")}
 INDEX_GAME = {key + 1: value for key, value in enumerate("_Chaves_ _Mundo_ _FALA_ __A_T_I_V_A__".split())}
+WAVELET_MODE = pywt.MODES.sp1
+MACHINE_ORDER = [0, 2, 3, 1, 5, 4, 6, 7]
+
 
 
 class User:
@@ -250,6 +254,89 @@ class Jogada:
         attrs = "tempo, delta, ponto, carta, casa, valor, move".split(", ")
         [setattr(self, attr, value) for attr, value in kwargs.items() if attr in attrs]
         return self
+
+
+class Estado:
+    STATE_DIGEST = {}
+    STATE_INVENTORY = {}
+    STATE_INDEX = []
+    INDEX_STATE = {}
+
+    def __init__(self, tipo, tempo):
+        """
+        Estado é um estágio de processamento da máquina EICA.
+
+        :param tipo: Tipo do estado no máquina EICA
+        :param tempo: Evento de ocorrência do estado
+        """
+        self.tempo, self.tipo = tempo, tipo
+        self.profile = set()
+        self.machine_count = {key: 0 for key in CARDS}
+        self.user_count = {}
+        self.user_latency = []
+        self.user_duration = []
+        self.user_interval = []
+
+    @staticmethod
+    def identify(dat, slicer=4):
+        if not dat or len(dat) < slicer:
+            return []
+        dat = dat[:4]
+        mode = pywt.MODES.sp1
+        data_span = (float(max(dat)) - float(min(dat)))
+        data_scale = 1000.0 / data_span if data_span else 1
+        data_floor = float(min(dat))
+        scaled_data = [int(((datum - data_floor) * data_scale) // 10) for datum in dat]
+
+        w = pywt.Wavelet('bior1.5')
+        # w = pywt.Wavelet('sym5')
+        _, wavelet = pywt.dwt(scaled_data, w, WAVELET_MODE)
+        print("fan in wavelet", len(scaled_data), wavelet)
+        wavelet_profile = list(wavelet)
+        wavelet_profile = wavelet_profile[:3]
+        span = (float(max(wavelet_profile)) - float(min(wavelet_profile)))
+        data_scale = 27.0 / span if span else 1
+        data_floor = float(min(wavelet_profile))
+        print("classify_by_normatized_isomorphism", data_scale, wavelet_profile)
+        data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
+                                           for datum in wavelet_profile).strip("0") or "0"
+        if data_isomorphism_lattice not in Estado.STATE_DIGEST:
+            Estado.STATE_DIGEST[data_isomorphism_lattice] = data_isomorphism_lattice
+        return (data_isomorphism_lattice in Estado.STATE_DIGEST) and Estado.STATE_DIGEST[data_isomorphism_lattice]
+
+    def update(self, jogo, user, data):
+        # self.machine_count[jogo] += 1
+        self.profile.add(data)
+        if user[0] not in self.user_count:
+            self.user_count[user[0]] = 1
+        else:
+            self.user_count[user[0]] += 1
+
+    @staticmethod
+    def scan_data_for_minutia(janela_jogadas):
+        isoclazz = Estado.STATE_INDEX
+
+        for time_slice in zip(*(iter(janela_jogadas),) * 4):
+            if len(time_slice) < 3:
+                break
+            tempo, data, clazzes, jogo, user = list(zip(*time_slice))
+            # print("time_slice", data[:slicer])
+            data_span = (float(max(data)) - float(min(data)))
+            data_scale = 30.0 / data_span if data_span else 1
+            data_floor = float(min(data))
+            scaled_data = tuple(int(((datum - data_floor) * data_scale) // 10) for datum in data)
+            print("scan_data_for_minutia", scaled_data)
+            clazz = Estado.identify(data)
+            if clazz not in isoclazz:
+                isoclazz.append(clazz)
+                Estado.INDEX_STATE[clazz] = len(isoclazz)
+                Estado.STATE_INVENTORY[Estado.INDEX_STATE[clazz]] = estado = Estado(clazz, 0)
+                estado.update(jogo, user, data)
+            else:
+                Estado.STATE_INVENTORY[Estado.INDEX_STATE[clazz]].update(jogo, user, scaled_data)
+
+    def register_profile(self, wave):
+        self.profile.append(wave)
 
 
 class Learn:
@@ -1121,7 +1208,7 @@ class MinutiaStats(Track):
             labels = 'Intervalo entre estados,Permanência no estado'.split(",")
             labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
             # print(mfm.format(*[x for line in estatisticas_ordenadas for x in line]))
-            self.boxplot_de_caracteristicas(estatisticas, labels, "violin/"+sigla(user.user))
+            self.boxplot_de_caracteristicas(estatisticas, labels, filename="violin/"+sigla(user.user))
 
     @staticmethod
     def _boxplot_de_caracteristicas(data, filename=None):
@@ -1157,7 +1244,7 @@ class MinutiaStats(Track):
         plt.show()
 
     @staticmethod
-    def boxplot_de_caracteristicas(data,labels, filename=None):
+    def boxplot_de_caracteristicas(data, labels, complemento=" individual", filename=None):
         import matplotlib.pyplot as plt
         # labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
 
@@ -1170,7 +1257,7 @@ class MinutiaStats(Track):
             ax.yaxis.grid(True)
             ax.set_xticks([y + 1 for y in range(len(data))])
             ax.set_xlabel('Índices dos estados eica')
-            ax.set_title(label + ' para todos os participantes')
+            ax.set_title(label + complemento)
             ax.set_ylabel(label)
 
             # colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
@@ -1247,6 +1334,51 @@ class MinutiaConnections(Track):
             main("ideo/"+sigla(user.user), matrix)
 
 
+class MinutiaProfiler(Track):
+    """
+    Levanta os perfis de onda para cada estado EICA
+    """
+    def profile_wave_case_for_all_events(self):
+        for user in self.user:
+            if len(user.jogada) < 4:
+                continue
+            user.minutia_buckets = {minutia_id: [] for minutia_id in range(40)}
+            resampled_data = user.resample_user_deltas_games()
+            Estado.scan_data_for_minutia(resampled_data)
+        data = [[]]*8
+        print(Estado.STATE_INVENTORY)
+        for index, estado in Estado.STATE_INVENTORY.items():
+            print(index, len(estado.profile))
+            data.insert(MACHINE_ORDER.index(index-1), estado.profile)
+        labels = ["estado %d" % i for i in range(8)]
+        data = [[[float(y)+i/150 for y in plot] for i, plot in enumerate(st)] for st in data]
+        self.boxplot_de_caracteristicas(data, labels, complemento=": perfil de ondas")
+
+
+    @staticmethod
+    def boxplot_de_caracteristicas(data, labels, complemento=" individual", filename=None):
+        import matplotlib.pyplot as plt
+        # labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
+
+        fig, axes = plt.subplots(nrows=len(labels)//2, ncols=2, figsize=(8, 12))
+        # fig.tight_layout()
+        for prop, (caracteristic, ax, label) in enumerate(zip(data, axes, labels)):
+            # plt.subplot(311+prop)
+            # ax = ax.flatten()
+            for i, data in enumerate(caracteristic):
+                ax[i % 2].plot(list(data))
+            ax[i % 2].yaxis.grid(True)
+            # ax.set_xticks([y + 1 for y in range(len(data))])
+            ax[i % 2].set_xlabel('Tempo em segundos')
+            ax[i % 2].set_title(label + complemento)
+            ax[i % 2].set_ylabel("aceleração")
+        plt.subplots_adjust(hspace=0.5)
+        if filename:
+            plt.savefig(filename+".png")
+        else:
+            plt.show()
+
+
 def _notmain():
     # Learn().report_user_data()
     # Learn().report_user_turn()
@@ -1263,7 +1395,8 @@ def _notmain():
 
 if __name__ == '__main__':
     # MinutiaConnections().load_from_db().generate_connecion_table_for_user()
-    MinutiaStats().load_from_db().scan_for_minutia_stats_for_each_user()
+    MinutiaProfiler().load_from_db().profile_wave_case_for_all_events()
+    # MinutiaStats().load_from_db().scan_for_minutia_stats_for_each_user()
     # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)

@@ -278,7 +278,8 @@ def invPerm(perm):
 
 layout = []
 
-radii_sribb = [0.4, 0.40, 0.35, 0.39, 0.12, 0.30, 0.35, 0.39, 0.12]  # these value are set after a few trials
+# radii_sribb = [0.4, 0.40, 0.35, 0.39, 0.12, 0.30, 0.35, 0.39, 0.12]  # these value are set after a few trials
+radii_sribb = [0.1]*9  # these value are set after a few trials
 
 ribbon_info = []
 
@@ -394,7 +395,7 @@ SVG = '''<?xml version="1.0" standalone="no"?>
      id="layer1">
     % for sid, shape in enumerate(layout):
         <path id="line{{sid}}" d="{{shape["path"]}}" stroke="{{shape["line"]["color"]}}"
-        stroke-width="{{shape["line"]["width"]}}" fill="{{shape["fillcolor"]}}" fill-opacity="0.75"/>
+        stroke-width="{{shape["line"]["width"]}}" fill="{{shape["fillcolor"]}}" fill-opacity="0.45"/>
     % end
     % for sid, label in enumerate(labels):
         <rect id="cue{{sid}}" x="{{sid*26 - 105}}" y="120" width="10" height="10"
