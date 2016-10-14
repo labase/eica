@@ -278,11 +278,10 @@ class Estado:
         self.user_interval = []
 
     @staticmethod
-    def identify(dat, slicer=4):
+    def wavelet(dat, slicer=4):
         if not dat or len(dat) < slicer:
             return []
         dat = dat[:4]
-        mode = pywt.MODES.sp1
         data_span = (float(max(dat)) - float(min(dat)))
         data_scale = 1000.0 / data_span if data_span else 1
         data_floor = float(min(dat))
@@ -293,7 +292,11 @@ class Estado:
         _, wavelet = pywt.dwt(scaled_data, w, WAVELET_MODE)
         print("fan in wavelet", len(scaled_data), wavelet)
         wavelet_profile = list(wavelet)
-        wavelet_profile = wavelet_profile[:3]
+        return wavelet_profile
+
+    @staticmethod
+    def identify(dat, slicer=4):
+        wavelet_profile = Estado.wavelet(dat, slicer=slicer)[:3]
         span = (float(max(wavelet_profile)) - float(min(wavelet_profile)))
         data_scale = 27.0 / span if span else 1
         data_floor = float(min(wavelet_profile))
@@ -321,10 +324,13 @@ class Estado:
                 break
             tempo, data, clazzes, jogo, user = list(zip(*time_slice))
             # print("time_slice", data[:slicer])
+            # data = tuple(Estado.wavelet(data))
             data_span = (float(max(data)) - float(min(data)))
             data_scale = 30.0 / data_span if data_span else 1
             data_floor = float(min(data))
             scaled_data = tuple(int(((datum - data_floor) * data_scale) // 10) for datum in data)
+            # data = scaled_data
+            # scaled_data = tuple(Estado.wavelet(data))
             print("scan_data_for_minutia", scaled_data)
             clazz = Estado.identify(data)
             if clazz not in isoclazz:
@@ -333,7 +339,7 @@ class Estado:
                 Estado.STATE_INVENTORY[Estado.INDEX_STATE[clazz]] = estado = Estado(clazz, 0)
                 estado.update(jogo, user, data)
             else:
-                Estado.STATE_INVENTORY[Estado.INDEX_STATE[clazz]].update(jogo, user, scaled_data)
+                Estado.STATE_INVENTORY[Estado.INDEX_STATE[clazz]].update(jogo, user, data)
 
     def register_profile(self, wave):
         self.profile.append(wave)
@@ -1354,24 +1360,27 @@ class MinutiaProfiler(Track):
         data = [[[float(y)+i/150 for y in plot] for i, plot in enumerate(st)] for st in data]
         self.boxplot_de_caracteristicas(data, labels, complemento=": perfil de ondas")
 
-
     @staticmethod
     def boxplot_de_caracteristicas(data, labels, complemento=" individual", filename=None):
         import matplotlib.pyplot as plt
         # labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
-
+        profile = data[:]
         fig, axes = plt.subplots(nrows=len(labels)//2, ncols=2, figsize=(8, 12))
         # fig.tight_layout()
-        for prop, (caracteristic, ax, label) in enumerate(zip(data, axes, labels)):
+        for axc in axes:
             # plt.subplot(311+prop)
             # ax = ax.flatten()
-            for i, data in enumerate(caracteristic):
-                ax[i % 2].plot(list(data))
-            ax[i % 2].yaxis.grid(True)
-            # ax.set_xticks([y + 1 for y in range(len(data))])
-            ax[i % 2].set_xlabel('Tempo em segundos')
-            ax[i % 2].set_title(label + complemento)
-            ax[i % 2].set_ylabel("aceleração")
+            for ax in axc:
+                waveprof = profile.pop(0)
+                for wave in waveprof:
+                    ax.plot(wave)
+                ax.yaxis.grid(True)
+                # ax.set_xticks([y + 1 for y in range(len(data))])
+                ax.set_xlabel('Tempo em segundos')
+                ax.set_title(labels.pop(0) + complemento)
+                ax.set_ylabel("aceleração")
+                ax.set_ylim(ymin=0)
+        # plt.ylim(ymin=0)
         plt.subplots_adjust(hspace=0.5)
         if filename:
             plt.savefig(filename+".png")
