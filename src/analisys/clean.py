@@ -14,7 +14,8 @@ Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
 JSONDB = os.path.dirname(__file__) + '/eica.json'
 JSONDBOUT = os.path.dirname(__file__) + '/eica_new.json'
 
-DBF = lambda: TinyDB(JSONDB)
+DBF = lambda: TinyDB(JSONDBOUT)
+# DBF = lambda: TinyDB(JSONDB)
 __author__ = 'carlo'
 
 PONTOS = dict(_LINGUA_=120, _CHAVES_=130, _MUNDO_=140, _Chaves_=150, _ABAS_=110, _HOMEM_=90)
@@ -75,6 +76,8 @@ def parse_time(time):
         return dt.strptime(time, "%Y-%m-%d %H:%M:%S.%f")
     except ValueError:
         return dt.strptime(time, "%Y-%m-%d %H:%M:%S")
+    except TypeError:
+        return time
 
 
 class Banco:
@@ -145,9 +148,9 @@ class Banco:
         #     print("tempo ", pl["tempo"], "  delta", pl["delta"], "XXXXXXXXXX" if 0 in pl else "")
         return merge
 
-    def new_merge_timed_sessions_ordered(self, given_user):
-        user_sessions = self.banco.search(self.query.user == given_user)
-        value_keys = ("tempo", "carta", "casa", "valor", "ponto")
+    def new_merge_timed_sessions_ordered(self, given_user, user_id=None):
+        user_sessions = [self.banco.all()[user_id]] if user_id else self.banco.search(self.query.user == given_user)
+        print("new_merge_timed_sessions_ordered", given_user, len(user_sessions), user_sessions)
         tuple_session_values_content = [tuple([jogada["tempo"], jogada])
                                         for sessions in user_sessions for jogada in sessions["jogada"]]
         tuple_session_values_content.sort(key=operator.itemgetter(0))
@@ -388,25 +391,32 @@ class Banco:
             print(i, data)
             # print(i, "nome:{user: >40}  idade: {idade: >4}   ano: {ano}     genero: {sexo}".format(**name))
 
-    def new_list_play_data_with_delta(self, u_name='wesleyana vitoria aquino de souza'):
+    def new_list_play_data_with_delta(self, u_name='wesleyana vitoria aquino de souza', u_id=None):
         # userdata = self.banco.search((self.query.user == u_name) and (self.query.jogada != []))
         # userdata = [data for user in userdata for data in user["jogada"]]
-        userdata = self.new_merge_timed_sessions_ordered(u_name)
+        userdata = self.new_merge_timed_sessions_ordered(u_name, u_id)
         userdata = [userdata[0]] + userdata
         value_keys = ("tempo", "carta", "casa", "valor", "ponto", "delta")
         initial_time = parse_time(userdata[0]["tempo"])
         options = {key: lambda _, data, k: data[k] for key in value_keys}
 
         def get_delta(i, *args):
+            tempo = userdata[i]["tempo"]-userdata[i - 1]["tempo"]
+            return tempo
+
+        def _get_delta(i, *args):
             tempo = parse_time(userdata[i]["tempo"]) \
                     - parse_time(userdata[i - 1]["tempo"])
             return tempo.total_seconds()
 
-        def get_playtime(i, *args):
+        def _get_playtime(i, *args):
             timeformat = "%Y-%m-%d %H:%M:%S.%f"
             tempo = parse_time(userdata[i]["tempo"]) \
                     - initial_time
             return tempo.total_seconds()
+
+        def get_playtime(i, *args):
+            return userdata[i]["tempo"]
 
         options["delta"] = get_delta
         options["tempo"] = get_playtime
@@ -437,8 +447,8 @@ class Banco:
                      for key in value_keys} for j, session in userdata for i, data in enumerate(session)]
         return playdata[1:]
 
-    def new_simple_plot(self, u_name='wesleyana vitoria aquino de souza'):
-        data = banco.new_list_play_data_with_delta(u_name)
+    def new_simple_plot(self, u_name='wesleyana vitoria aquino de souza', u_id=None):
+        data = self.new_list_play_data_with_delta(u_name, u_id)
         fig1 = plt.figure()
         x = [0.] + [float(d["tempo"]) for d in data] + [float(data[-1]["tempo"]) + 1]
         plt.ylim(0, 90)
@@ -509,11 +519,20 @@ class Banco:
         self.banco.insert(dict(key=key, value=value))
         return key
 
+    def plot_all_users(self):
+        # prin = list(set(self.new_find_all_users_names()))
+        print(list((i, u["user"]) for i, u in enumerate(self.banco.all()) if u["user"] == "andrija"))
+        self.new_simple_plot("Shaft")
+        return
+        for user in prin:
+            self.new_simple_plot(user)
+
 
 if __name__ == '__main__':
-    banco = Banco()
-    print(len(banco.find_all_users()))
-    banco.script_to_provide_clean_db_from_zero()
+    Banco().plot_all_users()
+    # banco = Banco()
+    # print(len(banco.find_all_users()))
+    # banco.script_to_provide_clean_db_from_zero()
     # banco.new_database_report_user_data()
     # banco.script_to_provide_clean_db_from_zero()
     # prin = list(set(banco.new_find_all_users_names()))
