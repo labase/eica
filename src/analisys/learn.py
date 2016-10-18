@@ -1,10 +1,11 @@
 # -*- coding: UTF8 -*-
 # import operator
-import itertools
-from tinydb import TinyDB, Query
 import os
 from csv import writer
+
+import matplotlib.pyplot as plt
 import pywt
+from tinydb import TinyDB, Query
 
 # import operator
 # from datetime import datetime as dt
@@ -110,7 +111,7 @@ class User:
 
         return linear_time_space, [index_str[int(index) - 1] for index in interpolating_function(linear_time_space)]
 
-    def resample_user_deltas_games(self, span=20000):
+    def resample_user_deltas_games(self, span=200000):
         _, delta = self.interpolate_deltas()
         time, game = self.interpolate_games()
         self.janela_jogadas = [(timer, float(turn) - float(turn0), self.prog, gamer, self.user)
@@ -318,6 +319,7 @@ class Estado:
     @staticmethod
     def scan_data_for_minutia(janela_jogadas):
         isoclazz = Estado.STATE_INDEX
+        stated_marked_time_series = []
 
         for time_slice in zip(*(iter(janela_jogadas),) * 4):
             if len(time_slice) < 3:
@@ -340,6 +342,9 @@ class Estado:
                 estado.update(jogo, user, data)
             else:
                 Estado.STATE_INVENTORY[Estado.INDEX_STATE[clazz]].update(jogo, user, data)
+            stated_marked_time_series += [(Estado.INDEX_STATE[clazz], *full_state)
+                                          for full_state in zip(tempo, data, clazzes, jogo, user)]
+        return stated_marked_time_series
 
     def register_profile(self, wave):
         self.profile.append(wave)
@@ -1031,6 +1036,14 @@ class Track:
                         linewidth=0, antialiased=False, shade=False)
         plt.show()
 
+    def scan_states_in_full_data(self):
+        for user in self.user:
+            if len(user.jogada) < 4:
+                continue
+            user.minutia_buckets = {minutia_id: [] for minutia_id in range(40)}
+            resampled_data = user.resample_user_deltas_games()
+            yield Estado.scan_data_for_minutia(resampled_data)
+
 
 class MinutiaStats(Track):
     def scan_for_minutia_stats_in_users(self, slicer=16):
@@ -1218,7 +1231,6 @@ class MinutiaStats(Track):
 
     @staticmethod
     def _boxplot_de_caracteristicas(data, filename=None):
-        import matplotlib.pyplot as plt
         plt.figure(1)
         for prop, caracteristic in enumerate(data):
             plt.subplot(311 + prop)
@@ -1235,7 +1247,6 @@ class MinutiaStats(Track):
 
     @staticmethod
     def _violinplot_de_caracteristicas(data, filename=None):
-        import matplotlib.pyplot as plt
         plt.figure(1)
         for prop, caracteristic in enumerate(data):
             plt.subplot(311 + prop)
@@ -1251,7 +1262,6 @@ class MinutiaStats(Track):
 
     @staticmethod
     def boxplot_de_caracteristicas(data, labels, complemento=" individual", filename=None):
-        import matplotlib.pyplot as plt
         # labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
 
         fig, axes = plt.subplots(nrows=len(labels), ncols=1, figsize=(8, 12))
@@ -1344,13 +1354,13 @@ class MinutiaProfiler(Track):
     """
     Levanta os perfis de onda para cada estado EICA
     """
+    def plot_derivative_marked_states(self):
+        user_data = [user for user in self.scan_states_in_full_data()]
+        states, _, data, _, _, user = zip(*user_data[1])
+        self.new_delta_plot(user[0], data, states)
+
     def profile_wave_case_for_all_events(self):
-        for user in self.user:
-            if len(user.jogada) < 4:
-                continue
-            user.minutia_buckets = {minutia_id: [] for minutia_id in range(40)}
-            resampled_data = user.resample_user_deltas_games()
-            Estado.scan_data_for_minutia(resampled_data)
+        _ = [user for user in self.scan_states_in_full_data()]
         data = [[]]*8
         print(Estado.STATE_INVENTORY)
         for index, estado in Estado.STATE_INVENTORY.items():
@@ -1358,6 +1368,7 @@ class MinutiaProfiler(Track):
             data.insert(MACHINE_ORDER.index(index-1), estado.profile)
         labels = ["estado %d" % i for i in range(8)]
         data = [[[float(y)+i/150 for y in plot] for i, plot in enumerate(st)] for st in data]
+        return
         self.boxplot_de_caracteristicas(data, labels, complemento=": perfil de ondas")
 
     @staticmethod
@@ -1387,6 +1398,27 @@ class MinutiaProfiler(Track):
         else:
             plt.show()
 
+    def new_delta_plot(self, u_name, derivative_data, state_coloring):
+        # data = self.banco.new_list_play_data_with_delta(u_name)
+        fig1 = plt.figure()
+        plt.ylim(0, 35)
+        plt.xlim(0, 128)
+        plt.xlabel('jogadas')
+        plt.title(u_name)
+        color = ['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow']
+        colored_states = [color[state] for state in state_coloring]
+        derivative_data = [d*10+20 for d in derivative_data]
+        # plt.gca().set_prop_cycle(color=['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow'])
+        # plt.plot(x, [-2] + [d["first"] for d in data] + [-2], "magenta")
+        plt.plot(range(len(derivative_data)), derivative_data)
+        plt.scatter(range(len(derivative_data)), derivative_data, c=colored_states)
+        # plt.legend(["SEG"] + [plot for plot in CARDS], ncol=5, bbox_to_anchor=(0, 1, 1, 3),
+        #            loc=3, borderaxespad=1.2, mode="expand")
+        plt.grid(True)
+        plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.9, hspace=.35)
+        # fig1.savefig("delta/%s.jpg" % "_".join(u_name.split()))
+        plt.show()
+
 
 def _notmain():
     # Learn().report_user_data()
@@ -1404,7 +1436,8 @@ def _notmain():
 
 if __name__ == '__main__':
     # MinutiaConnections().load_from_db().generate_connecion_table_for_user()
-    MinutiaProfiler().load_from_db().profile_wave_case_for_all_events()
+    MinutiaProfiler().load_from_db().plot_derivative_marked_states()
+    # MinutiaProfiler().load_from_db().profile_wave_case_for_all_events()
     # MinutiaStats().load_from_db().scan_for_minutia_stats_for_each_user()
     # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
     # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
