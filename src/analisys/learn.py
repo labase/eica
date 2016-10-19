@@ -6,6 +6,7 @@ from csv import writer
 import matplotlib.pyplot as plt
 import pywt
 from tinydb import TinyDB, Query
+from matplotlib import collections as mc
 
 # import operator
 # from datetime import datetime as dt
@@ -30,7 +31,6 @@ PROG_INDEX = {key: value for value, key in enumerate("VSFE")}
 INDEX_GAME = {key + 1: value for key, value in enumerate("_Chaves_ _Mundo_ _FALA_ __A_T_I_V_A__".split())}
 WAVELET_MODE = pywt.MODES.sp1
 MACHINE_ORDER = [0, 2, 3, 1, 5, 4, 6, 7]
-
 
 
 class User:
@@ -1354,10 +1354,24 @@ class MinutiaProfiler(Track):
     """
     Levanta os perfis de onda para cada estado EICA
     """
+    def survey_orc_transitivity_in_time(self, user):
+        pass
+
     def plot_derivative_marked_states(self):
         user_data = [user for user in self.scan_states_in_full_data()]
-        states, _, data, _, _, user = zip(*user_data[1])
-        self.new_delta_plot(user[0], data, states)
+        for user in user_data:
+            self.plot_user_states(user)
+
+    def plot_user_states(self, user_data):
+        states, time, data, _, _, user = zip(*user_data)
+        data = [(x, y1-y0) for x, y0, y1 in zip(range(len(data)), data, data[1:])]
+        # data = [(x, y1-y0) for x, y0, y1 in zip(time, data, data[1:])]
+        # data = [(x, y) for x, y in zip(range(len(data)), data)]
+        data_collection = list(zip(*(iter(data),) * 4))
+        data_collection = [segment + (complement[0],) for segment, complement in
+                           zip(data_collection, data_collection[1:])]
+        state_collection = [st[0] for st in zip(*(iter(states),) * 4)]
+        self.plot_state_colored_segments(user[0], data_collection, state_collection)
 
     def profile_wave_case_for_all_events(self):
         _ = [user for user in self.scan_states_in_full_data()]
@@ -1398,26 +1412,23 @@ class MinutiaProfiler(Track):
         else:
             plt.show()
 
-    def new_delta_plot(self, u_name, derivative_data, state_coloring):
-        # data = self.banco.new_list_play_data_with_delta(u_name)
-        fig1 = plt.figure()
-        plt.ylim(0, 35)
-        plt.xlim(0, 128)
-        plt.xlabel('jogadas')
-        plt.title(u_name)
-        color = ['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow']
+    def plot_state_colored_segments(self, u_name, derivative_data, state_coloring):
+        color = ['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow', 'red']
         colored_states = [color[state] for state in state_coloring]
-        derivative_data = [d*10+20 for d in derivative_data]
-        # plt.gca().set_prop_cycle(color=['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow'])
-        # plt.plot(x, [-2] + [d["first"] for d in data] + [-2], "magenta")
-        plt.plot(range(len(derivative_data)), derivative_data)
-        plt.scatter(range(len(derivative_data)), derivative_data, c=colored_states)
+        lc = mc.LineCollection(derivative_data, colors=colored_states, linewidths=2)
+        fig1, ax = plt.subplots()
+        ax.set_ylim(-1, 1)        # ax.ylim(-5, 5)
+        ax.set_xlim(0, min(1028, derivative_data[-1][-1][0]))
+        ax.set_xlabel('jogadas')
+        ax.set_title(u_name)
+        ax.add_collection(lc)
+        # ax.autoscale()
+        ax.margins(0.1)        # derivative_data = [d*10+20 for d in derivative_data]
         # plt.legend(["SEG"] + [plot for plot in CARDS], ncol=5, bbox_to_anchor=(0, 1, 1, 3),
         #            loc=3, borderaxespad=1.2, mode="expand")
-        plt.grid(True)
         plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.9, hspace=.35)
-        # fig1.savefig("delta/%s.jpg" % "_".join(u_name.split()))
-        plt.show()
+        fig1.savefig("states_delta/%s.jpg" % "_".join(u_name.split()))
+        # plt.show()
 
 
 def _notmain():

@@ -93,7 +93,7 @@ class Stats:
                    loc=3, borderaxespad=1.2, mode="expand")
         plt.grid(True)
         plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.9, hspace=.35)
-        fig1.savefig("delta/%s.jpg" % "_".join(u_name.split()))
+        fig1.savefig("delta0/%s.jpg" % "_".join(u_name.split()))
         # plt.show()
 
     def new_simple_plot(self, u_name='wesleyana vitoria aquino de souza'):
@@ -171,7 +171,7 @@ class Stats:
 
 if __name__ == '__main__':
     # Stats().plot_item_use_across_games()
-    # Stats().new_delta_plot()
-    Stats().report_all_user_data()
+    Stats().new_delta_plot("Patrick")
+    # Stats().report_all_user_data()
     # Stats().new_delta_plot()
     # Stats().delta_given_users()
