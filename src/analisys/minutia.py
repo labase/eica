@@ -8,6 +8,7 @@ import pywt
 from tinydb import TinyDB, Query
 from matplotlib import collections as mc
 import numpy as np
+
 # import operator
 # from datetime import datetime as dt
 # from datetime import timedelta as td
@@ -26,7 +27,8 @@ TURN = {'tempo': 12, 'valor': 10, 'casa': 7, 'ponto': 8, 'carta': 12, 'delta': 1
 TURNLIST = 'tempo delta valor casa ponto carta'.split()
 TURNFORMAT = " ".join("{key}: {{{key}: <{val}}} ".format(key=key, val=TURN[key]) for key in TURNLIST)
 CARDS = "_Chaves_ _FALA_ _Mundo_".split()
-GAME_INDEX = dict(_Mundo_=2, _Chaves_=1, _FALA_=3, __A_T_I_V_A__=4)
+GAME_INDEX = dict(_Mundo_=2, _Chaves_=1, _FALA_=3, __A_T_I_V_A__=4,
+                  _MUNDO_=2, _HOMEM_=2, _ABAS_=1, _CHAVES_=1, _LINGUA_=3)
 PROG_INDEX = {key: value for value, key in enumerate("VSFE")}
 INDEX_GAME = {key + 1: value for key, value in enumerate("_Chaves_ _Mundo_ _FALA_ __A_T_I_V_A__".split())}
 WAVELET_MODE = pywt.MODES.sp1
@@ -73,7 +75,7 @@ class User:
     def interpolate_deltas(self, delta=0.5):
         from scipy.interpolate import interp1d  # , splev, splrep, UnivariateSpline
         import numpy as np
-        interpolate_deltas = [(jogo.tempo, jogo.delta) for jogo in self.jogada][1:100]
+        interpolate_deltas = [(jogo.tempo, jogo.delta) for jogo in self.jogada][1:1000]
         x, y = zip(*interpolate_deltas)
         interpolating_function = interp1d(x, y)
         linear_time_space = np.linspace(x[0], x[-1], (x[-1] - x[0]) / delta)
@@ -112,13 +114,12 @@ class User:
         import numpy as np
         str_index = {}
         index_str = {}
-        total_card = [set()]*4
-        # total_card, mundo_card, chave_card, fala_card = [set()]*4
+        total_card = [set(), set(), set(), set()]
 
         def parse_carta(carta):
-            carta = index_str[int(carta) - 1]
-            print("parse_carta", carta)
-            return [str_index[int(carta) - 1]] if carta.isdigit() else [] if "__" in carta \
+            carta = index_str[int(carta)]
+            # print("parse_carta", carta)
+            return [get_str_index(int(carta))] if carta.isdigit() else [] if "__" in carta \
                 else [int(ct) - 1 for ct in carta.split("_") if ct] if "mini" not in carta else []
 
         def get_str_index(token):
@@ -128,19 +129,44 @@ class User:
                 index_str[index] = token
             return index
 
-        interpolate_cards = [(jogo.tempo, get_str_index(jogo.carta)) for jogo in self.jogada][1:]
-        x, card = zip(*interpolate_cards)
+        def iterate(jogada):
+            blacklist = "minitens fruta animal objeto __A_T_I_V_A__".split()
+            for jogo in jogada:
+                tempo, carta, ponto = jogo.tempo, jogo.carta, jogo.ponto
+                # if "A" in carta: print(carta)
+                carta = [int(carta)] if carta.isdigit() else [int(ct) for ct in carta.split("_")
+                                                              if ct] if carta not in blacklist else []
+                if carta:
+                    for delta_tempo, uma_carta in enumerate(carta):
+                        yield tempo + delta_tempo * 0.2, uma_carta, GAME_INDEX[ponto]-1
+                else:
+                    continue
+
+        interpolate_cards = [(tempo, carta, ponto) for tempo, carta, ponto in iterate(self.jogada[1:])]
+        print(interpolate_cards)
+        if not interpolate_cards:
+            return [], []
+        # interpolate_cards = [(jogo.tempo, get_str_index(jogo.carta)) for jogo in self.jogada][1:]
+        x, card, game = zip(*interpolate_cards)
         interpolating_card = interp1d(x, card, kind='nearest')
-        game = self.combine_matching_games_into_indexed_sequence(tuple(jogo.ponto for jogo in self.jogada)[1:])
+        # game = self.combine_matching_games_into_indexed_sequence(tuple(jogo.ponto for jogo in self.jogada)[1:])
         interpolating_game = interp1d(x, game, kind='nearest')
         linear_time_space = np.linspace(x[0], x[-1], (x[-1] - x[0]) / delta)
+
+        def update_game_usage_sets(crd, gme):
+            total_card[int(gme)].add(int(crd))
+            # return (len(total_card[0] | total_card[1] | total_card[2]), len(total_card[0]), len(total_card[1]),
+            #         len(total_card[2]),
+            #         len(total_card[0] & total_card[1] & total_card[2]))
+            return (len(total_card[0] | total_card[1] | total_card[2]), len(total_card[0] & total_card[1]),
+                    len(total_card[1] & total_card[2]), len(total_card[0] & total_card[2]),
+                    len(total_card[0] & total_card[1] & total_card[2]))
+
+        cross_usage = [update_game_usage_sets(crd, gme)
+                       for crd, gme in
+                       zip(interpolating_card(linear_time_space), interpolating_game(linear_time_space))]
         print("total_card,", total_card)
-        items = total_card
-        cross_usage = [
-            total_card[int(game)].union(set(parse_carta(card))) or
-            [(len(items[0] | items[1] | items[2]), len(items[0] & items[1]), len(items[1] & items[2]),
-              len(items[0] & items[2]), len(items[0] & items[1] & items[2]))]
-            for card, game in zip(interpolating_card(linear_time_space), interpolating_game(linear_time_space))]
+        print("cross_usage,", cross_usage)
 
         return linear_time_space, cross_usage
 
@@ -324,7 +350,7 @@ class Estado:
         w = pywt.Wavelet('bior1.5')
         # w = pywt.Wavelet('sym5')
         _, wavelet = pywt.dwt(scaled_data, w, WAVELET_MODE)
-        print("fan in wavelet", len(scaled_data), wavelet)
+        # print("fan in wavelet", len(scaled_data), wavelet)
         wavelet_profile = list(wavelet)
         return wavelet_profile
 
@@ -334,7 +360,7 @@ class Estado:
         span = (float(max(wavelet_profile)) - float(min(wavelet_profile)))
         data_scale = 27.0 / span if span else 1
         data_floor = float(min(wavelet_profile))
-        print("classify_by_normatized_isomorphism", data_scale, wavelet_profile)
+        # print("classify_by_normatized_isomorphism", data_scale, wavelet_profile)
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
                                            for datum in wavelet_profile).strip("0") or "0"
         if data_isomorphism_lattice not in Estado.STATE_DIGEST:
@@ -366,7 +392,7 @@ class Estado:
             scaled_data = tuple(int(((datum - data_floor) * data_scale) // 10) for datum in data)
             # data = scaled_data
             # scaled_data = tuple(Estado.wavelet(data))
-            print("scan_data_for_minutia", scaled_data)
+            # print("scan_data_for_minutia", scaled_data)
             clazz = Estado.identify(data)
             if clazz not in isoclazz:
                 isoclazz.append(clazz)
@@ -426,7 +452,7 @@ class Track:
             w = pywt.Wavelet('bior1.5')
             # w = pywt.Wavelet('sym5')
             _, wavelet = pywt.dwt(scaled_data, w, mode)
-            print("fan in wavelet", len(scaled_data), wavelet)
+            # print("fan in wavelet", len(scaled_data), wavelet)
             return list(wavelet)
 
         time, delta, game = self.resample_user_deltas_games()
@@ -537,7 +563,7 @@ class Track:
         span = (float(max(data)) - float(min(data)))
         data_scale = 27.0 / span if span else 1
         data_floor = float(min(data))
-        print("classify_by_normatized_isomorphism", data_scale, data)
+        # print("classify_by_normatized_isomorphism", data_scale, data)
         data_isomorphism_lattice = "".join(str(int(((datum - data_floor) * data_scale) // 10))
                                            for datum in data).strip("0") or "0"
         if data_isomorphism_lattice not in self.iso_classifier:
@@ -665,6 +691,14 @@ class Track:
                         linewidth=0, antialiased=False, shade=False)
         plt.show()
 
+    def scan_states_in_full_data_plus_user(self):
+        for user in self.user:
+            if len(user.jogada) < 4:
+                continue
+            user.minutia_buckets = {minutia_id: [] for minutia_id in range(40)}
+            resampled_data = user.resample_user_deltas_games()
+            yield Estado.scan_data_for_minutia(resampled_data), user
+
     def scan_states_in_full_data(self):
         for user in self.user:
             if len(user.jogada) < 4:
@@ -678,13 +712,24 @@ class MinutiaProfiler(Track):
     """
     Levanta os perfis de onda para cada estado EICA
     """
-    def survey_orc_transitivity_in_time(self, user=None):
-        user = user or self.user[0]
-        # data_collection, state_collection, user = self.create_state_colored_derivative_data(user_data)
-        cross_orc_usage = user.interpolate_card_cross_usage()
-        lines = [[(0, 1), (1, 1)], [(2, 3), (3, 3)], [(1, 2), (1, 3)]]
-        self.plot_state_colored_segments("nono", lines, [1, 2, 3], cross_orc_usage)
-        pass
+
+    def survey_orc_transitivity_in_time(self, named_user=None):
+        # user_data = [user for user in self.scan_states_in_full_data()]
+        for user_data, user_object in self.scan_states_in_full_data_plus_user():
+            # print(user_data[0][-1])
+            if named_user and named_user != user_data[0][-1]:
+                continue
+            cross_orc_usage = user_object.interpolate_card_cross_usage()
+            # lines = [[(0, 1), (1, 1)], [(2, 3), (3, 3)], [(1, 2), (1, 3)]]
+            if cross_orc_usage[0] == []:
+                continue
+            # data_collection, state_collection, user = self.create_state_colored_derivative_data(
+            #     user_data)
+            data_collection, state_collection, user = self.create_interpolated_state_colored_derivative_data(
+                user_data, cross_orc_usage[0])
+            self.plot_state_colored_segments(user_object.user, data_collection, state_collection, cross_orc_usage)
+            # self.plot_state_colored_segments("nono", lines, [1, 2, 3], cross_orc_usage)
+            pass
 
     def cross_usage_in_user(self, u_name):
         data = self.list_user_data(u_name)
@@ -696,7 +741,7 @@ class MinutiaProfiler(Track):
         items = [set(carta for d in data if d["ponto"] == game for carta in parse_carta(d["carta"])
                      ) for game in games]
         return u_name, len(items[0] | items[1] | items[2]), len(items[0] & items[1]), len(items[1] & items[2]), \
-            len(items[0] & items[2]), len(items[0] & items[1] & items[2])
+               len(items[0] & items[2]), len(items[0] & items[1] & items[2])
 
     def plot_item_use_across_games(self):
         u_names = list(set(self.new_find_all_users_names()))
@@ -704,7 +749,9 @@ class MinutiaProfiler(Track):
         udata.sort(key=lambda u: sum(u[1:]))
         ubars = list(zip(*udata))
         labels = ubars.pop(0)
-        labels = [" ".join([part.capitalize() if i == 0 else part[:1].capitalize() for i, part in enumerate(name.split())]) for name in labels]
+        labels = [
+            " ".join([part.capitalize() if i == 0 else part[:1].capitalize() for i, part in enumerate(name.split())])
+            for name in labels]
         legend = "Objetos usados,Trans chave/fala,Trans fala/mundo,Trans chave/mundo,Trans total".split(",")
         print(legend)
         # cl = "r g b c m y".split()
@@ -719,11 +766,12 @@ class MinutiaProfiler(Track):
         print(ubars[:10])
         plt.bar(x, ubars[0], color="r", label=legend[0], linewidth=0)
         plt.bar(x, ubars[1], bottom=ubars[0], color="g", label=legend[1], linewidth=0)
-        plt.bar(x, ubars[2], bottom=[i+j for i, j in zip(ubars[0], ubars[1])], color="b", label=legend[2], linewidth=0)
-        plt.bar(x, ubars[3], bottom=[i+j+k for i, j, k in
+        plt.bar(x, ubars[2], bottom=[i + j for i, j in zip(ubars[0], ubars[1])], color="b", label=legend[2],
+                linewidth=0)
+        plt.bar(x, ubars[3], bottom=[i + j + k for i, j, k in
                                      zip(ubars[0], ubars[1], ubars[2])], color="m", label=legend[3], linewidth=0)
         plt.bar(
-            x, ubars[4], bottom=[i+j+k+l for i, j, k, l in
+            x, ubars[4], bottom=[i + j + k + l for i, j, k, l in
                                  zip(ubars[0], ubars[1], ubars[2], ubars[3])], color="c", label=legend[4], linewidth=0)
         plt.legend(ncol=2, loc="upper left")
         plt.show()
@@ -738,9 +786,30 @@ class MinutiaProfiler(Track):
         data_collection, state_collection, user = self.create_state_colored_derivative_data(user_data)
         self.plot_state_colored_segments(user[0], data_collection, state_collection)
 
+    def create_interpolated_state_colored_derivative_data(self, user_data, interpolating_time):
+        from scipy.interpolate import interp1d  # , splev, splrep, UnivariateSpline
+        states, time, data, _, _, user = zip(*user_data)
+        data = [(x, y1 - y0) for x, y0, y1 in zip(time, data, data[1:])]
+        interpolating_function = interp1d(*zip(*data))
+        # data = [(x, y1 - y0) for x, y0, y1 in zip(range(len(data)), data, data[1:])]
+        # data = [(x, y1-y0) for x, y0, y1 in zip(time, data, data[1:])]
+        # data = [(x, y) for x, y in zip(range(len(data)), data)]
+        while interpolating_time[-1] > time[-1]:
+            interpolating_time = interpolating_time[:-3]
+            print(interpolating_time[-3], time[-1])
+        data = [(y, float(interpolating_function(y))) for y in interpolating_time[:-2]]
+        interpolating_function = interp1d(time, states)
+        states = [interpolating_function(y) for y in interpolating_time]
+        data_collection = list(zip(*(iter(data),) * 4))
+        data_collection = [segment + (complement[0],) for segment, complement in
+                           zip(data_collection, data_collection[1:])]
+        state_collection = [st[0] for st in zip(*(iter(states),) * 4)]
+        return data_collection, state_collection, user
+
     def create_state_colored_derivative_data(self, user_data):
         states, time, data, _, _, user = zip(*user_data)
-        data = [(x, y1 - y0) for x, y0, y1 in zip(range(len(data)), data, data[1:])]
+        data = [(x, y1 - y0) for x, y0, y1 in zip(time, data, data[1:])]
+        # data = [(x, y1 - y0) for x, y0, y1 in zip(range(len(data)), data, data[1:])]
         # data = [(x, y1-y0) for x, y0, y1 in zip(time, data, data[1:])]
         # data = [(x, y) for x, y in zip(range(len(data)), data)]
         data_collection = list(zip(*(iter(data),) * 4))
@@ -751,13 +820,13 @@ class MinutiaProfiler(Track):
 
     def profile_wave_case_for_all_events(self):
         _ = [user for user in self.scan_states_in_full_data()]
-        data = [[]]*8
+        data = [[]] * 8
         print(Estado.STATE_INVENTORY)
         for index, estado in Estado.STATE_INVENTORY.items():
             print(index, len(estado.profile))
-            data.insert(MACHINE_ORDER.index(index-1), estado.profile)
+            data.insert(MACHINE_ORDER.index(index - 1), estado.profile)
         labels = ["estado %d" % i for i in range(8)]
-        data = [[[float(y)+i/150 for y in plot] for i, plot in enumerate(st)] for st in data]
+        data = [[[float(y) + i / 150 for y in plot] for i, plot in enumerate(st)] for st in data]
         return
         self.boxplot_de_caracteristicas(data, labels, complemento=": perfil de ondas")
 
@@ -766,7 +835,7 @@ class MinutiaProfiler(Track):
         import matplotlib.pyplot as plt
         # labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
         profile = data[:]
-        fig, axes = plt.subplots(nrows=len(labels)//2, ncols=2, figsize=(8, 12))
+        fig, axes = plt.subplots(nrows=len(labels) // 2, ncols=2, figsize=(8, 12))
         # fig.tight_layout()
         for axc in axes:
             # plt.subplot(311+prop)
@@ -784,39 +853,59 @@ class MinutiaProfiler(Track):
         # plt.ylim(ymin=0)
         plt.subplots_adjust(hspace=0.5)
         if filename:
-            plt.savefig(filename+".png")
+            plt.savefig(filename + ".png")
         else:
             plt.show()
 
     @staticmethod
     def plot_state_colored_segments(u_name, derivative_data, state_coloring, cross_game_data=None):
+        # color = ["ff0000", "00ff00", "0000ff", "orange", "magenta", "cyan", "black", 'yellow', 'red']
         color = ['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow', 'red']
-        colored_states = [color[state] for state in state_coloring]
+        legend = "Objetos usados,Trans chave/fala,Trans fala/mundo,Trans chave/mundo,Trans total".split(",")
+        colored_states = [color[int(state)] for state in state_coloring]
+        print(derivative_data[:3])
         lc = mc.LineCollection(derivative_data, colors=colored_states, linewidths=2)
-        fig1, ax = plt.subplots()
-        ax.set_ylim(-1, 1)        # ax.ylim(-5, 5)
-        ax.set_xlim(0, min(1028, derivative_data[-1][-1][0]))
+        fig1, ax = plt.subplots(figsize=(18, 12))
+        # ax.set_ylim(-1, 1)        # ax.ylim(-5, 5)
+        ax.set_xlim(0, min(500, derivative_data[-1][-1][0]))
         ax.set_xlabel('jogadas')
         ax.set_title(u_name)
-        ax.add_collection(lc)
         # ax.autoscale()
         x, y = cross_game_data
-        print(y[3])
+        # print("xn, yn: ", len(x), len(y), len(list(zip(*y))), list(zip(*y)))
         y = np.row_stack(zip(*y))
+        # y = np.row_stack(y)
+        # print("xn, yn: ", len(x), len(y))
         # this call to 'cumsum' (cumulative sum), passing in your y data,
         # is necessary to avoid having to manually order the datasets
         y_stack = np.cumsum(y, axis=0)  # a 3x10 array
-        ax.fill_between(x, 0, y_stack[0,:], facecolor="red", alpha=.7)
-        ax.fill_between(x, y_stack[0,:], y_stack[1,:], facecolor="green", alpha=.7)
-        ax.fill_between(x, y_stack[1,:], y_stack[2,:], facecolor="#blue", alpha=.7)
-        ax.fill_between(x, y_stack[2,:], y_stack[3,:], facecolor="magenta", alpha=.7)
+        # print("y_stack", len(y_stack[0,:]), y_stack)
+        ax.fill_between(x, 0, y_stack[0, :], facecolor="red", alpha=.7, label=legend[0])
+        ax.fill_between(x, y_stack[0, :], y_stack[1, :], facecolor="green", alpha=.7, label=legend[1])
+        ax.fill_between(x, y_stack[1, :], y_stack[2, :], facecolor="blue", alpha=.7, label=legend[2])
+        ax.fill_between(x, y_stack[2, :], y_stack[3, :], facecolor="magenta", alpha=.7, label=legend[3])
+        ax.fill_between(x, y_stack[3, :], y_stack[4, :], facecolor="cyan", alpha=.7, label=legend[4])
+        ax.legend(ncol=2, loc="upper left")
+        ax.margins(0.1)  # derivative_data = [d*10+20 for d in derivative_data]
+        ax2 = ax.twinx()
+        ax2.set_ylim(-1, 1)        # ax.ylim(-5, 5)
+        # ax.set_xlim(0, min(1028, derivative_data[-1][-1][0]))
+        ax2.add_collection(lc)
+        ax2.set_ylabel('colored states', color='r')
 
-        ax.margins(0.1)        # derivative_data = [d*10+20 for d in derivative_data]
+        # def make_proxy(zvalue, scalar_mappable, **kwargs):
+        #     color = scalar_mappable.cmap(scalar_mappable.norm(zvalue))
+        #     return Line2D([0, 1], [0, 1], color=color, **kwargs)
+        # proxies = [make_proxy(item, lc, linewidth=5) for item in z]
+        # ax.legend(proxies, ['Line 1', 'Line 2', 'Line 3', 'Line 4'])
+        #
+        # fig1.colorbar(lc)
+
         # plt.legend(["SEG"] + [plot for plot in CARDS], ncol=5, bbox_to_anchor=(0, 1, 1, 3),
         #            loc=3, borderaxespad=1.2, mode="expand")
         plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.9, hspace=.35)
-        # fig1.savefig("states_delta/%s.jpg" % "_".join(u_name.split()))
-        plt.show()
+        fig1.savefig("statrans/%s.jpg" % "_".join(u_name.split()))
+        # plt.show()
 
 
 def _notmain():
