@@ -797,7 +797,7 @@ class MinutiaProfiler(Track):
         while interpolating_time[-1] > time[-1]:
             interpolating_time = interpolating_time[:-3]
             print(interpolating_time[-3], time[-1])
-        data = [(y, float(interpolating_function(y))) for y in interpolating_time[:-2]]
+        data = [(y, float(interpolating_function(y))) for y in interpolating_time[1:-2]]
         interpolating_function = interp1d(time, states)
         states = [interpolating_function(y) for y in interpolating_time]
         data_collection = list(zip(*(iter(data),) * 4))
@@ -867,11 +867,12 @@ class MinutiaProfiler(Track):
         lc = mc.LineCollection(derivative_data, colors=colored_states, linewidths=2)
         fig1, ax = plt.subplots(figsize=(18, 12))
         # ax.set_ylim(-1, 1)        # ax.ylim(-5, 5)
-        ax.set_xlim(0, min(500, derivative_data[-1][-1][0]))
+        ax.set_ylim(-1, 60)        # ax.ylim(-5, 5)
         ax.set_xlabel('jogadas')
         ax.set_title(u_name)
         # ax.autoscale()
         x, y = cross_game_data
+        ax.set_xlim(0, min(500, x[-1]))
         # print("xn, yn: ", len(x), len(y), len(list(zip(*y))), list(zip(*y)))
         y = np.row_stack(zip(*y))
         # y = np.row_stack(y)
@@ -885,9 +886,13 @@ class MinutiaProfiler(Track):
         ax.fill_between(x, y_stack[1, :], y_stack[2, :], facecolor="blue", alpha=.7, label=legend[2])
         ax.fill_between(x, y_stack[2, :], y_stack[3, :], facecolor="magenta", alpha=.7, label=legend[3])
         ax.fill_between(x, y_stack[3, :], y_stack[4, :], facecolor="cyan", alpha=.7, label=legend[4])
-        ax.legend(ncol=2, loc="upper left")
-        ax.margins(0.1)  # derivative_data = [d*10+20 for d in derivative_data]
+        [ax.plot([-100]*len(x), color=colour, alpha=.9, label="estado%d" % index, linewidth=2)
+         for index, colour in enumerate(color[1:])]
+        ax.legend(ncol=3, loc="upper left")
+        # ax.margins(0.1)  # derivative_data = [d*10+20 for d in derivative_data]
         ax2 = ax.twinx()
+        ax2.set_xlim(0, min(500, x[-1]))
+        # ax2.set_xlim(0, min(500, derivative_data[-1][-1][0]))
         ax2.set_ylim(-1, 1)        # ax.ylim(-5, 5)
         # ax.set_xlim(0, min(1028, derivative_data[-1][-1][0]))
         ax2.add_collection(lc)
