@@ -30,6 +30,7 @@ CARDS = "_Chaves_ _FALA_ _Mundo_".split()
 GAME_INDEX = dict(_Mundo_=2, _Chaves_=1, _FALA_=3, __A_T_I_V_A__=4,
                   _MUNDO_=2, _HOMEM_=2, _ABAS_=1, _CHAVES_=1, _LINGUA_=3)
 PROG_INDEX = {key: value for value, key in enumerate("VSFE")}
+CLAZ_INDEX = {key: value+4 for value, key in enumerate("VSFE")}
 INDEX_GAME = {key + 1: value for key, value in enumerate("_Chaves_ _Mundo_ _FALA_ __A_T_I_V_A__".split())}
 WAVELET_MODE = pywt.MODES.sp1
 MACHINE_ORDER = [0, 2, 3, 1, 5, 4, 6, 7]
@@ -421,6 +422,7 @@ class Track:
         self.user_timed_minutia_buckets = {}
         self.isoclazz_minutia_buckets = {}
         self.user_minutia_buckets = {}
+        self.state_burst = {}
         self.iso_classifier = {}
 
     def resample_user_deltas_games(self, _=2):
@@ -713,6 +715,39 @@ class MinutiaProfiler(Track):
     Levanta os perfis de onda para cada estado EICA
     """
 
+    def collect_state_burst_information(self, named_user=None):
+        # user_data = [user for user in self.scan_states_in_full_data()]
+        for user_data, user_object in self.scan_states_in_full_data_plus_user():
+            # print(user_data[0][-1])
+            if named_user and named_user != user_data[0][-1]:
+                continue
+            # states, time, data, _, _, user = zip(*user_data)
+            user_collected_burst = "0"
+            for state, time, data, claz, jogo, user in user_data:
+                # print("state, time, data, _, _, user", state, time, data, user)
+
+                if state == 1:
+                    if user_collected_burst != "0":
+                        if user_collected_burst in self.state_burst:
+                            ucb = self.state_burst[user_collected_burst]
+                            ucb[0] += 1
+                            ucb[int(jogo)] += 1
+                            if claz:
+                                ucb[CLAZ_INDEX[claz]] += 5
+                        else:
+                            self.state_burst[user_collected_burst] = ucb = [1, 0, 0, 0, 0, 0, 0, 0]
+                            ucb[int(jogo)] += 1
+                            if claz:
+                                ucb[CLAZ_INDEX[claz]] += 5
+                        user_collected_burst = "0"
+                else:
+                    user_collected_burst += "" if str(state-1) == user_collected_burst[-1] else str(state-1)
+        best_burst = [(g, k, c, m, r, v, f, s, e) for k, (g, c, m, r, v, f, s, e) in self.state_burst.items() if v>1]
+        best_burst.sort()
+        gcount, labels, c, m, r, v, f, s, e = zip(*best_burst)
+        self.plot_burst_usage_and_size([labels, gcount, c, m, r, v, f, s, e])
+        print("collect_state_burst_information", len(self.state_burst), len(best_burst), best_burst )
+
     def survey_orc_transitivity_in_time(self, named_user=None):
         # user_data = [user for user in self.scan_states_in_full_data()]
         for user_data, user_object in self.scan_states_in_full_data_plus_user():
@@ -773,6 +808,49 @@ class MinutiaProfiler(Track):
         plt.bar(
             x, ubars[4], bottom=[i + j + k + l for i, j, k, l in
                                  zip(ubars[0], ubars[1], ubars[2], ubars[3])], color="c", label=legend[4], linewidth=0)
+        plt.legend(ncol=2, loc="upper left")
+        plt.show()
+        return
+
+    def plot_burst_usage_and_size(self, ubars):
+        labels = ubars.pop(0)
+        labels = [
+            " ".join([part.capitalize() if i == 0 else part[:1].capitalize() for i, part in enumerate(name.split())])
+            for name in labels]
+        legend = "Contagem global,Contagem no Chaves,Contagem no Mundo,Contagem no Fala," \
+                 "Contagem Verdadeiros,Contagem Sucesso,Contagem Falso,Contagem Expulsão".split(",")
+        print(legend)
+        # cl = "r g b c m y".split()
+        plt.grid(True)
+        plt.subplots_adjust(bottom=0.5, left=.05, right=.96, top=0.96, hspace=.35)
+        plt.title("Contagem dos casos de uso da máquina EICA")
+
+        x = range(len(ubars[0]))
+        plt.xticks(x, labels, rotation='vertical')
+        # for i, bar in enumerate(ubars):
+        #     plt.bar(x, bar, bottom=None if i == 0 else ubars[i-1], color=cl[i])
+        print(ubars[:10])
+        plt.bar(x, ubars[0], color="r", label=legend[0], linewidth=0, log=1)
+
+        plt.bar(x, ubars[1], bottom=ubars[0], color="g", label=legend[1], linewidth=0)
+        plt.bar(x, ubars[2], bottom=[i + j for i, j in zip(ubars[0], ubars[1])], color="b", label=legend[2],
+                linewidth=0)
+        plt.bar(x, ubars[3], bottom=[i + j + k for i, j, k in
+                                     zip(ubars[0], ubars[1], ubars[2])], color="m", label=legend[3], linewidth=0)
+        plt.bar(
+            x, ubars[4], bottom=[i + j + k + l for i, j, k, l in
+                                 zip(ubars[0], ubars[1], ubars[2], ubars[3])], color="c", label=legend[4], linewidth=0)
+        plt.bar(
+            x, ubars[5], bottom=[i + j + k + l + m for i, j, k, l, m in
+                                 zip(ubars[0], ubars[1], ubars[2], ubars[3], ubars[4])], color="y", label=legend[5], linewidth=0)
+        plt.bar(
+            x, ubars[6], bottom=[i + j + k + l + m + n for i, j, k, l, m, n in
+                                 zip(ubars[0], ubars[1], ubars[2], ubars[3], ubars[4], ubars[5])], color="k", label=legend[6], linewidth=0)
+        plt.bar(
+            x, ubars[7], bottom=[i + j + k + l + m + n + o for i, j, k, l, m, n, o in
+                                 zip(ubars[0], ubars[1], ubars[2], ubars[3], ubars[4], ubars[5], ubars[6])], color="pink", label=legend[7], linewidth=0)
+        """        """
+
         plt.legend(ncol=2, loc="upper left")
         plt.show()
         return
@@ -924,11 +1002,12 @@ def _notmain():
 
 if __name__ == '__main__':
     # MinutiaConnections().load_from_db().generate_connecion_table_for_user()
-    MinutiaProfiler().load_from_db().survey_orc_transitivity_in_time()
-    # MinutiaProfiler().load_from_db().plot_derivative_marked_states()
-    # MinutiaProfiler().load_from_db().profile_wave_case_for_all_events()
-    # MinutiaStats().load_from_db().scan_for_minutia_stats_for_each_user()
-    # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
-    # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
-    # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
-    # Learn().load_from_db().resample_user_deltas()
+    MinutiaProfiler().load_from_db().collect_state_burst_information()
+    # MinutiaProfiler().load_from_db().survey_orc_transitivity_in_time()
+    # # MinutiaProfiler().load_from_db().plot_derivative_marked_states()
+    # # MinutiaProfiler().load_from_db().profile_wave_case_for_all_events()
+    # # MinutiaStats().load_from_db().scan_for_minutia_stats_for_each_user()
+    # # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
+    # # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
+    # # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
+    # # Learn().load_from_db().resample_user_deltas()
