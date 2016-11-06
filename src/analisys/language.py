@@ -13,8 +13,9 @@ from matplotlib import collections as mc
 # from datetime import timedelta as td
 # from time import strftime
 # import matplotlib.pyplot as plt
-from learn import Track, User
+from analisys.learn import Track, User
 from minutia import MinutiaProfiler
+
 NONE = ""
 
 Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
@@ -31,15 +32,14 @@ CARDS = "_Chaves_ _FALA_ _Mundo_".split()
 GAME_INDEX = dict(_Mundo_=2, _Chaves_=1, _FALA_=3, __A_T_I_V_A__=4)
 PROG_INDEX = {key: value for value, key in enumerate("VSFE")}
 INDEX_GAME = {key + 1: value for key, value in enumerate("_Chaves_ _Mundo_ _FALA_ __A_T_I_V_A__".split())}
-NAMED_GAME = "_Chaves_ _Mundo_ _FALA_=3".split()
+NAMED_GAME = "None _Chaves_ _Mundo_ _FALA_".split()
 WAVELET_MODE = pywt.MODES.sp1
 MACHINE_ORDER = [0, 2, 3, 1, 5, 4, 6, 7]
-CLAZ_INDEX = {key: value+4 for value, key in enumerate("VSFE")}
+CLAZ_INDEX = {key: value + 4 for value, key in enumerate("VSFE")}
 
 
 class Lexicon:
     lex = {}
-    lex_users = set()
     common_vocabulary = "02 01 021 012 06 03 04 05 0212 0121".split()
 
     def __init__(self, headword, start_time, timestamp, user, clazz, game):
@@ -57,27 +57,46 @@ class Lexicon:
                 self.timestamp.append(timestamp)
                 self.permanence.append(timestamp - start_time)
 
-        self.headword, self.start_time, self.timestamp, self.user, self.clazz, self.game =\
+        self.headword, self.start_time, self.timestamp, self.user, self.clazz, self.game = \
             headword, start_time, timestamp, user, clazz, game
         if user not in Lexicon.lex:
-            Lexicon.lex[user] = self
-            self.stats = {headword: LexStats(headword=headword, count=0, latency=4e3, interval=[], permanence=[])
-                          for headword in Lexicon.common_vocabulary}
+            stats = {headword: LexStats(headword=headword, count=0, latency=4e3, interval=[], permanence=[])
+                     for headword in Lexicon.common_vocabulary}
+            Lexicon.lex[user] = dict(lex=[self], stats=stats)
         else:
-            # Lexicon.lex[user].append(self)
+            Lexicon.lex[user]["lex"].append(self)
             if headword in Lexicon.common_vocabulary:
-                Lexicon.lex[user].stats[headword].update(timestamp, start_time)
-        Lexicon.lex_users.add(user)
+                Lexicon.lex[user]["stats"][headword].update(timestamp, start_time)
 
-    def update_idiom(self, idiom, popul, _Chaves_=0, _Mundo_=0, _FALA_=0, V=0, S=0, F=0, E=0):
-        # idiom, popul, _Chaves_=0, _Mundo_=0, _FALA_=0, V=0, S=0, F=0, E=0
-        Lexicon.idiom[idiom]
+    @staticmethod
+    def survey():
+        from statistics import mean
+
+        # for lex_user in Lexicon.lex_users:
+        #     for lex in Lexicon.lex[lex_user]:
+        #         if lex.headword in Lexicon.common_vocabulary:
+        #             lex["stats"][lex.headword].update(lex.timestamp, lex.start_time)
+        stats_by_lex = [
+            list(zip(*[(lexentry["stats"][headword].count, lexentry["stats"][headword].latency,
+                        mean(lexentry["stats"][headword].interval) if lexentry["stats"][headword].interval else 0,
+                        mean(lexentry["stats"][headword].permanence) if lexentry["stats"][
+                            headword].permanence else 0)
+                       for lexentry in Lexicon.lex.values()]))
+            for headword in Lexicon.common_vocabulary]
+        print("Lexicon.lex.", [(l, Lexicon.lex[l]) for l in Lexicon.lex])
+        print("stats_by_lex", stats_by_lex)
+        stat_props = [(count, latency, interval, permanence)
+                      for count, latency, interval, permanence in stats_by_lex]
+        return list(zip(*stat_props)), \
+            ["%s do Imaginário" % stat for stat in "Contagem Latência Intervalo Permanência".split()], \
+            Lexicon.common_vocabulary, " coletivo"
 
 
 class Idiomaton:
     idiom = {}
     idiomaton = {}
-    common_idiomatics = "02 01 021 012 06 03 04 05 0212 0121".split()
+    common_idiomatics = ('051', '0601', '0501', '020121', '01201', '01021', '0204', '02101', '020212',
+                         '0206', '01012', '02102', '02012', '02021', '0102', '0201')
 
     def __init__(self, headword, start_time, timestamp, user, clazz, game):
 
@@ -94,16 +113,17 @@ class Idiomaton:
                 self.timestamp.append(timestamp)
                 self.permanence.append(timestamp - start_time)
 
-        self.headword, self.start_time, self.timestamp, self.user, self.clazz, self.game =\
+        self.headword, self.start_time, self.timestamp, self.user, self.clazz, self.game = \
             headword, start_time, timestamp, user, clazz, game
         if user not in Idiomaton.idiom:
-            Idiomaton.idiom[user] = self
-            self.stats = {headword: IdiomStats(headword=headword, count=0, latency=4e3, interval=[], permanence=[])
-                          for headword in Lexicon.common_vocabulary}
+            stats = {
+                headword: IdiomStats(headword=headword, count=0, latency=2.5e3, interval=[], permanence=[])
+                for headword in Idiomaton.common_idiomatics}
+            Idiomaton.idiom[user] = dict(idiom=[self], stats=stats)
         else:
-            # Lexicon.lex[user].append(self)
+            Idiomaton.idiom[user]["idiom"].append(self)
             if headword in Idiomaton.common_idiomatics:
-                Idiomaton.idiom[user].stats[headword].update(timestamp, start_time)
+                Idiomaton.idiom[user]["stats"][headword].update(timestamp, start_time)
 
     def update_idiom(self, idiom, popul, _Chaves_=0, _Mundo_=0, _FALA_=0, V=0, S=0, F=0, E=0):
         # idiom, popul, _Chaves_=0, _Mundo_=0, _FALA_=0, V=0, S=0, F=0, E=0
@@ -116,22 +136,23 @@ class Idiomaton:
         # for lex_user in Lexicon.lex_users:
         #     for lex in Lexicon.lex[lex_user]:
         #         if lex.headword in Lexicon.common_vocabulary:
-        #             lex.stats[lex.headword].update(lex.timestamp, lex.start_time)
+        #             lex["stats"][lex.headword].update(lex.timestamp, lex.start_time)
         stats_by_lex = [
-            list(zip(*[(idiomentry.stats[headword].count, idiomentry.stats[headword].latency,
-                        mean(idiomentry.stats[headword].interval) if idiomentry.stats[headword].interval else 0,
-                        mean(idiomentry.stats[headword].permanence) if idiomentry.stats[headword].permanence else 0)
-                       for idiomentry in Idiomaton.idiom.values()]))
+            list(zip(*[(idiom_entry["stats"][headword].count, idiom_entry["stats"][headword].latency,
+                        mean(idiom_entry["stats"][headword].interval) if idiom_entry["stats"][headword].interval else 0,
+                        mean(idiom_entry["stats"][headword].permanence) if idiom_entry["stats"][
+                            headword].permanence else 0)
+                       for idiom_entry in Idiomaton.idiom.values() if idiom_entry["idiom"][0].clazz == "S"]))
             for headword in Idiomaton.common_idiomatics]
-        print("Lexicon.lex.", [(l, Idiomaton.lex[l]) for l in Idiomaton.lex])
+        print("Lexicon.lex.", [(l, Idiomaton.idiom[l]) for l in Idiomaton.idiom])
         print("stats_by_lex", stats_by_lex)
         stat_props = [
             (count, latency, interval,
              permanence)
             for count, latency, interval, permanence in stats_by_lex]
-        return list(zip(*stat_props)),\
-            ["%s do Imaginário" % stat for stat in "Contagem Latência Intervalo Permanência".split()],\
-            Lexicon.common_vocabulary, " coletivo"
+        return list(zip(*stat_props)), \
+            ["%s do Idiomático" % stat for stat in "Contagem Latência Intervalo Permanência".split()], \
+            Idiomaton.common_idiomatics, " coletivo", "Índices dos idiomas EICA"
 
 
 class LanguageSurvey(MinutiaProfiler):
@@ -275,8 +296,8 @@ class LanguageSurvey(MinutiaProfiler):
                         user_collected_burst = "0"
                         start_time = time
                 else:
-                    user_collected_burst += "" if str(state-1) == user_collected_burst[-1] else str(state-1)
-        best_burst = [(g, k, c, m, r, v, f, s, e) for k, (g, c, m, r, v, f, s, e) in self.state_burst.items() if v>1]
+                    user_collected_burst += "" if str(state - 1) == user_collected_burst[-1] else str(state - 1)
+        best_burst = [(g, k, c, m, r, v, f, s, e) for k, (g, c, m, r, v, f, s, e) in self.state_burst.items() if v > 1]
         best_burst.sort()
         gcount, labels, c, m, r, v, f, s, e = zip(*best_burst)
         # self.plot_burst_usage_and_size([labels, gcount, c, m, r, v, f, s, e])
@@ -293,45 +314,52 @@ class LanguageSurvey(MinutiaProfiler):
             started_time = 0
             # print(list(current_user.__dict__[arg] for arg in
             #          "headword, start_time, timestamp, user, clazz, game".split(", ")))
-            if current_user:
-                headword, start_time, timestamp, user, clazz, game =\
-                    list(current_user.__dict__[arg] for arg in
+            for user_stat in current_user["lex"]:
+                headword, start_time, timestamp, user, clazz, game = \
+                    list(user_stat.__dict__[arg] for arg in
                          "headword, start_time, timestamp, user, clazz, game".split(", "))
-                print("headword, start_time, timestamp, user, clazz, game", headword, start_time, timestamp, user, clazz, game)
+                print("headword, start_time, timestamp, user, clazz, game", headword, start_time, timestamp, user,
+                      clazz, game)
+                # user_collected_burst = headword + next_stat.headword
 
-                if headword in Lexicon.common_vocabulary:
-                    if headword not in user_collected_burst != "":
-                        if user_collected_burst in Idiomaton.idiom:
+                if user_collected_burst != "" and (user_collected_burst not in Lexicon.common_vocabulary):
+                    if headword in Lexicon.common_vocabulary:
+                        if user_collected_burst in Idiomaton.idiomaton:
                             ucb = Idiomaton.idiomaton[user_collected_burst]
                         else:
                             ucb = Idiomaton.idiomaton[user_collected_burst] = dict(
                                 popul=0, _Chaves_=0, _Mundo_=0, _FALA_=0, V=0, S=0, F=0, E=0)
-                        ucb["popul"] += 1
-                        ucb[NAMED_GAME[jogo]] += 1
-                        if claz:
-                            ucb[claz] += 5
+                        Idiomaton.idiomaton[user_collected_burst]["popul"] += 1
+                        Idiomaton.idiomaton[user_collected_burst][NAMED_GAME[int(game)]] += 1
+                        if clazz:
+                            Idiomaton.idiomaton[user_collected_burst][clazz] += 1
                         Idiomaton(user_collected_burst, start_time, timestamp, user_name, clazz, game)
                         user_collected_burst = ""
                         start_time = timestamp
                 else:
                     user_collected_burst += "" if user_collected_burst.endswith(headword) else headword
         print("Idiomaton.idiomaton", Idiomaton.idiomaton)
-        best_burst = [(g, k, c, m, r, v, f, s, e) for k, (g, c, m, r, v, f, s, e) in Idiomaton.idiomaton.items() if v > 1]
+        kind = ['popul', '_Chaves_', '_Mundo_', '_FALA_', 'V', 'S', 'F', 'E']
+        # best_burst = [list(stats[stat] for stat in kind)+[k] for k, stats in Idiomaton.idiomaton.items() if
+        #               stats['popul'] > 3]
+        best_burst = [list(stats[stat] for stat in kind)+[k] for k, stats in Idiomaton.idiomaton.items() if
+                      sum(1 for claz in ['V', 'S', 'F', 'E'] if stats[claz]) > 2]
         best_burst.sort()
-        gcount, labels, c, m, r, v, f, s, e = zip(*best_burst)
+        gcount, c, m, r, v, s, f, e, labels = zip(*best_burst)
         if plot:
-            self.plot_burst_usage_and_size([labels, gcount, c, m, r, v, f, s, e])
-        # print("collect_state_burst_information", len(self.state_burst), len(best_burst), best_burst)
+            self.plot_burst_usage_and_size([labels, gcount, c, m, r, v, s, f, e], log=0)
+            print("plot_burst_usage_and_size labels", labels)
+            # print("collect_state_burst_information", len(self.state_burst), len(best_burst), best_burst)
 
     def survey_vocabulary_use_in_population(self):
         self.mark_vocabulary_use_cases()
-        self.boxplot_de_caracteristicas(*Lexicon.survey_lexicon())
+        self.boxplot_de_caracteristicas(*Lexicon.survey())
 
     def survey_idiom_use_in_population(self, plot=True):
         self.mark_vocabulary_use_cases()
         self.mark_idiom_use_cases(plot=True)
         if not plot:
-            self.boxplot_de_caracteristicas(*Idiomaton.survey_idiomaton())
+            self.boxplot_de_caracteristicas(*Idiomaton.survey())
 
     def scan_for_minutia_stats_for_each_user(self, slicer=16):
         """
@@ -349,15 +377,15 @@ class LanguageSurvey(MinutiaProfiler):
         def wavelenght(mt):
             empty = [0, 1]
             if not mt:
-                return empty*2
+                return empty * 2
             minutia_events = mt[:]
             minutia_intervals = [j - i for i, j in zip(minutia_events, minutia_events[1:]) if j - i >= 4]
             minutia_events = [minutia_events[0] - 4] + minutia_events + [minutia_events[-1] + 4]
             end_start_pairs = [(i, j) for i, j in zip(minutia_events, minutia_events[1:]) if j - i >= 5]
             minutia_durations = [b - a + 4 for (_, a), (b, _) in zip(end_start_pairs, end_start_pairs[1:])]
             print("minutia_intervals", minutia_intervals, minutia_durations)
-            minutia_intervals += empty * (2-len(minutia_intervals))
-            minutia_durations += empty * (2-len(minutia_durations))
+            minutia_intervals += empty * (2 - len(minutia_intervals))
+            minutia_durations += empty * (2 - len(minutia_durations))
             minutia_latency = [0, min(minutia_events)]
             minutia_count = [0, len(minutia_events)]
             return [minutia_count, minutia_latency, minutia_intervals, minutia_durations]
@@ -396,14 +424,15 @@ class LanguageSurvey(MinutiaProfiler):
             duration = [[w for w in wavelenght if w is not np.nan] for _, wavelenght in estatisticas_ordenadas]
             print("reordena_minucias_por_atraso wavelenghts", duration)
             estatisticas_ordenadas = [intervals if len(intervals) > 1 else [0, 1],
-                                      duration or [0]if len(duration) > 1 else [0, 1]]
+                                      duration or [0] if len(duration) > 1 else [0, 1]]
 
             estatisticas = list(zip(*data))
             print(data)
             labels = 'Intervalo entre estados,Permanência no estado'.split(",")
             labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
             # print(mfm.format(*[x for line in estatisticas_ordenadas for x in line]))
-            self.boxplot_de_caracteristicas(estatisticas, labels, filename="violin/"+sigla(user.user))
+            ticks = ["eica%d" % order for order, _ in enumerate(estatisticas)]
+            self.boxplot_de_caracteristicas(estatisticas, labels, ticks, filename="violin/" + sigla(user.user))
 
     @staticmethod
     def _boxplot_de_caracteristicas(data, filename=None):
@@ -417,7 +446,7 @@ class LanguageSurvey(MinutiaProfiler):
             for patch, color in zip(box['boxes'], colors):
                 patch.set_facecolor(color)
         if filename:
-            plt.savefig(filename+".png")
+            plt.savefig(filename + ".png")
         else:
             plt.show()
 
@@ -437,7 +466,8 @@ class LanguageSurvey(MinutiaProfiler):
         plt.show()
 
     @staticmethod
-    def boxplot_de_caracteristicas(data, labels, ticks, complemento=" individual", filename=None):
+    def boxplot_de_caracteristicas(data, labels, ticks, complemento=" individual",
+                                   xlabel='Índices dos estados eica', filename=None):
         # labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
 
         fig, axes = plt.subplots(nrows=len(labels), ncols=1, figsize=(8, 12))
@@ -448,15 +478,21 @@ class LanguageSurvey(MinutiaProfiler):
             box = ax.violinplot(caracteristic, showmeans=False, showmedians=True)
             ax.yaxis.grid(True)
             ax.set_xticks([y + 1 for y in range(len(data))])
-            ax.set_xlabel('Índices dos estados eica')
+            ax.set_xlabel(xlabel)
             ax.set_title(label + complemento)
             ax.set_ylabel(label)
 
             # colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
             colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen',
-                      'aquamarine', 'cyan', 'lightblue', 'violet', 'fuchsia']
+                      'aquamarine', 'cyan', 'lightblue', 'violet', 'fuchsia'] if len(ticks) <= 10 else [
+                'tan', 'lightcoral', 'pink', 'orange', 'yellow', 'yellowgreen', 'olive', 'lightgreen',
+                'springgreen', 'aquamarine', 'cyan', 'lightblue', 'skyblue', 'violet', 'orchid', 'fuchsia'
+            ]
             edges = ['maroon', 'red', 'orangered', 'goldenrod', 'green',
-                     'teal', 'deepskyblue', 'blue', 'darkviolet', 'darkmagenta']
+                     'teal', 'deepskyblue', 'blue', 'darkviolet', 'darkmagenta'] if len(ticks) <= 10 else [
+                    'maroon', 'tomato', 'red', 'orangered', 'goldenrod', 'greenyellow', 'darkolivegreen', 'green',
+                    'forestgreen', 'teal', 'deepskyblue', 'blue', 'navy', 'darkviolet', 'darkmagenta', 'indigo']
+            print(colors, edges, ticks, len(ticks))
             for patch, edge, color in zip(box['bodies'], edges, colors):
                 patch.set_facecolor(color)
                 patch.set_edgecolor(edge)
@@ -465,7 +501,7 @@ class LanguageSurvey(MinutiaProfiler):
         plt.setp(axes, xticks=[y + 1 for y in range(len(ticks))],
                  xticklabels=['%s' % tick for tick in ticks])
         if filename:
-            plt.savefig(filename+".png")
+            plt.savefig(filename + ".png")
         else:
             plt.show()
 
@@ -488,7 +524,7 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    LanguageSurvey().load_from_db().survey_idiom_use_in_population()
+    LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False)
     # LanguageSurvey().load_from_db().survey_vocabulary_use_in_population()
     # LanguageSurvey().load_from_db().scan_for_minutia_stats_in_users()
     # LanguageSurvey().load_from_db().scan_for_minutia_stats_for_each_user()

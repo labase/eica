@@ -812,7 +812,7 @@ class MinutiaProfiler(Track):
         plt.show()
         return
 
-    def plot_burst_usage_and_size(self, ubars):
+    def plot_burst_usage_and_size(self, ubars, log=1):
         labels = ubars.pop(0)
         labels = [
             " ".join([part.capitalize() if i == 0 else part[:1].capitalize() for i, part in enumerate(name.split())])
@@ -822,7 +822,7 @@ class MinutiaProfiler(Track):
         print(legend)
         # cl = "r g b c m y".split()
         plt.grid(True)
-        plt.subplots_adjust(bottom=0.5, left=.05, right=.96, top=0.96, hspace=.35)
+        plt.subplots_adjust(bottom=0.25, left=.05, right=.96, top=0.96, hspace=.35)
         plt.title("Contagem dos casos de uso da máquina EICA")
 
         x = range(len(ubars[0]))
@@ -830,7 +830,7 @@ class MinutiaProfiler(Track):
         # for i, bar in enumerate(ubars):
         #     plt.bar(x, bar, bottom=None if i == 0 else ubars[i-1], color=cl[i])
         print(ubars[:10])
-        plt.bar(x, ubars[0], color="r", label=legend[0], linewidth=0, log=1)
+        plt.bar(x, ubars[0], color="r", label=legend[0], linewidth=0, log=log)
 
         plt.bar(x, ubars[1], bottom=ubars[0], color="g", label=legend[1], linewidth=0)
         plt.bar(x, ubars[2], bottom=[i + j for i, j in zip(ubars[0], ubars[1])], color="b", label=legend[2],
@@ -845,10 +845,10 @@ class MinutiaProfiler(Track):
                                  zip(ubars[0], ubars[1], ubars[2], ubars[3], ubars[4])], color="y", label=legend[5], linewidth=0)
         plt.bar(
             x, ubars[6], bottom=[i + j + k + l + m + n for i, j, k, l, m, n in
-                                 zip(ubars[0], ubars[1], ubars[2], ubars[3], ubars[4], ubars[5])], color="k", label=legend[6], linewidth=0)
+                                 zip(ubars[0], ubars[1], ubars[2], ubars[3], ubars[4], ubars[5])], color="crimson", label=legend[6], linewidth=0)
         plt.bar(
             x, ubars[7], bottom=[i + j + k + l + m + n + o for i, j, k, l, m, n, o in
-                                 zip(ubars[0], ubars[1], ubars[2], ubars[3], ubars[4], ubars[5], ubars[6])], color="pink", label=legend[7], linewidth=0)
+                                 zip(ubars[0], ubars[1], ubars[2], ubars[3], ubars[4], ubars[5], ubars[6])], color="k", label=legend[7], linewidth=0)
         """        """
 
         plt.legend(ncol=2, loc="upper left")
