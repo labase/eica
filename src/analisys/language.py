@@ -38,9 +38,19 @@ MACHINE_ORDER = [0, 2, 3, 1, 5, 4, 6, 7]
 CLAZ_INDEX = {key: value + 4 for value, key in enumerate("VSFE")}
 
 
+class Clazz:
+    def __init__(self, claz, filtered):
+        self.claz, self.filtered = claz, lambda stat: True if filtered is None else (stat.clazz == filtered)
+
+CLAZ_FILTER = {claz[1]: Clazz(claz, claz[1]) for claz in
+               ' Verdadeiro Sucesso, Sucesso Mínimo, Falso Sucesso, Expulsão Simbólica'.split(',')}
+NO_FILTER = Clazz(' Populacional', None)
+
+
 class Lexicon:
     lex = {}
-    common_vocabulary = "02 01 021 012 06 03 04 05 0212 0121".split()
+    common_vocabulary = "02 01 021 012 06 05 04 03 016".split()
+    # common_vocabulary = "02 01 021 012 06 03 04 05 0212 0121".split()
 
     def __init__(self, headword, start_time, timestamp, user, clazz, game):
 
@@ -88,15 +98,17 @@ class Lexicon:
         stat_props = [(count, latency, interval, permanence)
                       for count, latency, interval, permanence in stats_by_lex]
         return list(zip(*stat_props)), \
-            ["%s do Imaginário" % stat for stat in "Contagem Latência Intervalo Permanência".split()], \
+            ["%s do Vocabulário" % stat for stat in "Contagem Latência Intervalo Permanência".split()], \
             Lexicon.common_vocabulary, " coletivo"
 
 
 class Idiomaton:
     idiom = {}
     idiomaton = {}
-    common_idiomatics = ('051', '0601', '0501', '020121', '01201', '01021', '0204', '02101', '020212',
-                         '0206', '01012', '02102', '02012', '02021', '0102', '0201')
+    common_idiomatics = ('0412', '0302', '051', '0501', '0601', '0106', '020121', '0205', '0204', '01021', '02101',
+                         '020212', '01012', '0206', '01202', '02102', '02021', '0102', '0201')
+    # common_idiomatics = ('051', '0601', '0501', '020121', '01201', '01021', '0204', '02101', '020212',
+    #                      '0206', '01012', '02102', '02012', '02021', '0102', '0201')
 
     def __init__(self, headword, start_time, timestamp, user, clazz, game):
 
@@ -130,7 +142,7 @@ class Idiomaton:
         Idiomaton.idiom[idiom]
 
     @staticmethod
-    def survey():
+    def survey(filtered=NO_FILTER):
         from statistics import mean
 
         # for lex_user in Lexicon.lex_users:
@@ -142,7 +154,8 @@ class Idiomaton:
                         mean(idiom_entry["stats"][headword].interval) if idiom_entry["stats"][headword].interval else 0,
                         mean(idiom_entry["stats"][headword].permanence) if idiom_entry["stats"][
                             headword].permanence else 0)
-                       for idiom_entry in Idiomaton.idiom.values() if idiom_entry["idiom"][0].clazz == "S"]))
+                       for idiom_entry in Idiomaton.idiom.values() if filtered.filtered(idiom_entry["idiom"][0])]))
+            # for idiom_entry in Idiomaton.idiom.values() if idiom_entry["idiom"][0].clazz == "E"]))
             for headword in Idiomaton.common_idiomatics]
         print("Lexicon.lex.", [(l, Idiomaton.idiom[l]) for l in Idiomaton.idiom])
         print("stats_by_lex", stats_by_lex)
@@ -152,7 +165,7 @@ class Idiomaton:
             for count, latency, interval, permanence in stats_by_lex]
         return list(zip(*stat_props)), \
             ["%s do Idiomático" % stat for stat in "Contagem Latência Intervalo Permanência".split()], \
-            Idiomaton.common_idiomatics, " coletivo", "Índices dos idiomas EICA"
+            Idiomaton.common_idiomatics, filtered.claz, "Índices dos idiomas EICA"
 
 
 class LanguageSurvey(MinutiaProfiler):
@@ -249,7 +262,7 @@ class LanguageSurvey(MinutiaProfiler):
         estatisticas = estatisticas_ordenadas
         # print(mfm.format(*[x for line in estatisticas_ordenadas for x in line]))
         labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
-        self.boxplot_de_caracteristicas(estatisticas, labels)
+        self.boxplot_de_caracteristicas(estatisticas, labels, ticks=["eica%d" % order for order in range(8)])
         # self.boxplot_de_caracteristicas(atraso)
         import invariant as inv
         # head = "aluno,atr,"+"".join(["cm%d,tm%d,dm%d,wv%d," % ((i,)*4) for i in range(4)])
@@ -267,7 +280,7 @@ class LanguageSurvey(MinutiaProfiler):
         # plt.colorbar()
         # plt.show()
 
-    def mark_vocabulary_use_cases(self, named_user=None):
+    def mark_vocabulary_use_cases(self, named_user=None, plot=False):
         # user_data = [user for user in self.scan_states_in_full_data()]
         for user_data, user_object in self.scan_states_in_full_data_plus_user():
             # print(user_data[0][-1])
@@ -297,10 +310,14 @@ class LanguageSurvey(MinutiaProfiler):
                         start_time = time
                 else:
                     user_collected_burst += "" if str(state - 1) == user_collected_burst[-1] else str(state - 1)
-        best_burst = [(g, k, c, m, r, v, f, s, e) for k, (g, c, m, r, v, f, s, e) in self.state_burst.items() if v > 1]
+        best_burst = [(g, k, c, m, r, v, f, s, e) for k, (g, c, m, r, v, f, s, e) in self.state_burst.items() if g > 1]
+        best_burst = [(g, k, c, m, r, v, f, s, e) for k, (g, c, m, r, v, f, s, e) in self.state_burst.items()
+                      if sum(1 for count in [v, f, s, e] if count) > 2]
         best_burst.sort()
         gcount, labels, c, m, r, v, f, s, e = zip(*best_burst)
-        # self.plot_burst_usage_and_size([labels, gcount, c, m, r, v, f, s, e])
+        print("plot_burst_usage_and_size, lex", labels)
+        if plot:
+            self.plot_burst_usage_and_size([labels, gcount, c, m, r, v, s, f, e])
         # print("collect_state_burst_information", len(self.state_burst), len(best_burst), best_burst)
 
     def mark_idiom_use_cases(self, named_user=None, plot=False):
@@ -338,7 +355,7 @@ class LanguageSurvey(MinutiaProfiler):
                         start_time = timestamp
                 else:
                     user_collected_burst += "" if user_collected_burst.endswith(headword) else headword
-        print("Idiomaton.idiomaton", Idiomaton.idiomaton)
+        # print("Idiomaton.idiomaton", Idiomaton.idiomaton)
         kind = ['popul', '_Chaves_', '_Mundo_', '_FALA_', 'V', 'S', 'F', 'E']
         # best_burst = [list(stats[stat] for stat in kind)+[k] for k, stats in Idiomaton.idiomaton.items() if
         #               stats['popul'] > 3]
@@ -351,15 +368,16 @@ class LanguageSurvey(MinutiaProfiler):
             print("plot_burst_usage_and_size labels", labels)
             # print("collect_state_burst_information", len(self.state_burst), len(best_burst), best_burst)
 
-    def survey_vocabulary_use_in_population(self):
-        self.mark_vocabulary_use_cases()
-        self.boxplot_de_caracteristicas(*Lexicon.survey())
-
-    def survey_idiom_use_in_population(self, plot=True):
-        self.mark_vocabulary_use_cases()
-        self.mark_idiom_use_cases(plot=True)
+    def survey_vocabulary_use_in_population(self, plot=True):
+        self.mark_vocabulary_use_cases(plot=plot)
         if not plot:
-            self.boxplot_de_caracteristicas(*Idiomaton.survey())
+            self.boxplot_de_caracteristicas(*Lexicon.survey())
+
+    def survey_idiom_use_in_population(self, plot=True, filtered=NO_FILTER):
+        self.mark_vocabulary_use_cases()
+        self.mark_idiom_use_cases(plot=plot)
+        if not plot:
+            self.boxplot_de_caracteristicas(*Idiomaton.survey(filtered))
 
     def scan_for_minutia_stats_for_each_user(self, slicer=16):
         """
@@ -470,6 +488,26 @@ class LanguageSurvey(MinutiaProfiler):
                                    xlabel='Índices dos estados eica', filename=None):
         # labels = 'Contagem de estados,Latência de estados,Intervalo entre estados,Permanência no estado'.split(",")
 
+        # colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
+        colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen',
+                  'aquamarine', 'cyan', 'lightblue', 'violet', 'fuchsia'] if len(ticks) <= 10 else [
+            'tan', 'lightcoral', 'pink', 'orange', 'yellow', 'yellowgreen', 'olive', 'lightgreen',
+            'springgreen', 'aquamarine', 'cyan', 'lightblue', 'skyblue', 'violet', 'orchid', 'fuchsia'
+        ] if len(ticks) <= 16 else [
+            'tan', 'salmon', 'lightcoral', 'pink', 'orange', 'yellow', 'lawngreen', 'yellowgreen', 'olive',
+            'lightgreen', 'springgreen', 'mediumaquamarine', 'aquamarine', 'cyan', 'paleturquoise', 'lightblue',
+            'skyblue', 'violet', 'orchid', 'fuchsia', 'grey'
+        ]
+        edges = ['maroon', 'red', 'orangered', 'goldenrod', 'green',
+                 'teal', 'deepskyblue', 'blue', 'darkviolet', 'darkmagenta'] if len(ticks) <= 10 else [
+            'maroon', 'tomato', 'red', 'orangered', 'goldenrod', 'greenyellow', 'darkolivegreen', 'green',
+            'forestgreen', 'teal', 'deepskyblue', 'blue', 'navy', 'darkviolet', 'darkmagenta', 'indigo'
+        ] if len(ticks) <= 16 else [
+            'maroon', 'brown', 'tomato', 'red', 'orangered', 'goldenrod', 'greenyellow', 'darksage',
+            'darkolivegreen', 'green', 'forestgreen', 'teal', 'deepskyblue', 'cornflowerblue', 'blue',
+            'navy', 'darkviolet', 'darkmagenta', 'indigo', 'k'
+        ]
+
         fig, axes = plt.subplots(nrows=len(labels), ncols=1, figsize=(8, 12))
         # fig.tight_layout()
         for prop, (caracteristic, ax, label) in enumerate(zip(data, axes, labels)):
@@ -481,17 +519,6 @@ class LanguageSurvey(MinutiaProfiler):
             ax.set_xlabel(xlabel)
             ax.set_title(label + complemento)
             ax.set_ylabel(label)
-
-            # colors = ['cyan', 'lightblue', 'lightgreen', 'tan', 'pink']
-            colors = ['tan', 'pink', 'orange', 'yellow', 'lightgreen',
-                      'aquamarine', 'cyan', 'lightblue', 'violet', 'fuchsia'] if len(ticks) <= 10 else [
-                'tan', 'lightcoral', 'pink', 'orange', 'yellow', 'yellowgreen', 'olive', 'lightgreen',
-                'springgreen', 'aquamarine', 'cyan', 'lightblue', 'skyblue', 'violet', 'orchid', 'fuchsia'
-            ]
-            edges = ['maroon', 'red', 'orangered', 'goldenrod', 'green',
-                     'teal', 'deepskyblue', 'blue', 'darkviolet', 'darkmagenta'] if len(ticks) <= 10 else [
-                    'maroon', 'tomato', 'red', 'orangered', 'goldenrod', 'greenyellow', 'darkolivegreen', 'green',
-                    'forestgreen', 'teal', 'deepskyblue', 'blue', 'navy', 'darkviolet', 'darkmagenta', 'indigo']
             print(colors, edges, ticks, len(ticks))
             for patch, edge, color in zip(box['bodies'], edges, colors):
                 patch.set_facecolor(color)
@@ -524,7 +551,8 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False)
+    LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=NO_FILTER)
+    [LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=CLAZ_FILTER[c]) for c in "VSFE"]
     # LanguageSurvey().load_from_db().survey_vocabulary_use_in_population()
     # LanguageSurvey().load_from_db().scan_for_minutia_stats_in_users()
     # LanguageSurvey().load_from_db().scan_for_minutia_stats_for_each_user()
