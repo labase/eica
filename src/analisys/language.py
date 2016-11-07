@@ -42,7 +42,7 @@ class Clazz:
     def __init__(self, claz, filtered):
         self.claz, self.filtered = claz, lambda stat: True if filtered is None else (stat.clazz == filtered)
 
-CLAZ_FILTER = {claz[1]: Clazz(claz, claz[1]) for claz in
+CLZ_FILTER = {claz[1]: Clazz(claz, claz[1]) for claz in
                ' Verdadeiro Sucesso, Sucesso Mínimo, Falso Sucesso, Expulsão Simbólica'.split(',')}
 NO_FILTER = Clazz(' Populacional', None)
 
@@ -105,10 +105,13 @@ class Lexicon:
 class Idiomaton:
     idiom = {}
     idiomaton = {}
-    common_idiomatics = ('0412', '0302', '051', '0501', '0601', '0106', '020121', '0205', '0204', '01021', '02101',
-                         '020212', '01012', '0206', '01202', '02102', '02021', '0102', '0201')
-    # common_idiomatics = ('051', '0601', '0501', '020121', '01201', '01021', '0204', '02101', '020212',
-    #                      '0206', '01012', '02102', '02012', '02021', '0102', '0201')
+    common_idiomatics = ('0261', '051', '041', '025', '062', '0212')
+    # common_idiomatics = ('072', '0242', '013', '0162', '0261', '0412', '0512', '014', '0252', '051', '015',
+    #                      '02121', '024', '041', '025', '061', '026', '062', '0121', '0212')
+    # common_idiomatics = ('0412', '0302', '051', '0501', '0601', '0106', '020121', '0205', '0204', '01021', '02101',
+    #                      '020212', '01012', '0206', '01202', '02102', '02021', '0102', '0201')
+    # # common_idiomatics = ('051', '0601', '0501', '020121', '01201', '01021', '0204', '02101', '020212',
+    # #                      '0206', '01012', '02102', '02012', '02021', '0102', '0201')
 
     def __init__(self, headword, start_time, timestamp, user, clazz, game):
 
@@ -166,6 +169,70 @@ class Idiomaton:
         return list(zip(*stat_props)), \
             ["%s do Idiomático" % stat for stat in "Contagem Latência Intervalo Permanência".split()], \
             Idiomaton.common_idiomatics, filtered.claz, "Índices dos idiomas EICA"
+
+
+class Logicon:
+    logic = {}
+    logicon = {}
+    common_logics = ['0212', '041', '051', '0261', '062', '025']
+    # common_logics = ('0502', '020101012', '01201', '020101021', '01020201', '0602', '02012')
+    # common_idiomatics = ('051', '0601', '0501', '020121', '01201', '01021', '0204', '02101', '020212',
+    #                      '0206', '01012', '02102', '02012', '02021', '0102', '0201')
+
+    def __init__(self, headword, sequence, start_time, timestamp, user, clazz, game):
+
+        class LogicStats:
+            def __init__(self, headword, count, latency, interval, permanence):
+                self.headword, self.count, self.latency, self.interval, self.permanence = \
+                    headword, count, latency, interval, permanence
+                self.timestamp = []
+
+            def update(self, timestamp, start_time):
+                self.count += 1
+                self.latency = min(self.latency, start_time)
+                self.interval.append(timestamp - self.timestamp[-1] if self.timestamp else timestamp)
+                self.timestamp.append(timestamp)
+                self.permanence.append(timestamp - start_time)
+
+        self.headword, self.sequence, self.start_time, self.timestamp, self.user, self.clazz, self.game = \
+            headword, sequence, start_time, timestamp, user, clazz, game
+        if user not in Logicon.logic:
+            stats = {
+                headword: LogicStats(headword=headword, count=0, latency=2.5e3, interval=[], permanence=[])
+                for headword in Logicon.common_logics}
+            Logicon.logic[user] = dict(logic=[self], stats=stats)
+        else:
+            Logicon.logic[user]["logic"].append(self)
+            if headword in Logicon.common_logics:
+                Logicon.logic[user]["stats"][headword].update(timestamp, start_time)
+
+    @staticmethod
+    def survey(filtered=NO_FILTER):
+        from statistics import mean
+
+        # for lex_user in Lexicon.lex_users:
+        #     for lex in Lexicon.lex[lex_user]:
+        #         if lex.headword in Lexicon.common_vocabulary:
+        #             lex["stats"][lex.headword].update(lex.timestamp, lex.start_time)
+        stats_by_lex = [
+            list(zip(*[(logic_entry["stats"][headword].count, logic_entry["stats"][headword].latency,
+                        mean(logic_entry["stats"][headword].interval) if logic_entry["stats"][headword].interval else 0,
+                        mean(logic_entry["stats"][headword].permanence) if logic_entry["stats"][
+                            headword].permanence else 0)
+                       for logic_entry in Logicon.logic.values() if filtered.filtered(logic_entry["logic"][0])]))
+            # for idiom_entry in Idiomaton.idiom.values() if idiom_entry["logic"][0].clazz == "E"]))
+            for headword in Logicon.common_logics]
+        print("Logicon.logic.", [(l, Logicon.logic[l]) for l in Logicon.logic])
+        print("stats_by_lex", stats_by_lex)
+        stat_props = [
+            (count, latency, interval,
+             permanence)
+            for count, latency, interval, permanence in stats_by_lex] if any(stats_by_lex) else \
+            [(0, 2.5e3, 0, 0), (1, 1.5e3, 1, 1)]
+        ticks = [Logicon.logicon[burst]["sequence"] for burst in Logicon.common_logics]
+        return list(zip(*stat_props)), \
+            ["%s da Lógica" % stat for stat in "Contagem Latência Intervalo Permanência".split()], \
+            ticks, filtered.claz, "Índices das lógicas EICA"
 
 
 class LanguageSurvey(MinutiaProfiler):
@@ -339,8 +406,8 @@ class LanguageSurvey(MinutiaProfiler):
                       clazz, game)
                 # user_collected_burst = headword + next_stat.headword
 
-                if user_collected_burst != "" and (user_collected_burst not in Lexicon.common_vocabulary):
-                    if headword in Lexicon.common_vocabulary:
+                if headword in Lexicon.common_vocabulary:
+                    if user_collected_burst != "" and (user_collected_burst not in Lexicon.common_vocabulary):
                         if user_collected_burst in Idiomaton.idiomaton:
                             ucb = Idiomaton.idiomaton[user_collected_burst]
                         else:
@@ -368,6 +435,57 @@ class LanguageSurvey(MinutiaProfiler):
             print("plot_burst_usage_and_size labels", labels)
             # print("collect_state_burst_information", len(self.state_burst), len(best_burst), best_burst)
 
+    def mark_logic_use_cases(self, named_user=None, plot=False):
+        # user_data = [user for user in self.scan_states_in_full_data()]
+        for user_name, current_user in Idiomaton.idiom.items():
+            # print(user_data[0][-1])
+            if named_user and named_user != user_name:
+                continue
+            # states, time, data, _, _, user = zip(*user_data)
+            user_collected_burst = ""
+            started_time = 0
+            # print(list(current_user.__dict__[arg] for arg in
+            #          "headword, start_time, timestamp, user, clazz, game".split(", ")))
+            for user_stat in current_user["idiom"]:
+                headword, start_time, timestamp, user, clazz, game = \
+                    list(user_stat.__dict__[arg] for arg in
+                         "headword, start_time, timestamp, user, clazz, game".split(", "))
+                print("headword, start_time, timestamp, user, clazz, game", headword, start_time, timestamp, user,
+                      clazz, game)
+                # user_collected_burst = headword + next_stat.headword
+
+                if headword in Idiomaton.common_idiomatics:
+                    if user_collected_burst != "" and (user_collected_burst not in Idiomaton.common_idiomatics)\
+                            and (user_collected_burst not in Lexicon.common_vocabulary):
+                        sequence, user_collected_burst = user_collected_burst, headword
+                        if user_collected_burst in Logicon.logicon:
+                            ucb = Logicon.logicon[user_collected_burst]
+                        else:
+                            ucb = Logicon.logicon[user_collected_burst] = dict(
+                                popul=0, _Chaves_=0, _Mundo_=0, _FALA_=0, V=0, S=0, F=0, E=0)
+                        Logicon.logicon[user_collected_burst]["sequence"] = sequence
+                        Logicon.logicon[user_collected_burst]["popul"] += 1
+                        Logicon.logicon[user_collected_burst][NAMED_GAME[int(game)]] += 1
+                        if clazz:
+                            Logicon.logicon[user_collected_burst][clazz] += 1
+                        Logicon(user_collected_burst, sequence, start_time, timestamp, user_name, clazz, game)
+                        user_collected_burst = ""
+                        start_time = timestamp
+                else:
+                    user_collected_burst += "" if user_collected_burst.endswith(headword) else headword
+        # print("Logicon.logicon", Logicon.logicon)
+        kind = ['popul', '_Chaves_', '_Mundo_', '_FALA_', 'V', 'S', 'F', 'E']
+        # best_burst = [list(stats[stat] for stat in kind)+[k] for k, stats in Logicon.logicon.items() if
+        #               stats['popul'] > 3]
+        best_burst = [list(stats[stat] for stat in kind)+[stats["sequence"]] for k, stats in Logicon.logicon.items() if
+                      sum(1 for claz in ['V', 'S', 'F', 'E'] if stats[claz]) > 0]
+        best_burst.sort()
+        gcount, c, m, r, v, s, f, e, labels = zip(*best_burst)
+        if plot:
+            self.plot_burst_usage_and_size([labels, gcount, c, m, r, v, s, f, e], log=0)
+            print("plot_burst_usage_and_size labels", [k for k in Logicon.logicon.keys()])
+            # print("collect_state_burst_information", len(self.state_burst), len(best_burst), best_burst)
+
     def survey_vocabulary_use_in_population(self, plot=True):
         self.mark_vocabulary_use_cases(plot=plot)
         if not plot:
@@ -378,6 +496,13 @@ class LanguageSurvey(MinutiaProfiler):
         self.mark_idiom_use_cases(plot=plot)
         if not plot:
             self.boxplot_de_caracteristicas(*Idiomaton.survey(filtered))
+
+    def survey_logic_use_in_population(self, plot=True, filtered=NO_FILTER):
+        self.mark_vocabulary_use_cases()
+        self.mark_idiom_use_cases(plot=False)
+        self.mark_logic_use_cases(plot=plot)
+        if not plot:
+            self.boxplot_de_caracteristicas(*Logicon.survey(filtered))
 
     def scan_for_minutia_stats_for_each_user(self, slicer=16):
         """
@@ -551,8 +676,10 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=NO_FILTER)
-    [LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=CLAZ_FILTER[c]) for c in "VSFE"]
-    # LanguageSurvey().load_from_db().survey_vocabulary_use_in_population()
-    # LanguageSurvey().load_from_db().scan_for_minutia_stats_in_users()
-    # LanguageSurvey().load_from_db().scan_for_minutia_stats_for_each_user()
+    LanguageSurvey().load_from_db().survey_logic_use_in_population(plot=False, filtered=NO_FILTER)
+    [LanguageSurvey().load_from_db().survey_logic_use_in_population(plot=False, filtered=CLZ_FILTER[c]) for c in "VSFE"]
+    # LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=NO_FILTER)
+    # [LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=CLZ_FILTER[c]) for c in "VSFE"]
+    # # LanguageSurvey().load_from_db().survey_vocabulary_use_in_population()
+    # # LanguageSurvey().load_from_db().scan_for_minutia_stats_in_users()
+    # # LanguageSurvey().load_from_db().scan_for_minutia_stats_for_each_user()
