@@ -43,7 +43,7 @@ class Clazz:
         self.claz, self.filtered = claz, lambda stat: True if filtered is None else (stat.clazz == filtered)
 
 CLZ_FILTER = {claz[1]: Clazz(claz, claz[1]) for claz in
-               ' Verdadeiro Sucesso, Sucesso Mínimo, Falso Sucesso, Expulsão Simbólica'.split(',')}
+              ' Verdadeiro Sucesso, Sucesso Mínimo, Falso Sucesso, Expulsão Simbólica'.split(',')}
 NO_FILTER = Clazz(' Populacional', None)
 
 
@@ -417,9 +417,9 @@ class LanguageSurvey(MinutiaProfiler):
                         Idiomaton.idiomaton[user_collected_burst][NAMED_GAME[int(game)]] += 1
                         if clazz:
                             Idiomaton.idiomaton[user_collected_burst][clazz] += 1
-                        Idiomaton(user_collected_burst, start_time, timestamp, user_name, clazz, game)
+                        Idiomaton(user_collected_burst, started_time, timestamp, user_name, clazz, game)
                         user_collected_burst = ""
-                        start_time = timestamp
+                        started_time = timestamp
                 else:
                     user_collected_burst += "" if user_collected_burst.endswith(headword) else headword
         # print("Idiomaton.idiomaton", Idiomaton.idiomaton)
@@ -427,11 +427,14 @@ class LanguageSurvey(MinutiaProfiler):
         # best_burst = [list(stats[stat] for stat in kind)+[k] for k, stats in Idiomaton.idiomaton.items() if
         #               stats['popul'] > 3]
         best_burst = [list(stats[stat] for stat in kind)+[k] for k, stats in Idiomaton.idiomaton.items() if
-                      sum(1 for claz in ['V', 'S', 'F', 'E'] if stats[claz]) > 2]
+                      (sum(1 for claz in ['V', 'S', 'F', 'E'] if stats[claz]) > 2) and
+                      (sum(1 for jogo in ['_Chaves_', '_Mundo_', '_FALA_'] if stats[jogo]) > 2)]
         best_burst.sort()
         gcount, c, m, r, v, s, f, e, labels = zip(*best_burst)
         if plot:
-            self.plot_burst_usage_and_size([labels, gcount, c, m, r, v, s, f, e], log=0)
+            self.plot_burst_usage_and_size(
+                [labels, gcount, c, m, r, v, s, f, e],
+                title="Contagem da transitividade idiomaatica", log=0)
             print("plot_burst_usage_and_size labels", labels)
             # print("collect_state_burst_information", len(self.state_burst), len(best_burst), best_burst)
 
@@ -676,9 +679,9 @@ def _notmain():
 
 
 if __name__ == '__main__':
-    LanguageSurvey().load_from_db().survey_logic_use_in_population(plot=False, filtered=NO_FILTER)
-    [LanguageSurvey().load_from_db().survey_logic_use_in_population(plot=False, filtered=CLZ_FILTER[c]) for c in "VSFE"]
-    # LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=NO_FILTER)
+    # LanguageSurvey().load_from_db().survey_logic_use_in_population(plot=False, filtered=NO_FILTER)
+    # [LanguageSurvey().load_from_db().survey_logic_use_in_population(plot=False, filtered=CLZ_FILTER[c]) for c in "VSFE"]
+    LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=True, filtered=NO_FILTER)
     # [LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=CLZ_FILTER[c]) for c in "VSFE"]
     # # LanguageSurvey().load_from_db().survey_vocabulary_use_in_population()
     # # LanguageSurvey().load_from_db().scan_for_minutia_stats_in_users()

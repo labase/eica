@@ -14,6 +14,7 @@ import numpy as np
 # from datetime import timedelta as td
 # from time import strftime
 # import matplotlib.pyplot as plt
+BTITLE = "Contagem dos casos de uso da máquina EICA"
 NONE = ""
 
 Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
@@ -812,7 +813,7 @@ class MinutiaProfiler(Track):
         plt.show()
         return
 
-    def plot_burst_usage_and_size(self, ubars, log=1):
+    def plot_burst_usage_and_size(self, ubars, title=BTITLE, log=1):
         labels = ubars.pop(0)
         labels = [
             " ".join([part.capitalize() if i == 0 else part[:1].capitalize() for i, part in enumerate(name.split())])
@@ -823,7 +824,7 @@ class MinutiaProfiler(Track):
         # cl = "r g b c m y".split()
         plt.grid(True)
         plt.subplots_adjust(bottom=0.25, left=.05, right=.96, top=0.96, hspace=.35)
-        plt.title("Contagem dos casos de uso da máquina EICA")
+        plt.title(title)
 
         x = range(len(ubars[0]))
         plt.xticks(x, labels, rotation='vertical')

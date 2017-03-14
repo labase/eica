@@ -1,0 +1,956 @@
+
+
+
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Untitled</title>
+        <style>
+            body {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+
+            .sozi-frame-list {
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 33%;
+                height: 100%;
+                margin: 0;
+                padding: 0.5em 1em;
+                overflow-y: auto;
+
+                list-style: decimal inside;
+
+                font-family: "Droid Sans", Helvetica, Arial, sans-serif;
+                font-size: 12pt;
+
+                color: rgb(240, 255, 255);
+                background-color: rgba(34, 34, 34, 0.9);
+            }
+
+            .sozi-frame-list li {
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            .sozi-frame-list a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .sozi-frame-list a:hover {
+                color: rgb(0, 204, 255);
+                text-decoration: underline;
+            }
+
+            .sozi-frame-list a.current {
+                color: rgb(255, 170, 68);
+            }
+
+            .sozi-frame-number {
+                position: absolute;
+                top: 0;
+                left: 1em;
+                text-align: center;
+                padding: 0.3em 0.6em;
+
+                cursor: pointer;
+
+                font-family: "Droid Sans", Helvetica, Arial, sans-serif;
+                font-size: 12pt;
+                color: rgb(240, 255, 255);
+                background-color: rgba(34, 34, 34, 0.9);
+            }
+
+            svg a {
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="909px" height="799px" style="height: auto; width: auto; background-color: rgb(255, 255, 255);" id="svg2" inkscape:version="0.91 r13725" sodipodi:docname="MAPA_DA_TESE.svg"><style>svg {
+        background: rgba(255, 255, 255, 0);
+    }</style><metadata id="metadata1172">
+    <rdf:rdf>
+      <cc:work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></dc:type>
+      </cc:work>
+    </rdf:rdf>
+  </metadata><defs id="defs1170"></defs><sodipodi:namedview pagecolor="#ffffff" bordercolor="#666666" borderopacity="1" objecttolerance="10" gridtolerance="10" guidetolerance="10" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-width="1920" inkscape:window-height="1029" id="namedview1168" showgrid="false" inkscape:zoom="1.0922078" inkscape:cx="374.35266" inkscape:cy="432.12307" inkscape:window-x="0" inkscape:window-y="27" inkscape:window-maximized="1" inkscape:current-layer="layer7"></sodipodi:namedview><g inkscape:groupmode="layer" id="layer1" inkscape:label="razoes" style="display:inline">
+    <g id="g1088">
+      <rect x="124" y="175" rx="8" ry="8" width="131" height="42" id="rect1090" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="124" y="175" rx="8" ry="8" width="131" height="42" id="rect1092" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g1094">
+        <text x="131" y="193" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1096" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1098">Porque</tspan>
+          <tspan id="tspan1100" style="fill:none">t</tspan>
+          <tspan id="tspan1102">a</tspan>
+          <tspan id="tspan1104" style="fill:none">t</tspan>
+          <tspan id="tspan1106">sociedade</tspan>
+          <tspan id="tspan1108" style="fill:none">t</tspan>
+          <tspan id="tspan1110">é</tspan>
+        </text>
+        <text x="160" y="207" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1112" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1114">Anacrônica</tspan>
+        </text>
+      </g>
+    </g>
+    <g style="display:inline" id="g4541">
+      <g id="g726">
+        <rect id="rect728" height="28" width="128" ry="8" rx="8" y="272" x="601" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+        <g id="g732">
+          <text id="text734" font-size="8pt" font-style="normal" font-weight="normal" text-decoration="normal" alignment-baseline="auto" y="290" x="608" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+            <tspan id="tspan736">Resgatar</tspan>
+            <tspan id="tspan738" style="fill:none">t</tspan>
+            <tspan id="tspan740">a</tspan>
+            <tspan id="tspan742" style="fill:none">t</tspan>
+            <tspan id="tspan744">felicidade</tspan>
+          </text>
+        </g>
+      </g>
+      <rect id="rect730" height="28" width="128" ry="8" rx="8" y="272" x="601" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+    </g>
+    <g id="g1116">
+      <rect x="351" y="283" rx="8" ry="8" width="133" height="28" id="rect1118" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="351" y="283" rx="8" ry="8" width="133" height="28" id="rect1120" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g1122">
+        <text x="358" y="301" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1124" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1126">Para</tspan>
+          <tspan id="tspan1128" style="fill:none">t</tspan>
+          <tspan id="tspan1130">avaliar</tspan>
+          <tspan id="tspan1132" style="fill:none">t</tspan>
+          <tspan id="tspan1134">e</tspan>
+          <tspan id="tspan1136" style="fill:none">t</tspan>
+          <tspan id="tspan1138">intervir</tspan>
+        </text>
+      </g>
+    </g>
+  </g><g inkscape:groupmode="layer" id="layer2" inkscape:label="conceitos" style="display:inline">
+    <g id="g714">
+      <rect x="12" y="472" rx="8" ry="8" width="110" height="28" id="rect716" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="12" y="472" rx="8" ry="8" width="110" height="28" id="rect718" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g720">
+        <text x="19" y="490" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text722" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan724">TRANSITIVIDADE</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g746">
+      <rect x="206" y="483" rx="8" ry="8" width="152" height="28" id="rect748" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="206" y="483" rx="8" ry="8" width="152" height="28" id="rect750" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g752">
+        <text x="213" y="501" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text754" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan756">Metaprocessos</tspan>
+          <tspan id="tspan758" style="fill:none">t</tspan>
+          <tspan id="tspan760">cognitivos</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g828">
+      <rect x="497" y="409" rx="8" ry="8" width="119" height="28" id="rect830" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="497" y="409" rx="8" ry="8" width="119" height="28" id="rect832" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g834">
+        <text x="504" y="427" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text836" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan838">Próteses</tspan>
+          <tspan id="tspan840" style="fill:none">t</tspan>
+          <tspan id="tspan842">cognitivas</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g912">
+      <rect x="113" y="377" rx="8" ry="8" width="167" height="28" id="rect914" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="113" y="377" rx="8" ry="8" width="167" height="28" id="rect916" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g918">
+        <text x="120" y="395" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text920" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan922">UNIVERSAIS</tspan>
+          <tspan id="tspan924" style="fill:none">t</tspan>
+          <tspan id="tspan926">DA</tspan>
+          <tspan id="tspan928" style="fill:none">t</tspan>
+          <tspan id="tspan930">COGNIÇÃO</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g932">
+      <rect x="8" y="332" rx="8" ry="8" width="153" height="28" id="rect934" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="8" y="332" rx="8" ry="8" width="153" height="28" id="rect936" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g938">
+        <text x="15" y="350" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text940" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan942">Máquina</tspan>
+          <tspan id="tspan944" style="fill:none">t</tspan>
+          <tspan id="tspan946">de</tspan>
+          <tspan id="tspan948" style="fill:none">t</tspan>
+          <tspan id="tspan950">estados</tspan>
+          <tspan id="tspan952" style="fill:none">t</tspan>
+          <tspan id="tspan954">EICA</tspan>
+        </text>
+      </g>
+    </g>
+  </g><g inkscape:groupmode="layer" id="layer4" inkscape:label="instrumentos" style="display:inline">
+    <g id="g686">
+      <rect x="237" y="614" rx="8" ry="8" width="157" height="42" id="rect688" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="237" y="614" rx="8" ry="8" width="157" height="42" id="rect690" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g692">
+        <text x="273" y="632" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text694" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan696">API</tspan>
+          <tspan id="tspan698" style="fill:none">t</tspan>
+          <tspan id="tspan700">DE</tspan>
+          <tspan id="tspan702" style="fill:none">t</tspan>
+          <tspan id="tspan704">COLETA</tspan>
+        </text>
+        <text x="244" y="646" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text706" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan708">CRIVOS</tspan>
+          <tspan id="tspan710" style="fill:none">t</tspan>
+          <tspan id="tspan712">ESPECIALIZADOS</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g788">
+      <rect x="364" y="735" rx="8" ry="8" width="144" height="28" id="rect790" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="364" y="735" rx="8" ry="8" width="144" height="28" id="rect792" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g794">
+        <text x="371" y="753" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text796" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan798">MODELO</tspan>
+          <tspan id="tspan800" style="fill:none">t</tspan>
+          <tspan id="tspan802">DIMENSIONAL</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g896">
+      <rect x="13" y="559" rx="8" ry="8" width="127" height="28" id="rect898" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="13" y="559" rx="8" ry="8" width="127" height="28" id="rect900" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g902">
+        <text x="20" y="577" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text904" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan906">MACHINE</tspan>
+          <tspan id="tspan908" style="fill:none">t</tspan>
+          <tspan id="tspan910">LEARNING</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g1020">
+      <rect x="616" y="507" rx="8" ry="8" width="138" height="28" id="rect1022" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="616" y="507" rx="8" ry="8" width="138" height="28" id="rect1024" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g1026">
+        <text x="623" y="525" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1028" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1030">GAMES</tspan>
+          <tspan id="tspan1032" style="fill:none">t</tspan>
+          <tspan id="tspan1034">INTELIGENTES</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g1036">
+      <rect x="33" y="640" rx="8" ry="8" width="139" height="28" id="rect1038" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="33" y="640" rx="8" ry="8" width="139" height="28" id="rect1040" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g1042">
+        <text x="40" y="658" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1044" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1046">API</tspan>
+          <tspan id="tspan1048" style="fill:none">t</tspan>
+          <tspan id="tspan1050">DE</tspan>
+          <tspan id="tspan1052" style="fill:none">t</tspan>
+          <tspan id="tspan1054">COLETA</tspan>
+          <tspan id="tspan1056" style="fill:none">t</tspan>
+          <tspan id="tspan1058">GERAL</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g1072">
+      <rect x="189" y="751" rx="8" ry="8" width="132" height="28" id="rect1074" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="189" y="751" rx="8" ry="8" width="132" height="28" id="rect1076" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g1078">
+        <text x="196" y="769" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1080" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1082">CAPTURA</tspan>
+          <tspan id="tspan1084" style="fill:none">t</tspan>
+          <tspan id="tspan1086">COGNITIVA</tspan>
+        </text>
+      </g>
+    </g>
+  </g><g inkscape:groupmode="layer" id="layer3" inkscape:label="relacoes" style="display:inline">
+    <g id="g106">
+      <path d="m 191,217 5,111" id="path108" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g302">
+      <g id="g304">
+        <text x="399" y="428" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text306" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan308">Cibernética</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g310">
+      <g id="g312">
+        <text x="526" y="202" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text314" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan316">Com</tspan>
+          <tspan id="tspan318" style="fill:none">t</tspan>
+          <tspan id="tspan320">que</tspan>
+          <tspan id="tspan322" style="fill:none">t</tspan>
+          <tspan id="tspan324">objetivo?</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g342">
+      <g id="g344">
+        <text x="57" y="532" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text346" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan348">Prognóstico</tspan>
+          <tspan id="tspan350" style="fill:none">t</tspan>
+          <tspan id="tspan352">/</tspan>
+          <tspan id="tspan354" style="fill:none">t</tspan>
+          <tspan id="tspan356">diagnóstico</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g358">
+      <g id="g360">
+        <text x="440" y="629" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text362" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan364">instanciação</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g376">
+      <g id="g378">
+        <text x="263" y="704" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text380" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan382">CRIVOS</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g384">
+      <g id="g386">
+        <text x="279" y="570" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text388" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan390">Módulo</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g392">
+      <g id="g394">
+        <text x="661" y="211" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text396" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan398">O</tspan>
+          <tspan id="tspan400" style="fill:none">t</tspan>
+          <tspan id="tspan402">que</tspan>
+          <tspan id="tspan404" style="fill:none">t</tspan>
+          <tspan id="tspan406">os</tspan>
+          <tspan id="tspan408" style="fill:none">t</tspan>
+          <tspan id="tspan410">resultados</tspan>
+          <tspan id="tspan412" style="fill:none">t</tspan>
+          <tspan id="tspan414">revelam?</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g424">
+      <g id="g426">
+        <text x="395" y="477" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text428" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan430">Engenho</tspan>
+          <tspan id="tspan432" style="fill:none">t</tspan>
+          <tspan id="tspan434">computacional</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g436">
+      <g id="g438">
+        <text x="172" y="579" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text440" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan442">Módulo</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g444">
+      <g id="g446">
+        <text x="213" y="256" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text448" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan450">Desestimula</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g460">
+      <g id="g462">
+        <text x="598" y="571" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text464" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan466" style="fill:none">t</tspan>
+          <tspan id="tspan468">MICROGÊNESE,</tspan>
+          <tspan id="tspan470" style="fill:none">t</tspan>
+          <tspan id="tspan472">ONTOGÊNESE</tspan>
+          <tspan id="tspan474" style="fill:none">t</tspan>
+        </text>
+        <text x="611" y="585" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text476" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan478">E</tspan>
+          <tspan id="tspan480" style="fill:none">t</tspan>
+          <tspan id="tspan482">FILOGÊNESE</tspan>
+          <tspan id="tspan484" style="fill:none">t</tspan>
+          <tspan id="tspan486">COGNITIVA</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g488">
+      <g id="g490">
+        <text x="459" y="237" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text492" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan494">Através</tspan>
+          <tspan id="tspan496" style="fill:none">t</tspan>
+          <tspan id="tspan498">de</tspan>
+          <tspan id="tspan500" style="fill:none">t</tspan>
+          <tspan id="tspan502">que?</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g516">
+      <g id="g518">
+        <text x="6" y="410" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text520" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan522">COMPROVA</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g524">
+      <g id="g526">
+        <text x="669" y="633" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text528" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan530">OBSERVÁVEIS</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g532">
+      <g id="g534">
+        <text x="295" y="402" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text536" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan538">Competência</tspan>
+          <tspan id="tspan540" style="fill:none">t</tspan>
+          <tspan id="tspan542">Pioneira</tspan>
+        </text>
+        <text x="317" y="416" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text544" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan546">Área</tspan>
+          <tspan id="tspan548" style="fill:none">t</tspan>
+          <tspan id="tspan550">de</tspan>
+          <tspan id="tspan552" style="fill:none">t</tspan>
+          <tspan id="tspan554">força</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g556">
+      <g id="g558">
+        <text x="330" y="213" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text560" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan562">Para</tspan>
+          <tspan id="tspan564" style="fill:none">t</tspan>
+          <tspan id="tspan566">que?</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g580">
+      <g id="g582">
+        <text x="7" y="615" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text584" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan586">instanciação</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g588">
+      <g id="g590">
+        <text x="290" y="180" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text592" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan594">Porque?</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g596">
+      <g id="g598">
+        <text x="640" y="468" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text600" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan602">Como?</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g604">
+      <g id="g606">
+        <text x="771" y="634" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text608" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan610">ANÁLISE</tspan>
+          <tspan id="tspan612" style="fill:none">t</tspan>
+          <tspan id="tspan614">DAS</tspan>
+          <tspan id="tspan616" style="fill:none">t</tspan>
+        </text>
+        <text x="783" y="648" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text618" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan620">MINÚCIAS</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g622">
+      <g id="g624">
+        <text x="430" y="700" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text626" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan628">CRIVO</tspan>
+          <tspan id="tspan630" style="fill:none">t</tspan>
+          <tspan id="tspan632">COMPUTACIONAL</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g634">
+      <g id="g636">
+        <text x="519" y="341" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text638" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan640">SOBREVIVÊNCIA</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g642">
+      <g id="g644">
+        <text x="105" y="268" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text646" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan648">Desconstrói</tspan>
+        </text>
+        <text x="59" y="282" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text650" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan652">os</tspan>
+          <tspan id="tspan654" style="fill:none">t</tspan>
+          <tspan id="tspan656">metaprocessos</tspan>
+          <tspan id="tspan658" style="fill:none">t</tspan>
+          <tspan id="tspan660">cognitivos</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g662">
+      <g id="g664">
+        <text x="536" y="545" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text666" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan668">que</tspan>
+          <tspan id="tspan670" style="fill:none">t</tspan>
+          <tspan id="tspan672">geram</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g674">
+      <g id="g676">
+        <text x="507" y="508" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text678" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan680">dotados</tspan>
+          <tspan id="tspan682" style="fill:none">t</tspan>
+          <tspan id="tspan684">de</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g326">
+      <g id="g328">
+        <text x="346" y="455" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text330" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan332">mudança</tspan>
+          <tspan id="tspan334" style="fill:none">t</tspan>
+          <tspan id="tspan336">de</tspan>
+          <tspan id="tspan338" style="fill:none">t</tspan>
+          <tspan id="tspan340">paradigma</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g366">
+      <g id="g368">
+        <text x="175" y="340" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text370" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan372">Ignora</tspan>
+          <tspan id="tspan374" style="fill:none">t</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g452">
+      <g id="g454">
+        <text x="94" y="442" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text456" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan458">METAREGRAS</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g504">
+      <g id="g506">
+        <text x="331" y="530" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text508" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan510">MODELO</tspan>
+          <tspan id="tspan512" style="fill:none">t</tspan>
+          <tspan id="tspan514">NEURO-COMPUTACIONAL</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g568">
+      <g id="g570">
+        <text x="422" y="374" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text572" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan574">Patamares</tspan>
+          <tspan id="tspan576" style="fill:none">t</tspan>
+          <tspan id="tspan578">superiores</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g416">
+      <g id="g418">
+        <text x="412" y="81" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text420" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan422">Necessidade</tspan>
+        </text>
+      </g>
+    </g>
+  </g><g inkscape:groupmode="layer" id="layer5" inkscape:label="extra" style="display:inline">
+    <g id="g762">
+      <rect x="602" y="656" rx="8" ry="8" width="147" height="42" id="rect764" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="602" y="656" rx="8" ry="8" width="147" height="42" id="rect766" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g768">
+        <text x="609" y="674" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text770" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan772" style="fill:none">t</tspan>
+          <tspan id="tspan774">MÁQUINA</tspan>
+          <tspan id="tspan776" style="fill:none">t</tspan>
+          <tspan id="tspan778">DE</tspan>
+          <tspan id="tspan780" style="fill:none">t</tspan>
+          <tspan id="tspan782">ESTADOS</tspan>
+        </text>
+        <text x="662" y="688" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text784" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan786">EICA</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g956">
+      <rect x="368" y="548" rx="8" ry="8" width="160" height="28" id="rect958" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="368" y="548" rx="8" ry="8" width="160" height="28" id="rect960" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g962">
+        <text x="375" y="566" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text964" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan966">INTELIGÊNCIA</tspan>
+          <tspan id="tspan968" style="fill:none">t</tspan>
+          <tspan id="tspan970">ARTIFICIAL</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g972">
+      <rect x="697" y="381" rx="8" ry="8" width="144" height="56" id="rect974" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="697" y="381" rx="8" ry="8" width="144" height="56" id="rect976" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g978">
+        <text x="704" y="399" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text980" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan982">Soluções</tspan>
+          <tspan id="tspan984" style="fill:none">t</tspan>
+          <tspan id="tspan986">e</tspan>
+          <tspan id="tspan988" style="fill:none">t</tspan>
+          <tspan id="tspan990">implicações</tspan>
+          <tspan id="tspan992" style="fill:none">t</tspan>
+        </text>
+        <text x="728" y="413" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text994" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan996">pedagógicas</tspan>
+          <tspan id="tspan998" style="fill:none">t</tspan>
+          <tspan id="tspan1000">e</tspan>
+          <tspan id="tspan1002" style="fill:none">t</tspan>
+        </text>
+        <text x="721" y="427" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1004" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1006">neuropsicológicas</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g1008">
+      <rect x="775" y="308" rx="8" ry="8" width="67" height="28" id="rect1010" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="775" y="308" rx="8" ry="8" width="67" height="28" id="rect1012" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g1014">
+        <text x="782" y="326" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1016" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1018">Conexões</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g1060">
+      <rect x="261" y="323" rx="8" ry="8" width="88" height="28" id="rect1062" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="261" y="323" rx="8" ry="8" width="88" height="28" id="rect1064" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g1066">
+        <text x="268" y="341" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1068" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1070">Metacognição</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g1140">
+      <rect x="656" y="718" rx="8" ry="8" width="127" height="70" id="rect1142" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="656" y="718" rx="8" ry="8" width="127" height="70" id="rect1144" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g1146">
+        <text x="663" y="736" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1148" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1150">NÍVEIS</tspan>
+          <tspan id="tspan1152" style="fill:none">t</tspan>
+          <tspan id="tspan1154">IDIOMÁTICO</tspan>
+        </text>
+        <text x="686" y="750" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1156" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1158">SEMÂNTICO</tspan>
+        </text>
+        <text x="689" y="764" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1160" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1162">SINTÁTICO</tspan>
+        </text>
+        <text x="699" y="778" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text1164" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan1166">LÉXICO</tspan>
+        </text>
+      </g>
+    </g>
+  </g><g inkscape:groupmode="layer" id="layer6" inkscape:label="base" style="display:inline">
+    <g id="g804">
+      <rect x="308" y="19" rx="8" ry="8" width="263" height="28" id="rect806" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="308" y="19" rx="8" ry="8" width="263" height="28" id="rect808" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g810">
+        <text x="315" y="37" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text812" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan814">CÉREBRO-MENTE</tspan>
+          <tspan id="tspan816" style="fill:none">t</tspan>
+          <tspan id="tspan818">COMO</tspan>
+          <tspan id="tspan820" style="fill:none">t</tspan>
+          <tspan id="tspan822">SISTEMA</tspan>
+          <tspan id="tspan824" style="fill:none">t</tspan>
+          <tspan id="tspan826">COMPLEXO</tspan>
+        </text>
+      </g>
+    </g>
+    <g id="g844">
+      <rect x="295" y="100" rx="8" ry="8" width="313" height="42" id="rect846" style="fill:#edf4f6;stroke:none;stroke-width:0"></rect>
+      <rect x="295" y="100" rx="8" ry="8" width="313" height="42" id="rect848" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></rect>
+      <g id="g850">
+        <text x="302" y="118" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text852" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan854">CONSTRUÇÃO</tspan>
+          <tspan id="tspan856" style="fill:none">t</tspan>
+          <tspan id="tspan858">DE</tspan>
+          <tspan id="tspan860" style="fill:none">t</tspan>
+          <tspan id="tspan862">UM</tspan>
+          <tspan id="tspan864" style="fill:none">t</tspan>
+          <tspan id="tspan866">MODELO</tspan>
+          <tspan id="tspan868" style="fill:none">t</tspan>
+          <tspan id="tspan870">DE</tspan>
+          <tspan id="tspan872" style="fill:none">t</tspan>
+          <tspan id="tspan874">ENGENHARIA</tspan>
+          <tspan id="tspan876" style="fill:none">t</tspan>
+          <tspan id="tspan878">EICA:</tspan>
+        </text>
+        <text x="306" y="132" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text880" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan882">ESTRUTURAS</tspan>
+          <tspan id="tspan884" style="fill:none">t</tspan>
+          <tspan id="tspan886">INTERNAS</tspan>
+          <tspan id="tspan888" style="fill:none">t</tspan>
+          <tspan id="tspan890">COGNITIVAS</tspan>
+          <tspan id="tspan892" style="fill:none">t</tspan>
+          <tspan id="tspan894">APRENDENTES</tspan>
+        </text>
+      </g>
+    </g>
+  </g><g inkscape:groupmode="layer" id="layer7" inkscape:label="links" style="display:inline">
+    <g id="g4">
+      <path d="m 417,311 -6,132" id="path6" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g8">
+      <path d="m 252,260 43,63" id="path10" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g12">
+      <path d="m 597,536 8.44221,-1.31075" id="path14" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+      <path d="m 616,533 -9.69708,7.06871 -0.86071,-5.37946 -0.86072,-5.37947 z" id="path16" inkscape:connector-curvature="0" style="fill:#000000;stroke:none;stroke-width:1.5;stroke-dasharray:none"></path>
+    </g>
+    <g id="g18">
+      <path d="m 442,47 3,22" id="path20" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g22">
+      <path d="m 744,215 21,166" id="path24" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g26">
+      <path d="m 289,180 -34,5" id="path28" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g30">
+      <path d="M 74,360 44,398" id="path32" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g34">
+      <path d="m 308,707 85,28" id="path36" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g38">
+      <path d="m 175,217 -27,39" id="path40" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g42">
+      <path d="M 431,311 671,559" id="path44" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g46">
+      <path d="M 121,446 86,472" id="path48" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g50">
+      <path d="m 399,142 -66,26" id="path52" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g54">
+      <path d="M 474,688 389.13485,659.40667" id="path56" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+      <path d="m 379,656 11.87063,-1.75729 -1.73578,5.16396 -1.73579,5.16396 z" id="path58" inkscape:connector-curvature="0" style="fill:#000000;stroke:none;stroke-width:1.5;stroke-dasharray:none"></path>
+    </g>
+    <g id="g60">
+      <path d="m 158,668 104,26" id="path62" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g64">
+      <path d="M 518,344 280,379" id="path66" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g68">
+      <path d="m 462,424 24.30911,-0.84043" id="path70" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+      <path d="m 497,423 -10.60958,5.60684 -0.0813,-5.44727 -0.0813,-5.44728 z" id="path72" inkscape:connector-curvature="0" style="fill:#000000;stroke:none;stroke-width:1.5;stroke-dasharray:none"></path>
+    </g>
+    <g id="g74">
+      <path d="m 663,472 16,35" id="path76" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g78">
+      <path d="m 530,437 -54,28" id="path80" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g82">
+      <path d="M 456,735 664,589" id="path84" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g86">
+      <path d="M 439,534 641,656" id="path88" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g90">
+      <path d="m 211,217 28,27" id="path92" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g94">
+      <path d="M 628,300 393,390" id="path96" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g98">
+      <path d="m 285,511 12,47" id="path100" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g102">
+      <path d="m 462,142 38,83" id="path104" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g110">
+      <path d="m 363,217 45,66" id="path112" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g114">
+      <path d="M 421,366 171.67328,351.63373" id="path116" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+      <path d="m 161,351 10.99618,-4.80458 -0.3229,5.43831 -0.3229,5.4383 z" id="path118" inkscape:connector-curvature="0" style="fill:#000000;stroke:none;stroke-width:1.5;stroke-dasharray:none"></path>
+    </g>
+    <g id="g120">
+      <path d="m 526,512 -56,36" id="path122" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g124">
+      <path d="M 117,536 92,559" id="path126" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g128">
+      <path d="m 592,437 47,19" id="path130" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g132">
+      <path d="m 454,576 17,41" id="path134" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g136">
+      <path d="m 281,708 -20,43" id="path138" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g140">
+      <path d="m 506,241 47,168" id="path142" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g144">
+      <path d="M 221,405 412,518" id="path146" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g148">
+      <path d="m 196,344 1,33" id="path150" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g152">
+      <path d="M 227,405 692,621" id="path154" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g156">
+      <path d="M 301,420 117,472" id="path158" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g160">
+      <path d="m 87,500 28,20" id="path162" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g164">
+      <path d="M 368,572 75,607" id="path166" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g168">
+      <path d="m 266,511 -65,56" id="path170" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g172">
+      <path d="m 358,487 43,-6" id="path174" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g176">
+      <path d="m 748,215 53,93" id="path178" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g180">
+      <path d="m 430,142 -63,59" id="path182" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g184">
+      <path d="m 178,405 -35,25" id="path186" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g188">
+      <path d="M 634,300 499,362" id="path190" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g192">
+      <path d="m 528,548 7,-1" id="path194" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g196">
+      <path d="m 498,481 121,26" id="path198" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g200">
+      <path d="m 70,403 32.35419,-3.00639" id="path202" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+      <path d="m 113,399 -10.13954,6.41792 -0.50627,-5.42431 -0.50627,-5.42431 z" id="path204" inkscape:connector-curvature="0" style="fill:#000000;stroke:none;stroke-width:1.5;stroke-dasharray:none"></path>
+    </g>
+    <g id="g206">
+      <path d="m 301,574 10,40" id="path208" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g210">
+      <path d="m 439,627 -45,3" id="path212" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g214">
+      <path d="m 710,637 7,81" id="path216" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g218">
+      <path d="m 685,535 0,24" id="path220" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g222">
+      <path d="m 389,459 -68,24" id="path224" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g226">
+      <path d="M 775,324 612,334" id="path228" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g230">
+      <path d="m 518,337 -158.30792,0" id="path232" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+      <path d="m 349,337 10.69208,-5.44789 0,5.44789 0,5.44789 z" id="path234" inkscape:connector-curvature="0" style="fill:#000000;stroke:none;stroke-width:1.5;stroke-dasharray:none"></path>
+    </g>
+    <g id="g236">
+      <path d="m 684,589 -6,67" id="path238" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g240">
+      <path d="m 306,656 -17,36" id="path242" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g244">
+      <path d="m 747,656 23,-7" id="path246" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g248">
+      <path d="M 127,286 95,332" id="path250" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g252">
+      <path d="m 53,619 30,21" id="path254" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g256">
+      <path d="m 447,85 2,15" id="path258" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g260">
+      <path d="m 452,100 0,13" id="path262" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g264">
+      <path d="m 799,652 -52,66" id="path266" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g268">
+      <path d="M 122,477 398,429" id="path270" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g272">
+      <path d="m 183,583 -64,57" id="path274" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g276">
+      <path d="m 602,685 -36,4" id="path278" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g280">
+      <path d="m 586,206 65,66" id="path282" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g284">
+      <path d="m 452,113 0,-2.30792" id="path286" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+      <path d="m 452,100 5.44789,10.69208 -5.44789,0 -5.44789,0 z" id="path288" inkscape:connector-curvature="0" style="fill:#000000;stroke:none;stroke-width:1.5;stroke-dasharray:none"></path>
+    </g>
+    <g id="g290">
+      <path d="m 616,513 -47,-5" id="path292" inkscape:connector-curvature="0" style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none"></path>
+    </g>
+    <g id="g294">
+      <g id="g296">
+        <text x="439" y="125" alignment-baseline="auto" text-decoration="normal" font-weight="normal" font-style="normal" font-size="8pt" id="text298" style="font-style:normal;font-weight:normal;font-size:10px;font-family:Verdana;text-anchor:start;fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none">
+          <tspan id="tspan300">????</tspan>
+        </text>
+      </g>
+    </g>
+  </g></svg>
+
+        <div class="sozi-frame-number" title="Click to show the frame list">1</div>
+        <ol class="sozi-frame-list">
+            
+                
+                    <li value="1"><a data-frame-index="0" href="#frame1557" title="inicio">inicio</a></li>
+                
+            
+                
+                    <li value="2"><a data-frame-index="1" href="#frame9547" title="razoes">razoes</a></li>
+                
+            
+                
+                    <li value="3"><a data-frame-index="2" href="#frame7669" title="conceitos">conceitos</a></li>
+                
+            
+                
+                    <li value="4"><a data-frame-index="3" href="#frame2139" title="instrumentos">instrumentos</a></li>
+                
+            
+        </ol>
+        <script>var soziPresentationData = {"frames":[{"frameId":"frame1557","title":"inicio","timeoutMs":0,"timeoutEnable":false,"transitionDurationMs":1000,"showInFrameList":true,"showFrameNumber":true,"layerProperties":{"layer1":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer2":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer4":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer3":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer5":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer6":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer7":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"__sozi_auto__":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""}},"cameraStates":{"layer1":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer2":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer4":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer3":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer5":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer6":{"cx":439.3907692119497,"cy":116.1506374417025,"width":426.3414096007313,"height":319.5353835930947,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer7":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"__sozi_auto__":{"cx":426.421875,"cy":403.5,"width":840.84375,"height":769,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1}}},{"frameId":"frame9547","title":"razoes","timeoutMs":0,"timeoutEnable":false,"transitionDurationMs":1000,"showInFrameList":true,"showFrameNumber":true,"layerProperties":{"layer1":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer2":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer4":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer3":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer5":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer6":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer7":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"__sozi_auto__":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""}},"cameraStates":{"layer1":{"cx":446.52865587713586,"cy":164.86315561367067,"width":694.4652312713516,"height":520.4894694000607,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer2":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer4":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer3":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer5":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer6":{"cx":418.94430953427366,"cy":92.39107172184849,"width":694.4652312713528,"height":520.4894694000615,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer7":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"__sozi_auto__":{"cx":426.421875,"cy":403.5,"width":840.84375,"height":769,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1}}},{"frameId":"frame7669","title":"conceitos","timeoutMs":0,"timeoutEnable":false,"transitionDurationMs":1000,"showInFrameList":true,"showFrameNumber":true,"layerProperties":{"layer1":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer2":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer4":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer3":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer5":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer6":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer7":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"__sozi_auto__":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""}},"cameraStates":{"layer1":{"cx":404.8319856765787,"cy":305.0502364603719,"width":694.4652312713516,"height":520.4894694000607,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer2":{"cx":309.4462411080026,"cy":349.27536140837645,"width":629.900436527303,"height":472.09929197284407,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer4":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer3":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer5":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer6":{"cx":438.33296313904793,"cy":225.68763583355707,"width":930.6498289923728,"height":697.5056689342422,"opacity":0.5,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer7":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"__sozi_auto__":{"cx":426.421875,"cy":403.5,"width":840.84375,"height":769,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1}}},{"frameId":"frame2139","title":"instrumentos","timeoutMs":0,"timeoutEnable":false,"transitionDurationMs":1000,"showInFrameList":true,"showFrameNumber":true,"layerProperties":{"layer1":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer2":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer4":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer3":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer5":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer6":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"layer7":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""},"__sozi_auto__":{"transitionTimingFunction":"linear","transitionRelativeZoom":0,"transitionPathId":""}},"cameraStates":{"layer1":{"cx":404.0177309352071,"cy":428.87107455853754,"width":886.3331704689258,"height":664.2911132707063,"opacity":0.6,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer2":{"cx":308.70768805460443,"cy":461.58451161079466,"width":803.9303133504995,"height":602.5316220142461,"opacity":0.7,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer4":{"cx":403.9189897049202,"cy":485.99378144961526,"width":803.9303133504982,"height":602.531622014245,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer3":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer5":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer6":{"cx":437.2417839097775,"cy":391.6194011874435,"width":1187.7712178867455,"height":890.2136250000038,"opacity":0.3,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"layer7":{"cx":454.03789709944755,"cy":287.72513812154693,"width":1026.0414364640885,"height":769.0000000000001,"opacity":0,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1},"__sozi_auto__":{"cx":426.421875,"cy":403.5,"width":840.84375,"height":769,"opacity":1,"angle":0,"clipped":false,"clipXOffset":0,"clipYOffset":0,"clipWidthFactor":1,"clipHeightFactor":1}}}],"elementsToHide":[]};</script>
+
+        <script>!function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);var j=new Error("Cannot find module '"+g+"'");throw j.code="MODULE_NOT_FOUND",j}var k=c[g]={exports:{}};b[g][0].call(k.exports,function(a){var c=b[g][1][a];return e(c?c:a)},k,k.exports,a,b,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b,c){function d(a,b,c){b.hasOwnProperty(c)&&(a[c]=b[c])}Object.defineProperty(c,"__esModule",{value:!0});var e={opacity:1,angle:0,clipped:!1,clipXOffset:0,clipYOffset:0,clipWidthFactor:1,clipHeightFactor:1,init:function(a){this.svgRoot=a;var b=a.getBBox();return this.cx=b.x+b.width/2,this.cy=b.y+b.height/2,this.width=b.width,this.height=b.height,this},initFrom:function(a){return this.svgRoot=a.svgRoot,this.cx=a.cx,this.cy=a.cy,this.width=a.width,this.height=a.height,this.opacity=a.opacity,this.angle=a.angle,this.clipped=a.clipped,this.clipXOffset=a.clipXOffset,this.clipYOffset=a.clipYOffset,this.clipWidthFactor=a.clipWidthFactor,this.clipHeightFactor=a.clipHeightFactor,this},toStorable:function(){return{cx:this.cx,cy:this.cy,width:this.width,height:this.height,opacity:this.opacity,angle:this.angle,clipped:this.clipped,clipXOffset:this.clipXOffset,clipYOffset:this.clipYOffset,clipWidthFactor:this.clipWidthFactor,clipHeightFactor:this.clipHeightFactor}},toMinimalStorable:function(){return this.toStorable()},fromStorable:function(a){return d(this,a,"cx"),d(this,a,"cy"),d(this,a,"width"),d(this,a,"height"),d(this,a,"opacity"),d(this,a,"angle"),d(this,a,"clipped"),d(this,a,"clipXOffset"),d(this,a,"clipYOffset"),d(this,a,"clipWidthFactor"),d(this,a,"clipHeightFactor"),this},setAngle:function(a){return this.angle=(a+180)%360-180,this},setAtElement:function(a,b,c,d,e,f){b=b||0,c=c||0,d=d||1,e=e||1,f=f||0;var g=a.getBBox(),h=this.svgRoot.createSVGPoint();h.x=g.x+g.width/2,h.y=g.y+g.height/2;for(var i=a;i.parentNode.parentNode!==this.svgRoot;)i=i.parentNode;var j=i.getCTM().inverse().multiply(a.getCTM());h=h.matrixTransform(j);var k=Math.sqrt(j.a*j.a+j.b*j.b);return this.cx=h.x+b,this.cy=h.y+c,this.width=g.width*k*d,this.height=g.height*k*e,this.angle=180*Math.atan2(j.b,j.a)/Math.PI+f,this},resetClipping:function(){return this.clipXOffset=this.clipYOffset=0,this.clipWidthFactor=this.clipHeightFactor=1,this},offsetFromElement:function(a){var b=Object.create(e).init(this.svgRoot).setAtElement(a);return{deltaX:this.cx-b.cx,deltaY:this.cy-b.cy,widthFactor:this.width/b.width,heightFactor:this.height/b.height,deltaAngle:this.angle-b.angle}}};c.CameraState=e},{}],2:[function(a,b,c){function d(a,b,c){b.hasOwnProperty(c)&&(a[c]=b[c])}var e=function(a,b){if(Array.isArray(a))return a;if(Symbol.iterator in Object(a)){var c=[],d=!0,e=!1,f=void 0;try{for(var g,h=a[Symbol.iterator]();!(d=(g=h.next()).done)&&(c.push(g.value),!b||c.length!==b);d=!0);}catch(i){e=!0,f=i}finally{try{!d&&h["return"]&&h["return"]()}finally{if(e)throw f}}return c}throw new TypeError("Invalid attempt to destructure non-iterable instance")};Object.defineProperty(c,"__esModule",{value:!0});var f=a("../utils"),g=a("./CameraState"),h={link:!1,referenceElementId:"",referenceElementAuto:!0,transitionTimingFunction:"linear",transitionRelativeZoom:0,transitionPathId:"",init:function(a){return this.frame=a,this},initFrom:function(a){return this.frame=a.frame,this.link=a.link,this.referenceElementId=a.referenceElementId,this.referenceElementAuto=a.referenceElementAuto,this.transitionTimingFunction=a.transitionTimingFunction,this.transitionRelativeZoom=a.transitionRelativeZoom,this.transitionPathId=a.transitionPathId,this},toStorable:function(){return{link:this.link,referenceElementId:this.referenceElementId,referenceElementAuto:this.referenceElementAuto,transitionTimingFunction:this.transitionTimingFunction,transitionRelativeZoom:this.transitionRelativeZoom,transitionPathId:this.transitionPathId}},toMinimalStorable:function(){return{transitionTimingFunction:this.transitionTimingFunction,transitionRelativeZoom:this.transitionRelativeZoom,transitionPathId:this.transitionPathId}},fromStorable:function(a){return d(this,a,"link"),d(this,a,"referenceElementId"),d(this,a,"referenceElementAuto"),d(this,a,"transitionTimingFunction"),d(this,a,"transitionRelativeZoom"),d(this,a,"transitionPathId"),this},get index(){return this.frame.layerProperties.indexOf(this)},get referenceElement(){return this.frame.presentation.document.root.getElementById(this.referenceElementId)},get transitionPath(){return this.frame.presentation.document.root.getElementById(this.transitionPathId)},get referenceElementHide(){return this.frame.presentation.elementsToHide.indexOf(this.referenceElementId)>=0},set referenceElementHide(a){var b=this.referenceElementHide;if(a&&!b)this.frame.presentation.elementsToHide.push(this.referenceElementId);else if(!a&&b){var c=this.frame.presentation.elementsToHide.indexOf(this.referenceElementId);this.frame.presentation.elementsToHide.splice(c,1)}this.referenceElement&&(this.referenceElement.style.visibility=a?"hidden":"visible")},get transitionPathHide(){return this.frame.presentation.elementsToHide.indexOf(this.transitionPathId)>=0},set transitionPathHide(a){var b=this.transitionPathHide;if(a&&!b)this.frame.presentation.elementsToHide.push(this.transitionPathId);else if(!a&&b){var c=this.frame.presentation.elementsToHide.indexOf(this.transitionPathId);this.frame.presentation.elementsToHide.splice(c,1)}this.transitionPath&&(this.transitionPath.style.visibility=a?"hidden":"visible")}};c.LayerProperties=h;var i={title:"New frame",timeoutMs:0,timeoutEnable:!1,transitionDurationMs:1e3,showInFrameList:!0,showFrameNumber:!0,init:function(a){var b=this;return this.presentation=a,this.frameId=a.makeFrameId(),this.layerProperties=a.layers.map(function(a){return Object.create(h).init(b)}),this.cameraStates=a.layers.map(function(b){return Object.create(g.CameraState).init(a.document.root)}),this},initFrom:function(a,b){return this.presentation=a.presentation,b||(this.frameId=a.presentation.makeFrameId()),this.title=a.title,this.timeoutMs=a.timeoutMs,this.timeoutEnable=a.timeoutEnable,this.transitionDurationMs=a.transitionDurationMs,this.showInFrameList=a.showInFrameList,this.showFrameNumber=a.showFrameNumber,this.layerProperties=a.layerProperties.map(function(a){return Object.create(h).initFrom(a)}),this.cameraStates=a.cameraStates.map(function(a){return Object.create(g.CameraState).initFrom(a)}),this},toStorable:function(){var a=this,b={},c={},d={};return this.presentation.layers.forEach(function(e,f){var g=a.layerProperties[f],h=a.cameraStates[f],i=g.referenceElement,j=e.groupId;b[j]=g.toStorable(),c[j]=h.toStorable(),i&&(d[j]=a.cameraStates[f].offsetFromElement(i))}),{frameId:this.frameId,title:this.title,timeoutMs:this.timeoutMs,timeoutEnable:this.timeoutEnable,transitionDurationMs:this.transitionDurationMs,showInFrameList:this.showInFrameList,showFrameNumber:this.showFrameNumber,layerProperties:b,cameraStates:c,cameraOffsets:d}},toMinimalStorable:function(){var a=this,b={},c={};return this.presentation.layers.forEach(function(d,e){var f=a.layerProperties[e],g=a.cameraStates[e],h=d.groupId;b[h]=f.toMinimalStorable(),c[h]=g.toMinimalStorable()}),{frameId:this.frameId,title:this.title,timeoutMs:this.timeoutMs,timeoutEnable:this.timeoutEnable,transitionDurationMs:this.transitionDurationMs,showInFrameList:this.showInFrameList,showFrameNumber:this.showFrameNumber,layerProperties:b,cameraStates:c}},fromStorable:function(a){var b=this;return d(this,a,"frameId"),d(this,a,"title"),d(this,a,"timeoutMs"),d(this,a,"timeoutEnable"),d(this,a,"transitionDurationMs"),d(this,a,"showInFrameList"),d(this,a,"showFrameNumber"),this.presentation.layers.forEach(function(c,d){var e=c.groupId;if(e in a.layerProperties){var f=b.layerProperties[d];f.fromStorable(a.layerProperties[e]);var g=b.cameraStates[d].fromStorable(a.cameraStates[e]),h=f.referenceElement;if(h){var i=a.cameraOffsets[e]||{};g.setAtElement(h,i.deltaX,i.deltaY,i.widthFactor,i.heightFactor,i.deltaAngle)}}}),this},get index(){return this.presentation.frames.indexOf(this)},setAtStates:function(a){var b=this;a.forEach(function(a,c){b.cameraStates[c].initFrom(a)})},isLinkedTo:function(a,b){var c=this.index<a.index?[this,a]:[a,this],d=e(c,2),f=d[0],g=d[1];return g.layerProperties[b].link&&(g.index===f.index+1||g.index>f.index&&this.presentation.frames[g.index-1].isLinkedTo(f,b))}};c.Frame=i;var j={init:function(a,b,c){return this.presentation=a,this.label=b,this.auto=c,this.svgNodes=[],this},get groupId(){return this.auto?"__sozi_auto__":this.svgNodes[0].getAttribute("id")},get index(){return this.presentation.layers.indexOf(this)},get isVisible(){return this.svgNodes.some(function(a){return"none"!==window.getComputedStyle(a).display})},set isVisible(a){this.svgNodes.forEach(function(b){b.style.display=a?"inline":"none"})}};c.Layer=j;var k="http://www.w3.org/2000/svg",l={aspectWidth:4,aspectHeight:3,init:function(a){var b=this;this.document=a,this.frames=[],this.layers=[],this.elementsToHide=[];var c=Object.create(j).init(this,"auto",!0);return f.toArray(this.document.root.childNodes).forEach(function(a){if("g"===a.localName){var d=a.getAttribute("id");if(null===d)c.svgNodes.push(a);else{var e=Object.create(j).init(b,b.document.handler.getLabel(a)||"#"+d,!1);e.svgNodes.push(a),b.layers.push(e)}}}),this.layers.push(c),this},toStorable:function(){return{aspectWidth:this.aspectWidth,aspectHeight:this.aspectHeight,frames:this.frames.map(function(a){return a.toStorable()}),elementsToHide:this.elementsToHide.slice()}},toMinimalStorable:function(){return{frames:this.frames.map(function(a){return a.toMinimalStorable()}),elementsToHide:this.elementsToHide.slice()}},fromStorable:function(a){var b=this;return d(this,a,"aspectWidth"),d(this,a,"aspectHeight"),this.frames=a.frames.map(function(a){return Object.create(i).init(b).fromStorable(a)}),a.elementsToHide&&(this.elementsToHide=a.elementsToHide.slice()),this},get title(){var a=this.document.root.getElementsByTagNameNS(k,"title");return a.length?a[0].firstChild.wholeText.trim():"Untitled"},makeFrameId:function(){var a,b="frame",c=Math.floor(1e3*(1+9*Math.random()));do a=b+c,c++;while(this.frames.some(function(b){return b.frameId===a}));return a},getFrameWithId:function(a){for(var b=0;b<this.frames.length;b++)if(this.frames[b].frameId===a)return this.frames[b];return null},getLayerWithId:function(a){for(var b=0;b<this.layers.length;b++)if(this.layers[b].groupId===a)return this.layers[b];return null},updateLinkedLayers:function(){var a=this;if(this.frames.length){var b=this.frames[0].cameraStates,c=b[b.length-1];this.layers.forEach(function(b,d){var e=c;a.frames.forEach(function(a){a.layerProperties[d].link?a.cameraStates[d].initFrom(e):e=a.cameraStates[d]})})}}};c.Presentation=l},{"../utils":14,"./CameraState":1}],3:[function(a,b,c){"use strict";var d=function(a){return a&&a.__esModule?a:{"default":a}},e=a("./svg/SVGDocument"),f=a("./model/Presentation"),g=a("./player/Viewport"),h=a("./player/Player"),i=a("./player/Media"),j=d(i),k=a("./player/FrameList"),l=d(k),m=a("./player/FrameNumber"),n=d(m),o=a("./player/FrameURL"),p=d(o);window.addEventListener("load",function(){e.SVGDocument.init(document.querySelector("svg")),f.Presentation.init(e.SVGDocument),g.Viewport.init(f.Presentation,!1).onLoad(),f.Presentation.fromStorable(window.soziPresentationData),h.Player.init(g.Viewport,f.Presentation),j.init(h.Player),l.init(h.Player),n.init(h.Player),p.init(h.Player),window.sozi={presentation:f.Presentation,viewport:g.Viewport,player:h.Player},h.Player.addListener("change:playing",function(a,b){b?document.title=f.Presentation.title:document.title=f.Presentation.title+"(Paused)"}),window.addEventListener("resize",g.Viewport.repaint.bind(g.Viewport)),f.Presentation.frames.length&&h.Player.playFromIndex(p.getFrameIndex()),g.Viewport.repaint()})},{"./model/Presentation":2,"./player/FrameList":6,"./player/FrameNumber":7,"./player/FrameURL":8,"./player/Media":9,"./player/Player":10,"./player/Viewport":12,"./svg/SVGDocument":13}],4:[function(a,b,c){function d(){k>0?(h&&h(d),l.forEach(function(a){a.running&&a.step()})):h||window.clearInterval(f)}function e(){h?h(d):f=window.setInterval(d,j)}Object.defineProperty(c,"__esModule",{value:!0});var f,g=a("events"),h=window.requestAnimationFrame||window.mozRequestAnimationFrame||window.webkitRequestAnimationFrame||window.msRequestAnimationFrame||window.oRequestAnimationFrame,i=window.performance&&window.performance.now?window.performance:Date,j=40,k=0,l=[],m=Object.create(g.EventEmitter.prototype);c.Animator=m,m.init=function(){return g.EventEmitter.call(this),this.durationMs=500,this.initialTime=0,this.running=!1,l.push(this),this},m.start=function(a){this.durationMs=a,this.initialTime=i.now(),this.emit("step",0),this.running||(this.running=!0,k++,1===k&&e())},m.stop=function(){this.running&&(this.running=!1,k--,this.emit("stop"))},m.step=function(){var a=i.now()-this.initialTime;a>=this.durationMs?(this.emit("step",1),this.running=!1,k--,this.emit("done")):this.emit("step",a/this.durationMs)}},{events:15}],5:[function(a,b,c){Object.defineProperty(c,"__esModule",{value:!0});var d=a("../model/CameraState"),e="http://www.w3.org/2000/svg",f=Object.create(d.CameraState);c.Camera=f,f.init=function(a,b){if(d.CameraState.init.call(this,a.svgRoot),this.viewport=a,this.layer=b,this.selected=!0,this.svgClipRect=document.createElementNS(e,"rect"),a.editMode){this.maskValue=0;var c=document.createElementNS(e,"mask"),f=a.makeUniqueId("sozi-mask-");c.setAttribute("id",f),a.svgRoot.appendChild(c),this.svgMaskRect=document.createElementNS(e,"rect"),c.appendChild(this.svgMaskRect),this.svgClipRect.setAttribute("fill","white"),c.appendChild(this.svgClipRect),this.svgClipOutlineRect1=document.createElementNS(e,"rect"),this.svgClipOutlineRect1.setAttribute("stroke","black"),this.svgClipOutlineRect1.setAttribute("fill","none"),a.svgRoot.appendChild(this.svgClipOutlineRect1),this.svgClipOutlineRect2=document.createElementNS(e,"rect"),this.svgClipOutlineRect2.setAttribute("stroke","white"),this.svgClipOutlineRect2.setAttribute("fill","none"),this.svgClipOutlineRect2.setAttribute("stroke-dasharray","2,2"),a.svgRoot.appendChild(this.svgClipOutlineRect2),this.concealClipping()}else{var g=document.createElementNS(e,"clipPath"),h=a.makeUniqueId("sozi-clip-path-");g.setAttribute("id",h),g.appendChild(this.svgClipRect),a.svgRoot.appendChild(g)}return this.svgTransformGroups=b.svgNodes.map(function(b){var c=document.createElementNS(e,"g");a.svgRoot.insertBefore(c,b),a.editMode?c.setAttribute("mask","url(#"+f+")"):c.setAttribute("clip-path","url(#"+h+")");var d=document.createElementNS(e,"g");return d.appendChild(b),c.appendChild(d),d}),this},f.revealClipping=function(){this.maskValue=64,this.svgClipOutlineRect1.style.display="inline",this.svgClipOutlineRect2.style.display="inline"},f.concealClipping=function(){this.maskValue=0,this.svgClipOutlineRect1.style.display="none",this.svgClipOutlineRect2.style.display="none"},Object.defineProperty(f,"scale",{get:function(){return Math.min(this.viewport.width/this.width,this.viewport.height/this.height)}}),f.rotate=function(a){return this.restoreAspectRatio(),this.setAngle(this.angle+a).update()},f.zoom=function(a,b,c){return this.width/=a,this.height/=a,this.restoreAspectRatio(),this.translate((1-a)*(b-this.viewport.width/2),(1-a)*(c-this.viewport.height/2))},f.translate=function(a,b){var c=this.scale,d=this.angle*Math.PI/180,e=Math.sin(d),f=Math.cos(d);return this.cx-=(a*f-b*e)/c,this.cy-=(a*e+b*f)/c,this.restoreAspectRatio(),this.update()},f.clip=function(a,b,c,d){this.clipped=!0;var e=this.scale,f=Math.abs(c-a)+1,g=Math.abs(d-b)+1;return this.clipXOffset=(Math.min(a,c)-(this.viewport.width-f)/2)*this.width/f,this.clipYOffset=(Math.min(b,d)-(this.viewport.height-g)/2)*this.height/g,this.clipWidthFactor=f/this.width/e,this.clipHeightFactor=g/this.height/e,this.update()},f.restoreAspectRatio=function(){var a=this.viewport.width/this.viewport.height,b=this.width/this.height,c=a/b;c>1?(this.width*=c,this.clipped&&(this.clipWidthFactor/=c)):(this.height/=c,this.clipped&&(this.clipHeightFactor*=c))},f.getCandidateReferenceElement=function(){if(!this.svgRoot.getIntersectionList||!this.layer.svgNodes.length)return this.svgRoot;var a=this.svgRoot.createSVGRect();a.x=0,a.y=0,a.width=this.viewport.width,a.height=this.viewport.height;for(var b,c=this.viewport.width*this.viewport.height,d=this.svgRoot.getIntersectionList(a,this.layer.svgNodes[0]),e=-1,f=0;f<d.length;f++){var g=d[f];if(g.hasAttribute("id")){var h=g.getBoundingClientRect(),i=h.width*h.height,j=Math.max(h.left,this.viewport.x),k=Math.max(h.top,this.viewport.y),l=Math.min(h.right,this.viewport.x+this.viewport.width),m=Math.min(h.bottom,this.viewport.y+this.viewport.height),n=(l-j)*(m-k),o=c+i-2*n;(0>e||e>o)&&(e=o,b=g)}}return b},Object.defineProperty(f,"clipRect",{get:function(){var a,b,c,d;if(this.clipped){var e=this.scale;a=Math.round(this.width*this.clipWidthFactor*e),b=Math.round(this.height*this.clipHeightFactor*e),c=Math.round((this.viewport.width-a)/2+this.clipXOffset*this.clipWidthFactor*e),d=Math.round((this.viewport.height-b)/2+this.clipYOffset*this.clipHeightFactor*e)}else a=this.viewport.width,b=this.viewport.height,c=0,d=0;return{width:a,height:b,x:c,y:d}}}),f.update=function(){var a=this,b=this.clipRect;this.svgClipRect.setAttribute("x",b.x),this.svgClipRect.setAttribute("y",b.y),this.svgClipRect.setAttribute("width",b.width),this.svgClipRect.setAttribute("height",b.height),this.viewport.editMode&&(this.svgMaskRect.setAttribute("fill","rgb("+this.maskValue+","+this.maskValue+","+this.maskValue+")"),this.svgMaskRect.setAttribute("x",0),this.svgMaskRect.setAttribute("y",0),this.svgMaskRect.setAttribute("width",this.viewport.width),this.svgMaskRect.setAttribute("height",this.viewport.height),this.svgClipOutlineRect1.setAttribute("x",b.x),this.svgClipOutlineRect1.setAttribute("y",b.y),this.svgClipOutlineRect1.setAttribute("width",b.width),this.svgClipOutlineRect1.setAttribute("height",b.height),this.svgClipOutlineRect2.setAttribute("x",b.x),this.svgClipOutlineRect2.setAttribute("y",b.y),this.svgClipOutlineRect2.setAttribute("width",b.width),this.svgClipOutlineRect2.setAttribute("height",b.height));var c=this.scale,d=this.viewport.width/c/2-this.cx,e=this.viewport.height/c/2-this.cy;return this.svgTransformGroups.forEach(function(b){b.setAttribute("transform","scale("+c+")translate("+d+","+e+")rotate("+-a.angle+","+a.cx+","+a.cy+")"),b.setAttribute("opacity",a.opacity)}),this},f.interpolate=function(a,b,c,d,e,f,g){function h(a,b){return b*j+a*k}function i(a,b){var d=(e>0?Math.max(a,b):Math.min(a,b))*(1+e),f=a-d,g=b-d,h=Math.sqrt(f/g),i=h/(1+h),j=f/i/i,k=c-i;return j*k*k+d}var j=d(c),k=1-j;if(e?(this.width=i(a.width,b.width),this.height=i(a.height,b.height)):(this.width=h(a.width,b.width),this.height=h(a.height,b.height)),f){var l=f.getTotalLength(),m=f.getPointAtLength(g?l:0),n=f.getPointAtLength(g?0:l),o=f.getPointAtLength(l*(g?k:j));this.cx=o.x+h(a.cx-m.x,b.cx-n.x),this.cy=o.y+h(a.cy-m.y,b.cy-n.y)}else this.cx=h(a.cx,b.cx),this.cy=h(a.cy,b.cy);this.opacity=h(a.opacity,b.opacity),b.angle-a.angle>180?this.angle=h(a.angle,b.angle-360):b.angle-a.angle<-180?this.angle=h(a.angle-360,b.angle):this.angle=h(a.angle,b.angle),this.clipped=!0;var p=this.scale,q={clipXOffset:0,clipYOffset:0,clipWidthFactor:this.viewport.width/this.width/p,clipHeightFactor:this.viewport.height/this.height/p},r=a.clipped?a:q,s=b.clipped?b:q;for(var t in q)this[t]=h(r[t],s[t])}},{"../model/CameraState":1}],6:[function(a,b,c){function d(a){w=a,u=document.querySelector(".sozi-frame-list"),v=p.toArray(u.querySelectorAll("li a")),v.forEach(function(a){a.addEventListener("click",function(b){0===b.button&&(w.previewFrame(parseInt(a.dataset.frameIndex)),b.preventDefault())})}),x=Object.create(q.Animator).init(),x.addListener("step",k),window.addEventListener("keypress",j,!1),w.viewport.addListener("mouseDown",l),u.addEventListener("mouseout",m,!1),a.addListener("frameChange",n),e(y)}function e(a){A=a,u.style.left=A*u.clientWidth+"px"}function f(a){w.pause(),y=A,z=a,x.start(Math.abs(z-y)*t)}function g(){f(0)}function h(){f(-1)}function i(){f(-1-z)}function j(a){if(!(a.altKey||a.ctrlKey||a.metaKey)){switch(a.charCode||a.which){case 84:case 116:i();break;default:return}a.stopPropagation(),a.preventDefault()}}function k(a){var b=s.ease(a);e(z*b+y*(1-b))}function l(a){1===a&&i()}function m(a){for(var b=a.relatedTarget;b&&b!==u&&b!==document.documentElement;)b=b.parentNode;b!==u&&(h(),a.stopPropagation())}function n(){v.forEach(function(a){a.className=parseInt(a.dataset.frameIndex)===w.currentFrameIndex?"current":""})}var o=function(a){return a&&a.__esModule?a:{"default":a}};Object.defineProperty(c,"__esModule",{value:!0}),c.init=d,c.open=g,c.close=h,c.toggle=i;var p=a("../utils"),q=a("./Animator"),r=a("./Timing"),s=o(r);const t=500;var u,v,w,x,y=-1,z=-1,A=y},{"../utils":14,"./Animator":4,"./Timing":11}],7:[function(a,b,c){function d(a){var b=document.querySelector(".sozi-frame-number");a.addListener("frameChange",function(){b.innerHTML=a.currentFrameIndex+1,b.style.visibility=a.currentFrame.showFrameNumber?"visible":"hidden"}),b.addEventListener("click",g.open)}var e=function(a){return a&&a.__esModule?a:{"default":a}};Object.defineProperty(c,"__esModule",{value:!0}),c.init=d;var f=a("./FrameList"),g=e(f)},{"./FrameList":6}],8:[function(a,b,c){function d(a){h=a,window.addEventListener("hashchange",f,!1),h.addListener("frameChange",g)}function e(){if(window.location.hash){var a=window.location.hash.slice(1),b=h.presentation.getFrameWithId(a);if(b)return b.index;var c=parseInt(a);return!isNaN(c)&&c>0&&c<=h.presentation.frames.length?c-1:h.currentFrameIndex}return h.currentFrameIndex}function f(){var a=e();h.currentFrameIndex!==a&&h.moveToFrame(a)}function g(){window.location.hash="#"+h.currentFrame.frameId}Object.defineProperty(c,"__esModule",{value:!0}),c.init=d,c.getFrameIndex=e;var h},{}],9:[function(a,b,c){function d(a){a.stopPropagation()}function e(){var a=g.currentFrame.frameId;a in l&&l[a].forEach(function(a){a.play()}),a in m&&m[a].forEach(function(a){a.pause()})}function f(a){g=a,g.addListener("frameChange",e);for(var b,c=g.presentation.document.root,f=c.attributes,n=0;n<f.length;n++)if(f[n].value===j){b=f[n].name.slice(6);break}if(b){var o=c.getElementsByTagName(b+":video"),p=c.getElementsByTagName(b+":audio"),q=h.toArray(o).concat(h.toArray(p)),r=[];q.forEach(function(a){var c=a.parentNode,e=a.localName.slice(b.length+1),f=document.createElementNS(k,"source");f.setAttribute("type",a.getAttribute(b+":type")),f.setAttribute("src",a.getAttribute(b+":src"));for(var g=0;g<r.length&&r[g].rect!==c;g+=1);if(g===r.length){c.setAttribute("visibility","hidden");var h=document.createElementNS(k,e);h.setAttribute("controls","controls"),"video"===e&&(h.setAttribute("width",c.getAttribute("width")),h.setAttribute("height",c.getAttribute("height"))),h.addEventListener("click",d,!1),h.addEventListener("mousedown",d,!1),h.addEventListener("mouseup",d,!1),h.addEventListener("mousemove",d,!1),h.addEventListener("contextmenu",d,!1);var j=document.createElementNS(k,"html");j.appendChild(h);var n=document.createElementNS(i,"foreignObject");if(n.setAttribute("x",c.getAttribute("x")),n.setAttribute("y",c.getAttribute("y")),n.setAttribute("width",c.getAttribute("width")),n.setAttribute("height",c.getAttribute("height")),n.appendChild(j),c.parentNode.insertBefore(n,c.nextSibling),a.hasAttribute(b+":start-frame")){var o=a.getAttribute(b+":start-frame"),p=a.getAttribute(b+":stop-frame");o in l||(l[o]=[]),p in m||(m[p]=[]),l[o].push(h),m[p].push(h)}"true"===a.getAttribute(b+":loop")&&h.setAttribute("loop","true"),r.push({rect:a.parentNode,htmlMedia:h})}r[g].htmlMedia.appendChild(f)})}}Object.defineProperty(c,"__esModule",{value:!0}),c.init=f;var g,h=a("../utils"),i="http://www.w3.org/2000/svg",j="http://sozi.baierouge.fr",k="http://www.w3.org/1999/xhtml",l={},m={}},{"../utils":14}],10:[function(a,b,c){var d=function(a){return a&&a.__esModule?a:{"default":a}};Object.defineProperty(c,"__esModule",{value:!0});var e=a("./Animator"),f=a("./Timing"),g=d(f),h=a("../model/CameraState"),i=a("events"),j=500,k=0,l="ease",m=1.05,n=5,o=Object.create(i.EventEmitter.prototype);c.Player=o,o.init=function(a,b){return i.EventEmitter.call(this),this.viewport=a,this.presentation=b,this.animator=Object.create(e.Animator).init(),this.playing=!1,this.waitingTimeout=!1,this.currentFrameIndex=0,this.targetFrameIndex=0,this.timeoutHandle=null,this.transitions=[],this.setupEventHandlers(),this},o.setupEventHandlers=function(){this.viewport.addListener("click",this.onClick.bind(this)),this.viewport.addListener("dragStart",this.pause.bind(this)),this.viewport.addListener("userChangeState",this.pause.bind(this)),window.addEventListener("keydown",this.onKeyDown.bind(this),!1),window.addEventListener("keypress",this.onKeyPress.bind(this),!1),this.animator.addListener("step",this.onAnimatorStep.bind(this)),this.animator.addListener("stop",this.onAnimatorStop.bind(this)),this.animator.addListener("done",this.onAnimatorDone.bind(this))},o.onClick=function(a){switch(a){case 0:this.moveToNext();break;case 2:this.moveToPrevious()}},o.onKeyDown=function(a){if(!(a.altKey||a.ctrlKey||a.metaKey)){switch(a.keyCode){case 36:a.shiftKey?this.jumpToFirst():this.moveToFirst();break;case 35:a.shiftKey?this.jumpToLast():this.moveToLast();break;case 38:case 33:case 37:a.shiftKey?this.jumpToPrevious():this.moveToPrevious();break;case 40:case 34:case 39:case 13:case 32:a.shiftKey?this.jumpToNext():this.moveToNext();break;default:return}a.stopPropagation(),a.preventDefault()}},o.onKeyPress=function(a){if(!(a.altKey||a.ctrlKey||a.metaKey)){switch(a.charCode||a.which){case 43:this.viewport.zoom(m,this.viewport.width/2,this.viewport.height/2),this.pause();break;case 45:this.viewport.zoom(1/m,this.viewport.width/2,this.viewport.height/2),this.pause();break;case 82:this.viewport.rotate(-n),this.pause();break;case 114:this.viewport.rotate(n),this.pause();break;case 80:case 112:this.playing?this.pause():this.resume();break;default:return}a.stopPropagation(),a.preventDefault()}},Object.defineProperty(o,"currentFrame",{get:function(){return this.presentation.frames[this.currentFrameIndex]}}),Object.defineProperty(o,"targetFrame",{get:function(){return this.presentation.frames[this.targetFrameIndex]}}),Object.defineProperty(o,"previousFrameIndex",{get:function(){var a=this.animator.running?this.targetFrameIndex:this.currentFrameIndex;return(a+this.presentation.frames.length-1)%this.presentation.frames.length}}),Object.defineProperty(o,"nextFrameIndex",{get:function(){var a=this.animator.running?this.targetFrameIndex:this.currentFrameIndex;return(a+1)%this.presentation.frames.length}}),o.showCurrentFrame=function(){return this.viewport.setAtStates(this.currentFrame.cameraStates).update(),this.emit("frameChange"),this},o.playFromIndex=function(a){return this.playing=!0,this.waitingTimeout=!1,this.targetFrameIndex=a,this.currentFrameIndex=a,this.showCurrentFrame(),this.waitTimeout(),this},o.pause=function(){return this.animator.stop(),this.waitingTimeout&&(window.clearTimeout(this.timeoutHandle),this.waitingTimeout=!1),this.playing=!1,this.targetFrameIndex=this.currentFrameIndex,this},o.resume=function(){return this.playFromIndex(this.currentFrameIndex),this},o.waitTimeout=function(){return this.currentFrame.timeoutEnable&&(this.waitingTimeout=!0,this.timeoutHandle=window.setTimeout(this.moveToFrame.bind(this,this.nextFrameIndex),this.currentFrame.timeoutMs)),this},o.jumpToFrame=function(a){return this.pause(),this.targetFrameIndex=a,this.currentFrameIndex=a,this.showCurrentFrame(),this},o.jumpToFirst=function(){return this.jumpToFrame(0)},o.jumpToLast=function(){return this.jumpToFrame(this.presentation.frames.length-1)},o.jumpToPrevious=function(){return this.jumpToFrame(this.previousFrameIndex)},o.jumpToNext=function(){return this.jumpToFrame(this.nextFrameIndex)},o.moveToFrame=function(a){var b=this;this.waitingTimeout&&(window.clearTimeout(this.timeoutHandle),this.waitingTimeout=!1),this.targetFrameIndex=a;var c=null,d=j,e=!1,f=!1;return a===this.nextFrameIndex?(d=this.targetFrame.transitionDurationMs,c=this.targetFrame.layerProperties,e=!0):a===this.previousFrameIndex&&(d=this.currentFrame.transitionDurationMs,c=this.currentFrame.layerProperties,e=!0,f=!0),this.playing=!0,this.viewport.cameras.forEach(function(a){var d=g[l],h=k,i=null;if(c){var j=c[a.layer.index];h=j.transitionRelativeZoom,d=g[j.transitionTimingFunction],e&&(i=j.transitionPath),f&&(d=d.reverse)}b.setupTransition(a,d,h,i,f)}),this.animator.start(d),this},o.moveToFirst=function(){return this.moveToFrame(0)},o.moveToLast=function(){return this.moveToFrame(this.presentation.frames.length-1)},o.moveToPrevious=function(){for(var a=this.previousFrameIndex;a>=0;a--){var b=this.presentation.frames[a];if(!b.timeoutEnable||0!==b.timeoutMs){this.moveToFrame(a);break}}return this},o.moveToNext=function(){return this.moveToFrame(this.nextFrameIndex)},o.moveToCurrent=function(){return this.moveToFrame(this.currentFrameIndex)},o.previewFrame=function(a){var b=this;return this.targetFrameIndex=a,this.viewport.cameras.forEach(function(a){b.setupTransition(a,g[l],k)}),this.animator.start(j),this},o.setupTransition=function(a,b,c,d,e){return this.animator.running&&this.animator.stop(),this.transitions.push({camera:a,initialState:Object.create(h.CameraState).initFrom(a),finalState:this.targetFrame.cameraStates[a.layer.index],timingFunction:b,relativeZoom:c,svgPath:d,reverse:e}),this},o.onAnimatorStep=function(a){this.transitions.forEach(function(b){b.camera.interpolate(b.initialState,b.finalState,a,b.timingFunction,b.relativeZoom,b.svgPath,b.reverse),b.camera.update()})},o.onAnimatorStop=function(){this.transitions=[],this.currentFrameIndex=this.targetFrameIndex,this.emit("frameChange")},o.onAnimatorDone=function(){this.transitions=[],this.currentFrameIndex=this.targetFrameIndex,this.emit("frameChange"),this.playing&&this.waitTimeout()}},{"../model/CameraState":1,"./Animator":4,"./Timing":11,events:15}],11:[function(a,b,c){function d(a,b){return 1-3*b+3*a}function e(a,b){return 3*b-6*a}function f(a){return 3*a}function g(a,b,c,d){return((b*a+c)*a+d)*a}function h(a,b,c,d){return(3*b*a+2*c)*a+d}function i(a,b,c,i){var j=d(a,c),k=e(a,c),l=f(a),m=d(b,i),n=e(b,i),o=f(b);return a===b&&c===i?function(a){return a}:function(a){for(var b=a,c=0;4>c;c++){var d=h(b,j,k,l);if(0===d)break;var e=g(b,j,k,l)-a;b-=e/d}return g(b,m,n,o)}}function j(a,b){var c="start"===b?Math.ceil:Math.floor;return function(b){return c(a*b)/a}}function k(a){return a>=.5?1:0}Object.defineProperty(c,"__esModule",{value:!0}),c.makeBezier=i,c.makeSteps=j,c.stepMiddle=k;var l=i(0,0,1,1);c.linear=l,l.reverse=l;var m=i(.25,.1,.25,1);c.ease=m,m.reverse=m;var n=i(.42,0,1,1);c.easeIn=n;var o=i(0,0,.58,1);c.easeOut=o,n.reverse=o,o.reverse=n;var p=i(.42,0,.58,1);c.easeInOut=p,p.reverse=p;var q=j(1,"start");c.stepStart=q;var r=j(1,"end");c.stepEnd=r,q.reverse=r,r.reverse=q,k.reverse=k},{}],12:[function(a,b,c){Object.defineProperty(c,"__esModule",{value:!0});var d=a("./Camera"),e=a("events"),f=0,g=5,h=1.05,i=5,j=200,k=3,l=Object.create(e.EventEmitter.prototype);c.Viewport=l,l.init=function(a,b){return e.EventEmitter.call(this),this.presentation=a,this.editMode=!!b,this.cameras=[],this.mouseDragX=0,this.mouseDragY=0,this.dragMode="translate",this.clipMode={cameras:[],operation:"select"},this.showHiddenElements=!1,this.wheelTimeout=null,this.dragHandler=this.onDrag.bind(this),this.dragEndHandler=this.onDragEnd.bind(this),this},l.makeUniqueId=function(a){var b,c=Math.floor(1e3*(1+9*Math.random()));do b=a+c,c++;while(this.svgRoot.getElementById(b));return b},l.onLoad=function(){var a=this;this.svgRoot.addEventListener("mousedown",this.onMouseDown.bind(this),!1),this.svgRoot.addEventListener("mousemove",this.onMouseMove.bind(this),!1),this.svgRoot.addEventListener("contextmenu",this.onContextMenu.bind(this),!1);
+
+var b="onwheel"in document.createElement("div")?"wheel":void 0!==document.onmousewheel?"mousewheel":"DOMMouseScroll";return this.svgRoot.addEventListener(b,this.onWheel.bind(this),!1),this.cameras=this.presentation.layers.map(function(b){return Object.create(d.Camera).init(a,b)}),this},Object.defineProperty(l,"svgRoot",{get:function(){return this.presentation.document.root}}),l.getLayer=function(a){return this.layers.filter(function(b){return b.nodeId===a})[0]},l.onContextMenu=function(a){a.stopPropagation(),a.preventDefault(),this.emit("click",2,a)},l.onMouseMove=function(a){if("clip"===this.dragMode)switch(this.getClipMode(a).operation){case"select":this.svgRoot.style.cursor="crosshair";break;case"n":case"s":this.svgRoot.style.cursor="ns-resize";break;case"w":case"e":this.svgRoot.style.cursor="ew-resize";break;case"nw":case"se":this.svgRoot.style.cursor="nwse-resize";break;case"ne":case"sw":this.svgRoot.style.cursor="nesw-resize";break;case"move":this.svgRoot.style.cursor="move";break;default:this.svgRoot.style.cursor="default"}else this.svgRoot.style.cursor="default"},l.onMouseDown=function(a){a.stopPropagation(),a.preventDefault(),a.button===f&&(this.mouseDragged=!1,this.mouseDragX=this.mouseDragStartX=a.clientX,this.mouseDragY=this.mouseDragStartY=a.clientY,document.documentElement.addEventListener("mousemove",this.dragHandler,!1),document.documentElement.addEventListener("mouseup",this.dragEndHandler,!1),"clip"===this.dragMode&&(this.clipMode=this.getClipMode(a))),this.emit("mouseDown",a.button)},l.getClipMode=function(a){var b=a.clientX-this.x,c=a.clientY-this.y,d={nw:[],sw:[],ne:[],se:[],w:[],e:[],n:[],s:[],move:[]},e=this.cameras.filter(function(a){return a.selected});e.forEach(function(a){var e=a.clipRect;if(b>=e.x-k&&b<=e.x+e.width+k&&c>=e.y-k&&c<=e.y+e.height+k){var f=b<=e.x+k,g=b>=e.x+e.width-k-1,h=c<=e.y+k,i=c>=e.y+e.height-k-1,j=f||g||h||i?(h?"n":i?"s":"")+(f?"w":g?"e":""):"move";d[j].push(a)}});for(var f in d)if(d[f].length)return{cameras:d[f],operation:f};return{cameras:e,operation:"select"}},l.onDrag=function(a){a.stopPropagation();var b=a.clientX-this.x-this.width/2,c=a.clientY-this.y-this.height/2,d=180*Math.atan2(c,b)/Math.PI,e=a.clientX,f=a.clientY,h=Math.sqrt(b*b+c*c),i=a.clientX-this.mouseDragX,j=a.clientY-this.mouseDragY;if(!this.mouseDragged&&(Math.abs(i)>g||Math.abs(j)>g)&&(this.mouseDragged=!0,this.rotateStart=this.rotatePrev=d,this.translateStartX=this.translateXPrev=e,this.translateStartY=this.translateYPrev=f,this.zoomPrev=h,this.emit("dragStart")),this.mouseDragged){var k=this.dragMode;switch("translate"==k&&(a.altKey?k="scale":a.shiftKey&&(k="rotate")),k){case"scale":0!==this.zoomPrev&&this.zoom(h/this.zoomPrev,this.width/2,this.height/2),this.zoomPrev=h;break;case"rotate":a.ctrlKey&&(d=10*Math.round((d-this.rotateStart)/10)+this.rotateStart),this.rotate(this.rotatePrev-d),this.rotatePrev=d;break;case"clip":switch(this.clipMode.operation){case"select":this.clip(this.mouseDragStartX-this.x,this.mouseDragStartY-this.y,this.mouseDragX-this.x,this.mouseDragY-this.y);break;case"move":this.clipRel(i,j,i,j);break;case"w":this.clipRel(i,0,0,0);break;case"e":this.clipRel(0,0,i,0);break;case"n":this.clipRel(0,j,0,0);break;case"s":this.clipRel(0,0,0,j);break;case"nw":this.clipRel(i,j,0,0);break;case"ne":this.clipRel(0,j,i,0);break;case"sw":this.clipRel(i,0,0,j);break;case"se":this.clipRel(0,0,i,j)}break;default:a.ctrlKey&&(Math.abs(e-this.translateStartX)>=Math.abs(f-this.translateStartY)?f=this.translateStartY:e=this.translateStartX),this.translate(e-this.translateXPrev,f-this.translateYPrev),this.translateXPrev=e,this.translateYPrev=f}this.mouseDragX=a.clientX,this.mouseDragY=a.clientY}},l.onDragEnd=function(a){a.stopPropagation(),a.preventDefault(),a.button===f?(this.mouseDragged?(this.emit("dragEnd"),this.emit("userChangeState")):this.emit("click",a.button,a),document.documentElement.removeEventListener("mousemove",this.dragHandler,!1),document.documentElement.removeEventListener("mouseup",this.dragEndHandler,!1)):this.emit("click",a.button,a)},l.onWheel=function(a){var b=this;null!==this.wheelTimeout&&window.clearTimeout(this.wheelTimeout),a.stopPropagation(),a.preventDefault();var c=0;c=a.wheelDelta?a.wheelDelta:a.detail?-a.detail:-a.deltaY,0!==c&&(a.shiftKey?this.rotate(c>0?i:-i):this.zoom(c>0?h:1/h,a.clientX-this.x,a.clientY-this.y)),this.wheelTimeout=window.setTimeout(function(){b.wheelTimeout=null,b.emit("userChangeState")},j)},Object.defineProperty(l,"x",{get:function(){return this.svgRoot.getScreenCTM().e}}),Object.defineProperty(l,"y",{get:function(){return this.svgRoot.getScreenCTM().f}}),Object.defineProperty(l,"width",{get:function(){return this.svgRoot===document.documentElement?window.innerWidth:this.svgRoot.parentNode.clientWidth}}),Object.defineProperty(l,"height",{get:function(){return this.svgRoot===document.documentElement?window.innerHeight:this.svgRoot.parentNode.clientHeight}}),l.repaint=function(){var a=this;return this.svgRoot.setAttribute("width",this.width),this.svgRoot.setAttribute("height",this.height),this.update(),this.presentation.elementsToHide.forEach(function(b){var c=document.getElementById(b);c&&(c.style.visibility=a.showHiddenElements?"visible":"hidden")}),this},l.update=function(){return this.cameras.forEach(function(a){a.update()}),this},l.setAtStates=function(a){var b=this;return a.forEach(function(a,c){b.cameras[c].initFrom(a)}),this},l.translate=function(a,b){return this.cameras.forEach(function(c){c.selected&&c.translate(a,b)}),this},l.zoom=function(a,b,c){return this.cameras.forEach(function(d){d.selected&&d.zoom(a,b,c)}),this},l.rotate=function(a){return this.cameras.forEach(function(b){b.selected&&b.rotate(a)}),this},l.clip=function(a,b,c,d){return this.clipMode.cameras.forEach(function(e){e.clip(a,b,c,d)}),this},l.clipRel=function(a,b,c,d){return this.clipMode.cameras.forEach(function(e){var f=e.clipRect;a<=f.width+c-1&&b<=f.height+d-1&&e.clip(f.x+a,f.y+b,f.x+f.width+c-1,f.y+f.height+d-1)}),this}},{"./Camera":5,events:15}],13:[function(a,b,c){function d(a,b){h[a]=b}Object.defineProperty(c,"__esModule",{value:!0}),c.registerHandler=d;var e=a("../utils"),f="http://www.w3.org/2000/svg",g=["g","image","path","rect","circle","ellipse","line","polyline","polygon","text","clippath"],h={},i={matches:function(a){return!0},transform:function(a){return this},isLayer:function(a){return!0},getLabel:function(a){return null}};c.DefaultHandler=i;var j={asText:"",root:void 0,handler:i,init:function(a){this.root=a,this.handler=i;for(var b in h)if(h[b].matches(a)){console.log("Using handler: "+b),this.handler=h[b];break}var c=e.toArray(this.root.getElementsByTagName("a"));return c.forEach(function(a){a.addEventListener("mousedown",function(a){a.stopPropagation()},!1)}),this},get isValidSVG(){return this.root instanceof SVGSVGElement},isLayer:function(a){return a instanceof SVGGElement&&a.hasAttribute("id")&&this.handler.isLayer(a)},"import":function(a){var b=this;this.asText="",this.root=void 0;var c=document.createElement("div");for(c.innerHTML=a;c.firstChild!==c.firstElementChild;)c.removeChild(c.firstChild);if(this.init(c.firstChild),this.isValidSVG){this.handler.transform(this.root),this.root.removeAttribute("viewBox"),this.root.style.width=this.root.style.height="auto";var d=e.toArray(this.root.getElementsByTagName("script"));d.forEach(function(a){a.parentNode.removeChild(a)});var h=document.createElementNS(f,"g");return e.toArray(this.root.childNodes).forEach(function(a){void 0===a.tagName?b.root.removeChild(a):g.indexOf(a.localName)>=0&&(b.isLayer(a)?h.firstChild&&(b.root.insertBefore(h,a),h=document.createElementNS(f,"g")):h.appendChild(a))}),h.firstChild&&this.root.appendChild(h),this.asText=c.innerHTML,this}}};c.SVGDocument=j},{"../utils":14}],14:[function(a,b,c){function d(a){return Array.prototype.slice.call(a)}Object.defineProperty(c,"__esModule",{value:!0}),c.toArray=d},{}],15:[function(a,b,c){function d(){this._events=this._events||{},this._maxListeners=this._maxListeners||void 0}function e(a){return"function"==typeof a}function f(a){return"number"==typeof a}function g(a){return"object"==typeof a&&null!==a}function h(a){return void 0===a}b.exports=d,d.EventEmitter=d,d.prototype._events=void 0,d.prototype._maxListeners=void 0,d.defaultMaxListeners=10,d.prototype.setMaxListeners=function(a){if(!f(a)||0>a||isNaN(a))throw TypeError("n must be a positive number");return this._maxListeners=a,this},d.prototype.emit=function(a){var b,c,d,f,i,j;if(this._events||(this._events={}),"error"===a&&(!this._events.error||g(this._events.error)&&!this._events.error.length)){if(b=arguments[1],b instanceof Error)throw b;throw TypeError('Uncaught, unspecified "error" event.')}if(c=this._events[a],h(c))return!1;if(e(c))switch(arguments.length){case 1:c.call(this);break;case 2:c.call(this,arguments[1]);break;case 3:c.call(this,arguments[1],arguments[2]);break;default:for(d=arguments.length,f=new Array(d-1),i=1;d>i;i++)f[i-1]=arguments[i];c.apply(this,f)}else if(g(c)){for(d=arguments.length,f=new Array(d-1),i=1;d>i;i++)f[i-1]=arguments[i];for(j=c.slice(),d=j.length,i=0;d>i;i++)j[i].apply(this,f)}return!0},d.prototype.addListener=function(a,b){var c;if(!e(b))throw TypeError("listener must be a function");if(this._events||(this._events={}),this._events.newListener&&this.emit("newListener",a,e(b.listener)?b.listener:b),this._events[a]?g(this._events[a])?this._events[a].push(b):this._events[a]=[this._events[a],b]:this._events[a]=b,g(this._events[a])&&!this._events[a].warned){var c;c=h(this._maxListeners)?d.defaultMaxListeners:this._maxListeners,c&&c>0&&this._events[a].length>c&&(this._events[a].warned=!0,console.error("(node) warning: possible EventEmitter memory leak detected. %d listeners added. Use emitter.setMaxListeners() to increase limit.",this._events[a].length),"function"==typeof console.trace&&console.trace())}return this},d.prototype.on=d.prototype.addListener,d.prototype.once=function(a,b){function c(){this.removeListener(a,c),d||(d=!0,b.apply(this,arguments))}if(!e(b))throw TypeError("listener must be a function");var d=!1;return c.listener=b,this.on(a,c),this},d.prototype.removeListener=function(a,b){var c,d,f,h;if(!e(b))throw TypeError("listener must be a function");if(!this._events||!this._events[a])return this;if(c=this._events[a],f=c.length,d=-1,c===b||e(c.listener)&&c.listener===b)delete this._events[a],this._events.removeListener&&this.emit("removeListener",a,b);else if(g(c)){for(h=f;h-->0;)if(c[h]===b||c[h].listener&&c[h].listener===b){d=h;break}if(0>d)return this;1===c.length?(c.length=0,delete this._events[a]):c.splice(d,1),this._events.removeListener&&this.emit("removeListener",a,b)}return this},d.prototype.removeAllListeners=function(a){var b,c;if(!this._events)return this;if(!this._events.removeListener)return 0===arguments.length?this._events={}:this._events[a]&&delete this._events[a],this;if(0===arguments.length){for(b in this._events)"removeListener"!==b&&this.removeAllListeners(b);return this.removeAllListeners("removeListener"),this._events={},this}if(c=this._events[a],e(c))this.removeListener(a,c);else for(;c.length;)this.removeListener(a,c[c.length-1]);return delete this._events[a],this},d.prototype.listeners=function(a){var b;return b=this._events&&this._events[a]?e(this._events[a])?[this._events[a]]:this._events[a].slice():[]},d.listenerCount=function(a,b){var c;return c=a._events&&a._events[b]?e(a._events[b])?1:a._events[b].length:0}},{}]},{},[3]);</script>
+    </body>
+</html>
