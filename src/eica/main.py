@@ -111,6 +111,8 @@ def main(gid=None):
 def player(gid=None):
     # JogoEica.JOGO = JogoEica(gid)
     print("player")
+    from braser.vitollino import Vitollino
+    Vitollino.score = lambda *a, **k: None
     JogoEica.JOGO = JogoEica(gid)
     return __version__
 

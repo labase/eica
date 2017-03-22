@@ -26,6 +26,7 @@ import bottle
 import os
 import sys
 from bottle import run
+from server.control import application
 HOME = os.path.dirname(__file__) + '/../'
 
 project_home = HOME  # u'/home/carlo/Documentos/dev/eica/src/'
@@ -37,7 +38,7 @@ templates_dir = os.path.join(project_home, 'server/views/')
 if templates_dir not in bottle.TEMPLATE_PATH:
     bottle.TEMPLATE_PATH.insert(0, templates_dir)
 
-from server.control import application
+
+assert application
 
 run(host='localhost', port=8080)
-

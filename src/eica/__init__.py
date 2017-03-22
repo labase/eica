@@ -23,7 +23,7 @@
 
 """
 import os
-__version__ = "2.0.4"
+__version__ = "2.1.0"
 
 here = os.path.dirname(__file__)
 IMG = "https://s19.postimg.org/"
@@ -85,22 +85,3 @@ class Folha:
     @classmethod
     def alloldThing(cls):
         return Folha.fruta, Folha.comida, Folha.animal, Folha.arma, Folha.objeto
-'''
-[url=https://postimg.org/image/6ek59j5sf/][img]https://s19.postimg.org/6ek59j5sf/balooni.png[/img][/url]
-
-[url=https://postimg.org/image/3lqxpi5fz/][img]https://s19.postimg.org/3lqxpi5fz/cacarecos.png[/img][/url]
-
-[url=https://postimg.org/image/88wzr9ssv/][img]https://s19.postimg.org/88wzr9ssv/caveman.png[/img][/url]
-
-[url=https://postimg.org/image/4127iirdb/][img]https://s19.postimg.org/4127iirdb/fruit.png[/img][/url]
-
-[url=https://postimg.org/image/v062dodu7/][img]https://s19.postimg.org/v062dodu7/jogo_chaves.jpg[/img][/url]
-
-[url=https://postimg.org/image/sk48ztvrj/][img]https://s19.postimg.org/sk48ztvrj/largeemoji.png[/img][/url]
-
-[url=https://postimg.org/image/h91lbgowf/][img]https://s19.postimg.org/h91lbgowf/thought.png[/img][/url]
-
-[url=https://postimg.org/image/odjekhw5r/][img]https://s19.postimg.org/odjekhw5r/treesprites1.png[/img][/url]
-
-
-[url=https://postimage.org/]image post[/url]'''
