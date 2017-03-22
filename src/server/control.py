@@ -1,4 +1,27 @@
+#! /usr/bin/env python
 # -*- coding: UTF8 -*-
+# Este arquivo é parte do programa EICA
+# Copyright 2014-2017 Carlo Oliveira <carlo@nce.ufrj.br>,
+# `Labase <http://labase.selfip.org/>`__; `GPL <http://j.mp/GNU_GPL3>`__.
+#
+# EICA é um software livre; você pode redistribuí-lo e/ou
+# modificá-lo dentro dos termos da Licença Pública Geral GNU como
+# publicada pela Fundação do Software Livre (FSF); na versão 2 da
+# Licença.
+#
+# Este programa é distribuído na esperança de que possa ser útil,
+# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
+# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
+# Licença Pública Geral GNU para maiores detalhes.
+#
+# Você deve ter recebido uma cópia da Licença Pública Geral GNU
+# junto com este programa, se não, veja em <http://www.gnu.org/licenses/>
+
+"""Handle http requests.
+
+.. moduleauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
+
+"""
 from datetime import datetime
 from bottle import default_app, route, view, get, post, static_file, request, redirect, run, TEMPLATE_PATH
 import os
@@ -12,6 +35,16 @@ LAST = None
 PEC = "jogada"
 HEAD = "carta casa move tempo ponto value".split()
 FAKE = [{k: 10 * i + j for j, k in enumerate(HEAD)} for i in range(4)]
+
+
+@get("/assets/<filepath:re:.*\.(jpg|png|gif|ico|svg)>")
+def img(filepath):
+    return static_file(filepath, root=u'/home/carlo/Documentos/dev/eica/src/assets')
+
+
+@get("<filepath:re:.*\.py>")
+def py(filepath):
+    return static_file(filepath, root=u'/home/carlo/Documentos/dev/eica/src')
 
 
 def retrieve_data(req):
@@ -73,6 +106,13 @@ def register_user():
     return dict(doc_id=gid)
 
 
+@get('/plot')
+@view('eicaplayer')
+def register_user():
+    global LAST
+    return {}
+
+
 @get('/record/getid')
 def get_user_id_():
     global LAST
@@ -131,5 +171,5 @@ def store():
 application = default_app()
 
 if __name__ == "__main__":
-    TEMPLATE_PATH.insert(0, DIR)
+    TEMPLATE_PATH.insert(0, INDEX)
     run(host='localhost', port=8080)

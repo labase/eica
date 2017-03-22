@@ -1,10 +1,32 @@
-# from enum import Enum     # for enum34, or the stdlib version
-# from aenum import Enum  # for the aenum version
+#! /usr/bin/env python
+# -*- coding: UTF8 -*-
+# Este arquivo é parte do programa EICA
+# Copyright 2014-2017 Carlo Oliveira <carlo@nce.ufrj.br>,
+# `Labase <http://labase.selfip.org/>`__; `GPL <http://j.mp/GNU_GPL3>`__.
+#
+# EICA é um software livre; você pode redistribuí-lo e/ou
+# modificá-lo dentro dos termos da Licença Pública Geral GNU como
+# publicada pela Fundação do Software Livre (FSF); na versão 2 da
+# Licença.
+#
+# Este programa é distribuído na esperança de que possa ser útil,
+# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
+# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
+# Licença Pública Geral GNU para maiores detalhes.
+#
+# Você deve ter recebido uma cópia da Licença Pública Geral GNU
+# junto com este programa, se não, veja em <http://www.gnu.org/licenses/>
+
+"""Resources to be used in game.
+
+.. moduleauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
+
+"""
 import os
 __version__ = "2.0.4"
 
 here = os.path.dirname(__file__)
-IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
+IMG = "https://s19.postimg.org/"
 LOCAL = os.path.join(here, "../assets/")
 
 
@@ -38,17 +60,17 @@ class Folha:
     sapiens = Recurso("sapiens", LOCAL + "homem01.png")
     itens = Recurso("itens", LOCAL + "spritesheet.png", 200, 200, 6 * 7)
     minitens = Recurso("minitens", LOCAL + "spritesheety.png", 64, 64, 6 * 8)
-    coisa = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
-    comida = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
-    arma = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
-    objeto = Recurso("objeto", IMG + "cacarecos.png", 32, 32, 16 * 16)
-    fruta = Recurso("fruta", IMG + "fruit.png", 65, 65, 8 * 8)
-    animal = Recurso("animal", IMG + "largeemoji.png", 47.5, 47, 14 * 9)
-    arvore = Recurso("arvore", IMG + "treesprites1.png", 123.5, 111, 4 * 3)
-    homem = Recurso("homem", IMG + "caveman.png", 130, 130, 5 * 2)
-    fala = Recurso("chave", IMG + "balooni.png")
-    chave = Recurso("fala", IMG + "jogo_chaves.jpg")
-    mundo = Recurso("pensa", IMG + "thought.png")
+    coisa = Recurso("objeto", IMG + "c3lqxpi5fz/acarecos.png", 32, 32, 16 * 16)
+    comida = Recurso("objeto", IMG + "3lqxpi5fz/cacarecos.png", 32, 32, 16 * 16)
+    arma = Recurso("objeto", IMG + "3lqxpi5fz/cacarecos.png", 32, 32, 16 * 16)
+    objeto = Recurso("objeto", IMG + "3lqxpi5fz/cacarecos.png", 32, 32, 16 * 16)
+    fruta = Recurso("fruta", IMG + "4127iirdb/fruit.png", 65, 65, 8 * 8)
+    animal = Recurso("animal", IMG + "sk48ztvrj/largeemoji.png", 47.5, 47, 14 * 9)
+    arvore = Recurso("arvore", IMG + "odjekhw5r/ttreesprites1.png", 123.5, 111, 4 * 3)
+    homem = Recurso("homem", IMG + "88wzr9ssv/caveman.png", 130, 130, 5 * 2)
+    fala = Recurso("chave", IMG + "6ek59j5sf/balooni.png")
+    chave = Recurso("fala", IMG + "v062dodu7/jogo_chaves.jpg")
+    mundo = Recurso("pensa", IMG + "h91lbgowf/thought.png")
     eica = Recurso("fundo", LOCAL + "background.png")
     # eica = Recurso("fundo", IMG + "eicamundo.png")
 
@@ -63,3 +85,22 @@ class Folha:
     @classmethod
     def alloldThing(cls):
         return Folha.fruta, Folha.comida, Folha.animal, Folha.arma, Folha.objeto
+'''
+[url=https://postimg.org/image/6ek59j5sf/][img]https://s19.postimg.org/6ek59j5sf/balooni.png[/img][/url]
+
+[url=https://postimg.org/image/3lqxpi5fz/][img]https://s19.postimg.org/3lqxpi5fz/cacarecos.png[/img][/url]
+
+[url=https://postimg.org/image/88wzr9ssv/][img]https://s19.postimg.org/88wzr9ssv/caveman.png[/img][/url]
+
+[url=https://postimg.org/image/4127iirdb/][img]https://s19.postimg.org/4127iirdb/fruit.png[/img][/url]
+
+[url=https://postimg.org/image/v062dodu7/][img]https://s19.postimg.org/v062dodu7/jogo_chaves.jpg[/img][/url]
+
+[url=https://postimg.org/image/sk48ztvrj/][img]https://s19.postimg.org/sk48ztvrj/largeemoji.png[/img][/url]
+
+[url=https://postimg.org/image/h91lbgowf/][img]https://s19.postimg.org/h91lbgowf/thought.png[/img][/url]
+
+[url=https://postimg.org/image/odjekhw5r/][img]https://s19.postimg.org/odjekhw5r/treesprites1.png[/img][/url]
+
+
+[url=https://postimage.org/]image post[/url]'''
