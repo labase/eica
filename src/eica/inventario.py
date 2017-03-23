@@ -21,6 +21,7 @@ class Celula(Actor):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.celula = recurso
         self.x, self.y, self.tabuleiro = x, y, tabuleiro
+        self.jogo = tabuleiro.ladrilho if tabuleiro else "_NONE_"
 
     def create(self):
         self.celula = self.sprite(self.celula, self.x, self.y)
@@ -29,6 +30,7 @@ class Celula(Actor):
         self.celula.frame = 160
         self.celula.width, self.celula.height = self.tabuleiro.quadro.x, self.tabuleiro.quadro.y
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.recebe(self.tabuleiro), self)
+        self.register(evento=self.recebe, carta=["%d" % z for z in (self.x, self.y)], ponto=self.jogo, valor=True)
         self.tabuleiro.tabuleiro.add(self.celula)
 
     def recebe(self, tabuleiro):
@@ -43,8 +45,9 @@ class Tabuleiro(Celula):
     def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA, jogo="_Chaves_"):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         super().__init__(tab)  # super é invocado aqui para preservar os poderes recebidos do Circus
+        self.visible = None
         self.ladrilho = jogo
-        self.seleto = self.tabuleiro = None
+        self.seleto = self.tabuleiro = self
         self.quadro = quadro
         for x in range(dimensao.x):
             for y in range(dimensao.y):
@@ -72,6 +75,8 @@ class Aba(Actor):
         self.celula.inputEnabled = True
         self.celula.frame = 36  # 160
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.mostra_abas(self.chave, self.aba), self)
+        self.register(evento=self.mostra_abas, carta=["%d" % z for z in (self.x, self.y)],
+                      ponto="_ABAS_", valor=True)
         self.chave.add(self.celula)
 
     def mostra_abas(self, chave, proxima):
@@ -93,7 +98,8 @@ class Inventario(Jogo):
         super().__init__(ver)  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.x, self.y, self.delta, self.item, self.passo, self.janela = \
             ponto.x, ponto.y, delta, item or Folha.allThing(), passo, janela
-        self.aba_corrente = self.abas = None
+        self.aba_corrente = None
+        self.abas = []
         self.recebe = recebe
         self.monta_abas()
         self.monta_botoes()
@@ -221,7 +227,10 @@ class Item(Actor):
         super().__init__()
         self.recebe, self.nome, self.frame, self.x, self.y, \
             self.step, self.lista, self.janela = recebe, nome, frame, x, y, step, escopo, janela
-        self.aba = self.coisas = self.fala = self.jogo = None
+        self.visible = None
+        self.fala = self.jogo = None
+        self.aba = self
+        self.coisas = []
         self.seleto = None
         self.range = list(range(0, self.lista))
 

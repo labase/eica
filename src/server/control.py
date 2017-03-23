@@ -42,11 +42,6 @@ def img(filepath):
     return static_file(filepath, root=u'/home/carlo/Documentos/dev/eica/src/assets')
 
 
-@get("<filepath:re:.*\.py>")
-def py(filepath):
-    return static_file(filepath, root=u'/home/carlo/Documentos/dev/eica/src')
-
-
 def retrieve_data(req):
     jdata = req['data']
     print(jdata)
@@ -66,6 +61,13 @@ def hello_world():
     # redirect('/carinhas/carinhas.html')
     # redirect('/tuple/index.html')
     redirect("/static/index.html")
+
+
+@route('/plot')
+def hello_world():
+    # redirect('/carinhas/carinhas.html')
+    # redirect('/tuple/index.html')
+    redirect("/static/eicaplayer.html")
 
 
 @route('/ei')
@@ -89,7 +91,7 @@ def stylecss(filename):
 
 @get('/static/<filename:re:.*\.py>')
 def code(filename):
-    # print('/static/<filename:re:.*\.css>', filename, INDEX)
+    print('/static/<filename:re:.*\.css>', filename, INDEX)
     return static_file(filename, root=INDEX)
 
 
@@ -106,7 +108,7 @@ def register_user():
     return dict(doc_id=gid)
 
 
-@get('/plot')
+@get('/noplot')
 @view('eicaplayer')
 def register_user():
     global LAST

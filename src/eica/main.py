@@ -58,15 +58,27 @@ class Eica(Jogo):
         Imagem(Folha.eica, Ponto(-500, -200), self, (1.8, 1.8))
         ''''''
         self.mundo = Mundo(x=-150)  # MonoInventario(lambda _=0: None)
-        self.homem = Homem(self.clica)
+        self.homem = Homem(self.activating)
         self.roda = Roda(acao=self.homem.esconde)
         self.chaves = Chaves(y=100)
         self.menu = Menu(self)
 
+    def activating(self, item=None):
+        self.register(evento=self.activating, carta="_ATIVA_", ponto="_MUNDO_", valor=True)
+        self.activating = self.clica
+
     def ativaroda(self, item=None):
+        self.register(evento=self.ativaroda, carta="_ATIVA_", ponto="_LINGUA_", valor=self.ativo)
+        self.ativaroda = self._ativaroda
+
+    def _ativaroda(self, item=None):
         self.roda.ativa()
 
     def ativachaves(self, item=None):
+        self.register(evento=self.ativachaves, carta="_ATIVA_", ponto="_CHAVES_", valor=self.ativo)
+        self.ativachaves = self._ativachaves
+
+    def _ativachaves(self, item=None):
         self.chaves.ativa()
 
     def clica(self, item):
@@ -108,11 +120,21 @@ def main(gid=None):
     return __version__
 
 
+class MonkeyPatcher:
+
+    def score(self, evento, carta, ponto, valor):
+        carta = '_'.join(carta)
+        casa = evento
+        data = dict(doc_id=Vitollino.GID, carta=carta, casa=casa, move="ok", ponto=ponto, valor=valor)
+        print('store', data)
+
+
 def player(gid=None):
     # JogoEica.JOGO = JogoEica(gid)
     print("player")
     from braser.vitollino import Vitollino
-    Vitollino.score = lambda *a, **k: None
+    Vitollino.score = MonkeyPatcher.score
+    # Vitollino.score = lambda *a, **k: None
     JogoEica.JOGO = JogoEica(gid)
     return __version__
 

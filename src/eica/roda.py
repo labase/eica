@@ -17,16 +17,17 @@ class Roda(Jogo):
         self.x, self.y, self.acao = x, y, acao
         # Imagem(Folha.cumulus, Ponto(x, y), self, (0.7, 0.7))
         # Imagem(Folha.cumulus, Ponto(x + FALAX + FALASEPARA * 3.7, 10), self, (0.5, 0.8))
-        Imagem(Folha.nuvem, Ponto(x, y-90), self, (2.0, 3.1))
-        Imagem(Folha.cumulus, Ponto(x + FALAX + FALASEPARA * 3.7, -40), self, (1.6, 3.2))
-        Botao(Folha.twosapiens, Ponto(250+x, 450+y-90), 0, self._click, self, (0.22, 0.22))
-        Botao(Folha.twosapiens, Ponto(250+x + FALAX + FALASEPARA * 2, 450+y-100), 2, self._click, self, (0.22, 0.22))
-        Botao(Folha.minitens, Ponto(x + FALAX + FALASEPARA * 2.5, y + FALAY + FALASEPARA), 39, self._click, self)
         self.inventario = [
             ListaInventario(lambda _=0: None, Ponto(150+80*x, 90), item=[Folha.minitens], passo=Ponto(0, 50),
                             janela=3) for x in range(3)]
+        Imagem(Folha.nuvem, Ponto(x, y-90), self, (2.0, 3.1))
+        Imagem(Folha.cumulus, Ponto(x + FALAX + FALASEPARA * 3.7, -40), self, (1.6, 3.2))
+        Botao(Folha.twosapiens, Ponto(250+x, 450+y-90), 0, self.activating, self, (0.22, 0.22))
+        Botao(Folha.twosapiens, Ponto(250+x + FALAX + FALASEPARA * 2, 450+y-100), 2, self.activating, self, (0.22, 0.22))
+        Botao(Folha.minitens, Ponto(x + FALAX + FALASEPARA * 2.5, y + FALAY + FALASEPARA), 39, self.activating, self)
+        self.activating = self._click
         a, b, c = [(0, 540 + 80 * x, 30) for x in range(3)]
-        self.texto = Fala(lambda _=0: none, Ponto(500, 90),
+        self.texto = Fala(lambda _=0: None, Ponto(500, 90),
                           item=(Palavra(*a), Palavra(*b), Palavra(*c)), passo=Ponto(0, 50), janela=3)
         self.termos = None
 
@@ -43,6 +44,10 @@ class Roda(Jogo):
     def _nop(self, _=None, d=None):
         """Copia fala para pensamento do interlocutor"""
         pass
+
+    def activating(self, _=None, d=None):
+        """Copia fala para pensamento do interlocutor"""
+        self.register(evento=self.activating, carta=["%s" % c for c in "abc"], ponto="_FALA_", valor=True)
 
     def _click(self, _=None, d=None):
         """Copia fala para pensamento do interlocutor"""

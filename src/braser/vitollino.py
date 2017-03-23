@@ -57,7 +57,15 @@ class Vitollino:
         carta = '_'.join(carta)
         casa = '_'.join([str(evento.x), str(evento.y)])
         data = dict(doc_id=Vitollino.GID, carta=carta, casa=casa, move="ok", ponto=ponto, valor=valor)
-        self.gamer.send('store', data)
+        # self.gamer.send('store', data)
+        print('store', data)
+
+    def register(self, evento, carta, ponto, valor):
+        carta = '_'.join(carta)
+        data = dict(doc_id=Vitollino.GID, carta=carta, casa=evento, move="ok", ponto=ponto, valor=valor)
+        # self.gamer.send('store', data)
+        # print('register', data)
+
 
 
 class Actor(Vitollino):
