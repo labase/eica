@@ -14,6 +14,9 @@ class Vitollino:
         self.game = self.gamer.game
         self.gid = "00000000000000000000"
 
+    def registry(self, *args, **kwargs):
+        pass
+
     def set_id(self, gid):
         Vitollino.GID = gid
         print(gid)
@@ -63,9 +66,7 @@ class Vitollino:
     def register(self, evento, carta, ponto, valor):
         carta = '_'.join(carta)
         data = dict(doc_id=Vitollino.GID, carta=carta, casa=evento, move="ok", ponto=ponto, valor=valor)
-        # self.gamer.send('store', data)
-        # print('register', data)
-
+        self.registry(evento, carta, ponto)
 
 
 class Actor(Vitollino):

@@ -36,8 +36,8 @@ class JogoEica(Vitollino):
     JOGO = None
     """Essa  é a classe Jogo que recebe os poderes da classe Circus de poder criar um jogo"""
 
-    def __init__(self, gid):
-        super().__init__(1000, 800, alpha=True)  # super é invocado aqui para preservar os poderes recebidos do Circus
+    def __init__(self, gid, w=1000, h=800):
+        super().__init__(w, h, alpha=True)  # super é invocado aqui para preservar os poderes recebidos do Circus
         Eica()
 
 
@@ -46,8 +46,8 @@ class Menu(Jogo):
 
     def __init__(self, jogo):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
-        Botao(Folha.itens, Ponto(15, 15), 36 + 1, jogo.ativaroda, self, escala=(0.6, 0.6))
-        Botao(Folha.itens, Ponto(735+50, 15), 36 + 3, jogo.ativachaves, self, escala=(0.6, 0.6))
+        Botao(Folha.itens, Ponto(15, 15), 36 + 1, lambda i: jogo.ativaroda(i), self, escala=(0.6, 0.6))
+        Botao(Folha.itens, Ponto(735+50, 15), 36 + 3, lambda i: jogo.ativachaves(i), self, escala=(0.6, 0.6))
 
 
 class Eica(Jogo):
@@ -58,7 +58,7 @@ class Eica(Jogo):
         Imagem(Folha.eica, Ponto(-500, -200), self, (1.8, 1.8))
         ''''''
         self.mundo = Mundo(x=-150)  # MonoInventario(lambda _=0: None)
-        self.homem = Homem(self.activating)
+        self.homem = Homem(lambda i: self.activating(i))
         self.roda = Roda(acao=self.homem.esconde)
         self.chaves = Chaves(y=100)
         self.menu = Menu(self)
@@ -100,7 +100,7 @@ class Homem(Jogo):
         super().__init__()
         acao = acao or self._click
         # Imagem(Folha.eica, Ponto(0, 0), self, (1.6, 1.6))
-        self.homem = Botao(Folha.sapiens, Ponto(x=250, y=450), frame, acao, self, (0.1, 0.1))
+        self.homem = Botao(Folha.sapiens, Ponto(x=250, y=450), frame, lambda i: acao(i), self, (0.1, 0.1))
 
     def esconde(self, ativa=False):
         """Esconde o Homem"""
@@ -132,10 +132,13 @@ class MonkeyPatcher:
 def player(gid=None):
     # JogoEica.JOGO = JogoEica(gid)
     print("player")
+    from .player import Fachada
+    fachada = Fachada()
     from braser.vitollino import Vitollino
     Vitollino.score = MonkeyPatcher.score
     # Vitollino.score = lambda *a, **k: None
-    JogoEica.JOGO = JogoEica(gid)
+    JogoEica.JOGO = JogoEica(gid, 800, 800)
+    print(list(fachada.ativadores.keys()))
     return __version__
 
 
