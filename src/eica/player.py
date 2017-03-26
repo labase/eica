@@ -24,11 +24,22 @@
 """
 from browser import timer
 from braser.vitollino import Vitollino
+from json import load
+from datetime import datetime as dt
+
+
+def parse_time(time):
+    try:
+        return dt.strptime(time, "%Y-%m-%d %H:%M:%S.%f")
+    except ValueError:
+        return dt.strptime(time, "%Y-%m-%d %H:%M:%S")
+    except TypeError:
+        return time
 
 
 class Ativadora:
-    def __init__(self, evento, carta, ponto, valor=True):
-        self.evento, self.carta, self.ponto, self.valor, = evento, carta, ponto, valor
+    def __init__(self, evento, carta, ponto, player=lambda: None):
+        self.evento, self.carta, self.ponto, self.player, = evento, carta, ponto, player
 
     def play(self, time, carta=None):
         self.carta = carta if carta else self.carta
@@ -36,16 +47,33 @@ class Ativadora:
 
     def _play(self):
         self.evento()
+        self.pĺayer()
 
 
 class Fachada:
     def __init__(self):
         Vitollino.registry = self.registrar
         self.ativadores = {}
+        self.tape = []
+        self.tempo = None
+        self.count = 0
 
     def registrar(self, _, evento, carta, ponto, *args):
-        self.ativadores[(ponto, carta)] = Ativadora(evento=evento, carta=carta, ponto=ponto)
+        self.ativadores[ponto] = Ativadora(evento=evento, carta=carta, ponto=ponto, player=self.play)
 
+    def player(self, tape=JSON):
+        self.tape = tape
+        self.tempo = parse_time(self.tape[0]["tempo"]) - td(seconds=1)
+
+    def play(self):
+        def record(ponto, valor, move, carta, casa, tempo):
+            deltatempo = parse_time(tempo) - self.tempo
+            self.ativadores[ponto].play(deltatempo.total_seconds()*100, carta)
+        if self.count >= len(self.tape):
+            return
+        registro = self.tape[self.count]
+        record(**registro)
+        self.count += 1
 
 JSON = [{"ponto": "_MUNDO_", "valor": "True", "move": "ok", "carta": "__A_T_I_V_A__", "casa": "0_0",
          "tempo": "2016-08-08 23:14:03.885474"},

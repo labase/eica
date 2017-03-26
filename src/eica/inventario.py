@@ -1,3 +1,27 @@
+#! /usr/bin/env python
+# -*- coding: UTF8 -*-
+# Este arquivo é parte do programa EICA
+# Copyright 2014-2017 Carlo Oliveira <carlo@nce.ufrj.br>,
+# `Labase <http://labase.selfip.org/>`__; `GPL <http://j.mp/GNU_GPL3>`__.
+#
+# EICA é um software livre; você pode redistribuí-lo e/ou
+# modificá-lo dentro dos termos da Licença Pública Geral GNU como
+# publicada pela Fundação do Software Livre (FSF); na versão 2 da
+# Licença.
+#
+# Este programa é distribuído na esperança de que possa ser útil,
+# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
+# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
+# Licença Pública Geral GNU para maiores detalhes.
+#
+# Você deve ter recebido uma cópia da Licença Pública Geral GNU
+# junto com este programa, se não, veja em <http://www.gnu.org/licenses/>
+
+"""Game board, cells and inventory.
+
+.. moduleauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
+
+"""
 from braser.vitollino import Actor
 from . import Ponto, Folha
 from .eica import Botao, Imagem, Jogo
@@ -30,7 +54,7 @@ class Celula(Actor):
         self.celula.frame = 160
         self.celula.width, self.celula.height = self.tabuleiro.quadro.x, self.tabuleiro.quadro.y
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.recebe(self.tabuleiro), self)
-        self.register(evento=self.recebe, carta=["%d" % z for z in (self.x, self.y)], ponto=self.jogo, valor=True)
+        # self.register(evento=self.recebe, carta=["%d" % z for z in (self.x, self.y)], ponto=self.jogo, valor=True)
         self.tabuleiro.tabuleiro.add(self.celula)
 
     def recebe(self, tabuleiro):
@@ -45,6 +69,7 @@ class Tabuleiro(Celula):
     def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA, jogo="_Chaves_"):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         super().__init__(tab)  # super é invocado aqui para preservar os poderes recebidos do Circus
+        self.register(evento=self.recebe, carta=["tb"], ponto=jogo, valor=True)
         self.visible = None
         self.ladrilho = jogo
         self.seleto = self.tabuleiro = self
