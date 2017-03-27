@@ -69,10 +69,10 @@ class Tabuleiro(Celula):
     def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA, jogo="_Chaves_"):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         super().__init__(tab)  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.register(evento=self.recebe, carta=["tb"], ponto=jogo, valor=True)
+        self.register(evento=self.desenha, carta=["tb"], ponto=jogo, valor=True)
         self.visible = None
         self.ladrilho = jogo
-        self.seleto = self.tabuleiro = self
+        self.seleto = self.tabuleiro = None
         self.quadro = quadro
         for x in range(dimensao.x):
             for y in range(dimensao.y):
@@ -81,6 +81,13 @@ class Tabuleiro(Celula):
     def create(self):
         self.tabuleiro = self.group()
         self.tabuleiro.visible = False
+
+    def desenha(self, carta=0, casa=(100, 100)):
+        self.celula = self.sprite(Folha.minitens.n, casa[0], casa[1])
+        self.celula.frame = carta[0]
+        self.celula.visible = True
+        self.tabuleiro.add(self.celula)
+        self.tabuleiro.visible = True
 
     def ativa(self, ativa):
         """Abre o balão de conversa"""
@@ -100,8 +107,8 @@ class Aba(Actor):
         self.celula.inputEnabled = True
         self.celula.frame = 36  # 160
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.mostra_abas(self.chave, self.aba), self)
-        self.register(evento=self.mostra_abas, carta=["%d" % z for z in (self.x, self.y)],
-                      ponto="_ABAS_", valor=True)
+        # self.register(evento=self.mostra_abas, carta=["%d" % z for z in (self.x, self.y)],
+        #               ponto="_ABAS_", valor=True)
         self.chave.add(self.celula)
 
     def mostra_abas(self, chave, proxima):

@@ -24,8 +24,9 @@
 """
 from browser import timer
 from braser.vitollino import Vitollino
-from json import load
 from datetime import datetime as dt
+from datetime import timedelta as td
+NOT_CARTA = "__A_T_I_V_A__ minitens f_r_u_t_a o_b_j_e_t_o".split()
 
 
 def parse_time(time):
@@ -40,35 +41,42 @@ def parse_time(time):
 class Ativadora:
     def __init__(self, evento, carta, ponto, player=lambda: None):
         self.evento, self.carta, self.ponto, self.player, = evento, carta, ponto, player
+        self.casa = "0_0"
 
-    def play(self, time, carta=None):
+    def play(self, time, carta=None, casa=None):
         self.carta = carta if carta else self.carta
+        self.casa = casa if casa else self.casa
         timer.set_timeout(self._play, time)
 
     def _play(self):
-        self.evento()
-        self.pĺayer()
+        carta = [int(carta) for carta in self.carta.split('_')] if self.carta not in NOT_CARTA else [0]
+        casa = [int(casa) for casa in self.casa.split('_')]
+        print("_play", casa, carta, self.casa, self.carta)
+        self.evento(carta, casa)
+        self.player()
 
 
 class Fachada:
     def __init__(self):
         Vitollino.registry = self.registrar
-        self.ativadores = {}
+        self.ativadores = {"_ABAS_": Ativadora(evento=lambda *_: None, carta=[0], ponto=[0, 0], player=self.play)}
         self.tape = []
         self.tempo = None
         self.count = 0
 
-    def registrar(self, _, evento, carta, ponto, *args):
+    def registrar(self, _, evento, carta, ponto):
         self.ativadores[ponto] = Ativadora(evento=evento, carta=carta, ponto=ponto, player=self.play)
 
     def player(self, tape=JSON):
         self.tape = tape
-        self.tempo = parse_time(self.tape[0]["tempo"]) - td(seconds=1)
+        self.tempo = parse_time(self.tape[0]["tempo"]) - td(seconds=10)
+        self.play()
 
     def play(self):
-        def record(ponto, valor, move, carta, casa, tempo):
-            deltatempo = parse_time(tempo) - self.tempo
-            self.ativadores[ponto].play(deltatempo.total_seconds()*100, carta)
+        def record(ponto, carta, casa, tempo, **_):
+            self.tempo, deltatempo = parse_time(tempo), parse_time(tempo) - self.tempo
+            print("Fachada play deltatempo", deltatempo.total_seconds()*500)
+            self.ativadores[ponto].play(deltatempo.total_seconds()*500, carta, casa)
         if self.count >= len(self.tape):
             return
         registro = self.tape[self.count]

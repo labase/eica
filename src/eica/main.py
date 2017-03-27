@@ -63,25 +63,25 @@ class Eica(Jogo):
         self.chaves = Chaves(y=100)
         self.menu = Menu(self)
 
-    def activating(self, item=None):
+    def activating(self, *_):
         self.register(evento=self.activating, carta="_ATIVA_", ponto="_MUNDO_", valor=True)
         self.activating = self.clica
 
-    def ativaroda(self, item=None):
+    def ativaroda(self, *_):
         self.register(evento=self.ativaroda, carta="_ATIVA_", ponto="_LINGUA_", valor=self.ativo)
         self.ativaroda = self._ativaroda
 
-    def _ativaroda(self, item=None):
+    def _ativaroda(self, *_):
         self.roda.ativa()
 
-    def ativachaves(self, item=None):
+    def ativachaves(self, *_):
         self.register(evento=self.ativachaves, carta="_ATIVA_", ponto="_CHAVES_", valor=self.ativo)
         self.ativachaves = self._ativachaves
 
-    def _ativachaves(self, item=None):
+    def _ativachaves(self, *_):
         self.chaves.ativa()
 
-    def clica(self, item):
+    def clica(self, *_):
         """Aqui colocamos as imagems na tela do jogo"""
         self.mundo.ativa()
         # self.ativa()
@@ -107,7 +107,7 @@ class Homem(Jogo):
         print("homem action Esconde", ativa)
         self.homem.botao.visible = ativa
 
-    def _click(self, _=None, __=None):
+    def _click(self, *_):
         """Ativa o jogo do Mundo"""
         print("homem action", JogoEica.JOGO.mundo)
         self.ativa()
@@ -132,13 +132,15 @@ class MonkeyPatcher:
 def player(gid=None):
     # JogoEica.JOGO = JogoEica(gid)
     print("player")
-    from .player import Fachada
+    from .player import Fachada, JSON
     fachada = Fachada()
     from braser.vitollino import Vitollino
     Vitollino.score = MonkeyPatcher.score
     # Vitollino.score = lambda *a, **k: None
     JogoEica.JOGO = JogoEica(gid, 800, 800)
     print(list(fachada.ativadores.keys()))
+    fachada.player(tape=JSON)
+
     return __version__
 
 
