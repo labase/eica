@@ -38,7 +38,7 @@ class JogoEica(Vitollino):
 
     def __init__(self, gid, w=1000, h=800):
         super().__init__(w, h, alpha=True)  # super é invocado aqui para preservar os poderes recebidos do Circus
-        Eica()
+        self.eica = Eica()
 
 
 class Menu(Jogo):
@@ -83,7 +83,9 @@ class Eica(Jogo):
 
     def clica(self, *_):
         """Aqui colocamos as imagems na tela do jogo"""
+        print("ativamundo", self.mundo.ativo)
         self.mundo.ativa()
+        print("ativamundo", self.mundo.ativo)
         # self.ativa()
 
     def preload(self):
@@ -137,9 +139,10 @@ def player(gid=None):
     from braser.vitollino import Vitollino
     Vitollino.score = MonkeyPatcher.score
     # Vitollino.score = lambda *a, **k: None
-    JogoEica.JOGO = JogoEica(gid, 800, 800)
+    jogo = JogoEica.JOGO = JogoEica(gid, 800, 800)
+    jogo.eica.mundo.ativo = False
     print(list(fachada.ativadores.keys()))
-    fachada.player(tape=JSON)
+    fachada.player(tape=JSON, time=20, delta=200)
 
     return __version__
 

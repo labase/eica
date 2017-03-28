@@ -63,20 +63,22 @@ class Fachada:
         self.tape = []
         self.tempo = None
         self.count = 0
+        self.delta = 500
 
     def registrar(self, _, evento, carta, ponto):
         self.ativadores[ponto] = Ativadora(evento=evento, carta=carta, ponto=ponto, player=self.play)
 
-    def player(self, tape=JSON):
+    def player(self, tape=JSON, time=30, delta=500):
         self.tape = tape
-        self.tempo = parse_time(self.tape[0]["tempo"]) - td(seconds=10)
+        self.tempo = parse_time(self.tape[0]["tempo"]) - td(seconds=time)
+        self.delta = delta
         self.play()
 
     def play(self):
         def record(ponto, carta, casa, tempo, **_):
             self.tempo, deltatempo = parse_time(tempo), parse_time(tempo) - self.tempo
-            print("Fachada play deltatempo", deltatempo.total_seconds()*500)
-            self.ativadores[ponto].play(deltatempo.total_seconds()*500, carta, casa)
+            print("Fachada play deltatempo", deltatempo.total_seconds()*self.delta)
+            self.ativadores[ponto].play(deltatempo.total_seconds()*self.delta, carta, casa)
         if self.count >= len(self.tape):
             return
         registro = self.tape[self.count]
@@ -84,6 +86,12 @@ class Fachada:
         self.count += 1
 
 JSON = [{"ponto": "_MUNDO_", "valor": "True", "move": "ok", "carta": "__A_T_I_V_A__", "casa": "0_0",
+         "tempo": "2016-08-08 23:14:00.885474"},
+        {"ponto": "_LINGUA_", "valor": "True", "move": "ok", "carta": "__A_T_I_V_A__", "casa": "0_0",
+         "tempo": "2016-08-08 23:14:01.885474"},
+        {"ponto": "_CHAVES_", "valor": "True", "move": "ok", "carta": "__A_T_I_V_A__", "casa": "0_0",
+         "tempo": "2016-08-08 23:14:02.885474"},
+        {"ponto": "_MUNDO_", "valor": "True", "move": "ok", "carta": "__A_T_I_V_A__", "casa": "0_0",
          "tempo": "2016-08-08 23:14:03.885474"},
         {"ponto": "_Mundo_", "valor": "True", "move": "ok", "carta": "28", "casa": "212_448",
          "tempo": "2016-08-08 23:14:07.950161"},
@@ -103,6 +111,10 @@ JSON = [{"ponto": "_MUNDO_", "valor": "True", "move": "ok", "carta": "__A_T_I_V_
          "tempo": "2016-08-08 23:14:42.405210"},
         {"ponto": "_FALA_", "valor": "True", "move": "ok", "carta": "12_30_22", "casa": "0_0",
          "tempo": "2016-08-08 23:15:13.868345"},
+        {"ponto": "_FALA_", "valor": "True", "move": "ok", "carta": "22_30_16", "casa": "0_0",
+         "tempo": "2016-08-08 23:15:16.906352"},
+        {"ponto": "_FALA_", "valor": "True", "move": "ok", "carta": "12_30_22", "casa": "0_0",
+         "tempo": "2016-08-08 23:15:20.868345"},
         {"ponto": "_FALA_", "valor": "True", "move": "ok", "carta": "22_30_16", "casa": "0_0",
          "tempo": "2016-08-08 23:15:23.906352"},
         {"ponto": "_LINGUA_", "valor": "False", "move": "ok", "carta": "__A_T_I_V_A__", "casa": "0_0",
