@@ -1,12 +1,34 @@
-from braser.vitollino import Actor
+#! /usr/bin/env python
+# -*- coding: UTF8 -*-
+# Este arquivo é parte do programa EICA
+# Copyright 2014-2017 Carlo Oliveira <carlo@nce.ufrj.br>,
+# `Labase <http://labase.selfip.org/>`__; `GPL <http://j.mp/GNU_GPL3>`__.
+#
+# EICA é um software livre; você pode redistribuí-lo e/ou
+# modificá-lo dentro dos termos da Licença Pública Geral GNU como
+# publicada pela Fundação do Software Livre (FSF); na versão 2 da
+# Licença.
+#
+# Este programa é distribuído na esperança de que possa ser útil,
+# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
+# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
+# Licença Pública Geral GNU para maiores detalhes.
+#
+# Você deve ter recebido uma cópia da Licença Pública Geral GNU
+# junto com este programa, se não, veja em <http://www.gnu.org/licenses/>
+
+"""Definition for the Language Wheel Game.
+
+.. moduleauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
+
+"""
 from . import Ponto, Folha
-from random import shuffle
 from .eica import Jogo, Imagem, Botao
 from .inventario import ListaInventario, Item
 
-IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
 BALONX, BALONY = 20, 70
 FALAX, FALAY, FALASEPARA = 100, 40, 100
+FALAXS = FALAX + FALASEPARA
 
 
 class Roda(Jogo):
@@ -15,18 +37,17 @@ class Roda(Jogo):
     def __init__(self, x=BALONX, y=BALONY, acao=lambda _=0: None):
         super().__init__(ver=False)  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.x, self.y, self.acao = x, y, acao
-        # Imagem(Folha.cumulus, Ponto(x, y), self, (0.7, 0.7))
-        # Imagem(Folha.cumulus, Ponto(x + FALAX + FALASEPARA * 3.7, 10), self, (0.5, 0.8))
-        Imagem(Folha.nuvem, Ponto(x, y-90), self, (2.0, 3.1))
-        Imagem(Folha.cumulus, Ponto(x + FALAX + FALASEPARA * 3.7, -40), self, (1.6, 3.2))
-        Botao(Folha.twosapiens, Ponto(250+x, 450+y-90), 0, self._click, self, (0.22, 0.22))
-        Botao(Folha.twosapiens, Ponto(250+x + FALAX + FALASEPARA * 2, 450+y-100), 2, self._click, self, (0.22, 0.22))
-        Botao(Folha.minitens, Ponto(x + FALAX + FALASEPARA * 2.5, y + FALAY + FALASEPARA), 39, self._click, self)
         self.inventario = [
             ListaInventario(lambda _=0: None, Ponto(150+80*x, 90), item=[Folha.minitens], passo=Ponto(0, 50),
                             janela=3) for x in range(3)]
+        Imagem(Folha.nuvem, Ponto(x, y-90), self, (2.0, 3.1))
+        Imagem(Folha.cumulus, Ponto(x + FALAX + FALASEPARA * 3.7, -40), self, (1.6, 3.2))
+        Botao(Folha.twosapiens, Ponto(250+x, 450+y-90), 0, lambda i: self.activating(i), self, (0.22, 0.22))
+        Botao(Folha.twosapiens, Ponto(250+x + FALAXS * 2, 450+y-100), 2, lambda i: self.activating(i), self, (0.22, 0.22))
+        Botao(Folha.minitens, Ponto(x + FALAXS * 2.5, y + FALAY + FALASEPARA), 39, lambda i: self.activating(i), self)
+        self.activating = self._click
         a, b, c = [(0, 540 + 80 * x, 30) for x in range(3)]
-        self.texto = Fala(lambda _=0: none, Ponto(500, 90),
+        self.texto = Fala(lambda _=0: None, Ponto(500, 90),
                           item=(Palavra(*a), Palavra(*b), Palavra(*c)), passo=Ponto(0, 50), janela=3)
         self.termos = None
 
@@ -34,9 +55,7 @@ class Roda(Jogo):
         """Abre o balão de conversa"""
         super().ativa(ativo)
         self.acao(not self.ativo)
-        # self.tween(self.jogo, 1000, repeat=0, alpha=1)
         [inventario.ativa(self.ativo) for inventario in self.inventario]
-        # [inventario.ativa(self.ativo) for inventario in self.texto.item]
         self.texto.ativa(self.ativo)
         self.score(evento=Ponto(x=0, y=0), carta="_ATIVA_", ponto="_LINGUA_", valor=self.ativo)
 
@@ -44,12 +63,16 @@ class Roda(Jogo):
         """Copia fala para pensamento do interlocutor"""
         pass
 
-    def _click(self, _=None, d=None):
+    def activating(self, _=None, d=None):
+        """Copia fala para pensamento do interlocutor"""
+        self.register(evento=self.activating, carta=["%s" % c for c in "abc"], ponto="_FALA_", valor=True)
+
+    def _click(self, carta=None, *_):
         """Copia fala para pensamento do interlocutor"""
         fez_sentido = True  # set(termo.frame for termo in self.inventario) in faz_sentido
-        carta = [termo.frame for termo in self.inventario]
-        print("falou", carta, fez_sentido)
-        self.score(evento=Ponto(x=0, y=0), carta=["%s" % c for c in carta], ponto="_FALA_", valor=fez_sentido)
+        acarta = [termo.frame for termo in self.inventario] if carta is not list else carta
+        print("falou", acarta, fez_sentido)
+        self.score(evento=Ponto(x=0, y=0), carta=["%s" % c for c in acarta], ponto="_FALA_", valor=fez_sentido)
         self.texto.fala(carta, fez_sentido)
 
 

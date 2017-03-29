@@ -1,3 +1,27 @@
+#! /usr/bin/env python
+# -*- coding: UTF8 -*-
+# Este arquivo é parte do programa EICA
+# Copyright 2014-2017 Carlo Oliveira <carlo@nce.ufrj.br>,
+# `Labase <http://labase.selfip.org/>`__; `GPL <http://j.mp/GNU_GPL3>`__.
+#
+# EICA é um software livre; você pode redistribuí-lo e/ou
+# modificá-lo dentro dos termos da Licença Pública Geral GNU como
+# publicada pela Fundação do Software Livre (FSF); na versão 2 da
+# Licença.
+#
+# Este programa é distribuído na esperança de que possa ser útil,
+# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
+# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
+# Licença Pública Geral GNU para maiores detalhes.
+#
+# Você deve ter recebido uma cópia da Licença Pública Geral GNU
+# junto com este programa, se não, veja em <http://www.gnu.org/licenses/>
+
+"""Game board, cells and inventory.
+
+.. moduleauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
+
+"""
 from braser.vitollino import Actor
 from . import Ponto, Folha
 from .eica import Botao, Imagem, Jogo
@@ -21,6 +45,7 @@ class Celula(Actor):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.celula = recurso
         self.x, self.y, self.tabuleiro = x, y, tabuleiro
+        self.jogo = tabuleiro.ladrilho if tabuleiro else "_NONE_"
 
     def create(self):
         self.celula = self.sprite(self.celula, self.x, self.y)
@@ -29,6 +54,7 @@ class Celula(Actor):
         self.celula.frame = 160
         self.celula.width, self.celula.height = self.tabuleiro.quadro.x, self.tabuleiro.quadro.y
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.recebe(self.tabuleiro), self)
+        # self.register(evento=self.recebe, carta=["%d" % z for z in (self.x, self.y)], ponto=self.jogo, valor=True)
         self.tabuleiro.tabuleiro.add(self.celula)
 
     def recebe(self, tabuleiro):
@@ -40,9 +66,12 @@ class Celula(Actor):
 
 
 class Tabuleiro(Celula):
-    def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA, jogo="_Chaves_"):
+    def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA, jogo="_Chaves_", desenha=None):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         super().__init__(tab)  # super é invocado aqui para preservar os poderes recebidos do Circus
+        desenha = desenha if desenha else self.desenha
+        self.register(evento=desenha, carta=["tb"], ponto=jogo, valor=True)
+        self.visible = None
         self.ladrilho = jogo
         self.seleto = self.tabuleiro = None
         self.quadro = quadro
@@ -53,6 +82,13 @@ class Tabuleiro(Celula):
     def create(self):
         self.tabuleiro = self.group()
         self.tabuleiro.visible = False
+
+    def desenha(self, carta=(0, ), casa=(100, 100)):
+        self.celula = self.sprite(Folha.minitens.n, casa[0], casa[1])
+        self.celula.frame = carta[0]
+        self.celula.visible = True
+        self.tabuleiro.add(self.celula)
+        self.tabuleiro.visible = True
 
     def ativa(self, ativa):
         """Abre o balão de conversa"""
@@ -72,6 +108,8 @@ class Aba(Actor):
         self.celula.inputEnabled = True
         self.celula.frame = 36  # 160
         self.celula.events.onInputDown.add(lambda _=0, __=0: self.mostra_abas(self.chave, self.aba), self)
+        # self.register(evento=self.mostra_abas, carta=["%d" % z for z in (self.x, self.y)],
+        #               ponto="_ABAS_", valor=True)
         self.chave.add(self.celula)
 
     def mostra_abas(self, chave, proxima):
@@ -93,7 +131,8 @@ class Inventario(Jogo):
         super().__init__(ver)  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.x, self.y, self.delta, self.item, self.passo, self.janela = \
             ponto.x, ponto.y, delta, item or Folha.allThing(), passo, janela
-        self.aba_corrente = self.abas = None
+        self.aba_corrente = None
+        self.abas = []
         self.recebe = recebe
         self.monta_abas()
         self.monta_botoes()
@@ -221,7 +260,10 @@ class Item(Actor):
         super().__init__()
         self.recebe, self.nome, self.frame, self.x, self.y, \
             self.step, self.lista, self.janela = recebe, nome, frame, x, y, step, escopo, janela
-        self.aba = self.coisas = self.fala = self.jogo = None
+        self.visible = None
+        self.fala = self.jogo = None
+        self.aba = self
+        self.coisas = []
         self.seleto = None
         self.range = list(range(0, self.lista))
 

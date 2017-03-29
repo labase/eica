@@ -62,7 +62,6 @@ def hello_world():
 
 
 @route('/plot')
-def player():
     redirect("/static/eicaplayer.html")
 
 
@@ -87,7 +86,7 @@ def stylecss(filename):
 
 @get('/static/<filename:re:.*\.py>')
 def code(filename):
-    # print('/static/<filename:re:.*\.css>', filename, INDEX)
+    print('/static/<filename:re:.*\.css>', filename, INDEX)
     return static_file(filename, root=INDEX)
 
 

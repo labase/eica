@@ -52,8 +52,9 @@ class Jogo(Elemento):
     def __init__(self, ver=True):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.ativo = ver
+        self.visible = None
         self.ladrilho = "_%s_" % str(self.__name__)
-        self.grupo_de_elementos = None
+        self.grupo_de_elementos = self
 
     def ativa(self, ativo=None):
         """Abre o balão de conversa"""
@@ -77,7 +78,8 @@ class Imagem(Elemento):
     def __init__(self, folha, posicao, dono, escala=(1., 1.), ver=True):
         super().__init__()  # super é invocado aqui para preservar os poderes recebidos do Circus
         self.folha, self.posicao, self.dono, self.escala, self.ver = folha, posicao, dono, escala, ver
-        self.botao = None
+        self.visible = None
+        self.botao = self
 
     def preload(self):
         """Aqui no preload carregamos a imagem mundo e a folha de ladrilhos dos homens"""
@@ -95,6 +97,9 @@ class Botao(Imagem):
 
     def __init__(self, folha, posicao, frame, ato, dono, escala=(1., 1.), ver=True):
         super().__init__(folha, posicao, dono, escala, ver)
+        print("Botao(Imagem)", ato, ato.__name__)
+        self.visible = None
+        ato(self)
         self.frame, self.ato = frame, ato
 
     def preload(self):
