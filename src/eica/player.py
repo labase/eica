@@ -28,7 +28,7 @@ from datetime import datetime as dt
 from datetime import timedelta as td
 
 NOT_CARTA = "__A_T_I_V_A__ minitens f_r_u_t_a o_b_j_e_t_o".split()
-SX = 0.02
+SX = 0.015
 SY = 2
 
 
@@ -76,7 +76,7 @@ class Fachada:
     def plot(self, points=None, fill="none", stroke="#0074d9", stroke_width="1"):
         if points is None:
             points = [0, 0]
-        points = points[0] * SX + self.point[0], points[1] * SY + self.point[1]
+        points = points[0] * SX + self.point[0], points[1] * SY + 200.0
         plotpoints = self.point + tuple(points)
         _ = self.chart <= svg.polyline(fill=fill, stroke=stroke, stroke_width=stroke_width,
                                        points="%f,%f %f,%f" % plotpoints)
@@ -97,6 +97,8 @@ class Fachada:
             print("Fachada play deltatempo", deltatempo.total_seconds() * self.delta)
             tempo_corrente = self.tempo - self.tempo0
             self.deriva = deltatempo.total_seconds() - self.deriva
+            if deltatempo.total_seconds() > 0.5:
+                self.plot([tempo_corrente.total_seconds()+0.5, 0])
             # self.plot([tempo_corrente.total_seconds(), deltatempo.total_seconds()])
             self.plot([tempo_corrente.total_seconds(), self.deriva])
             self.ativadores[ponto].play(deltatempo.total_seconds() * self.delta, carta, casa)

@@ -66,10 +66,11 @@ class Celula(Actor):
 
 
 class Tabuleiro(Celula):
-    def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA, jogo="_Chaves_"):
+    def __init__(self, tab, dimensao=DIMENSAO, posicao=POSICAO, quadro=QUADRICULA, jogo="_Chaves_", desenha=None):
         """Aqui colocamos o sprite do homem e selecionamos o frame que o representa"""
         super().__init__(tab)  # super é invocado aqui para preservar os poderes recebidos do Circus
-        self.register(evento=self.desenha, carta=["tb"], ponto=jogo, valor=True)
+        desenha = desenha if desenha else self.desenha
+        self.register(evento=desenha, carta=["tb"], ponto=jogo, valor=True)
         self.visible = None
         self.ladrilho = jogo
         self.seleto = self.tabuleiro = None
@@ -82,7 +83,7 @@ class Tabuleiro(Celula):
         self.tabuleiro = self.group()
         self.tabuleiro.visible = False
 
-    def desenha(self, carta=0, casa=(100, 100)):
+    def desenha(self, carta=(0, ), casa=(100, 100)):
         self.celula = self.sprite(Folha.minitens.n, casa[0], casa[1])
         self.celula.frame = carta[0]
         self.celula.visible = True
