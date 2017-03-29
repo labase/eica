@@ -58,15 +58,10 @@ def retrieve_params(req):
 
 @route('/')
 def hello_world():
-    # redirect('/carinhas/carinhas.html')
-    # redirect('/tuple/index.html')
     redirect("/static/index.html")
 
 
 @route('/plot')
-def hello_world():
-    # redirect('/carinhas/carinhas.html')
-    # redirect('/tuple/index.html')
     redirect("/static/eicaplayer.html")
 
 
@@ -106,13 +101,6 @@ def register_user():
     print('/record/register', jsondata)
     LAST = gid
     return dict(doc_id=gid)
-
-
-@get('/noplot')
-@view('eicaplayer')
-def register_user():
-    global LAST
-    return {}
 
 
 @get('/record/getid')
