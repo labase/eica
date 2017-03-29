@@ -62,6 +62,7 @@ def hello_world():
 
 
 @route('/plot')
+def player():
     redirect("/static/eicaplayer.html")
 
 

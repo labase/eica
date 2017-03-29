@@ -70,10 +70,10 @@ class Roda(Jogo):
     def _click(self, carta=None, *_):
         """Copia fala para pensamento do interlocutor"""
         fez_sentido = True  # set(termo.frame for termo in self.inventario) in faz_sentido
-        acarta = [termo.frame for termo in self.inventario] if carta is not list else carta
+        acarta = [termo.frame for termo in self.inventario] if not isinstance(carta, list) else carta
         print("falou", acarta, fez_sentido)
         self.score(evento=Ponto(x=0, y=0), carta=["%s" % c for c in acarta], ponto="_FALA_", valor=fez_sentido)
-        self.texto.fala(carta, fez_sentido)
+        self.texto.fala(acarta, fez_sentido)
 
 
 class Fala(ListaInventario):
