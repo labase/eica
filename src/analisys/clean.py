@@ -453,6 +453,7 @@ class Banco:
         x = [0.] + [float(d["tempo"]) for d in data] + [float(data[-1]["tempo"]) + 1]
         plt.ylim(0, 90)
         plt.xlabel('tempo')
+        plt.ylabel('tempo de permanência na jogada (décimos de segundos)')
         plt.title(u_name)
         plt.gca().set_color_cycle(['red', 'green', 'blue', "orange", "magenta", "cyan", "black", 'yellow'])
         for plot in PONTO:
@@ -461,7 +462,7 @@ class Banco:
         plt.legend([plot for plot in PONTO], ncol=4, bbox_to_anchor=(0, 1, 1, 3),
                    loc=3, borderaxespad=1.2, mode="expand", )
         plt.grid(True)
-        plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.8, hspace=.35)
+        plt.subplots_adjust(bottom=0.08, left=.1, right=.96, top=.8, hspace=.35)
         fig1.savefig("plot/%s.jpg" % "_".join(u_name.split()))
 
         # plt.show()
@@ -520,10 +521,10 @@ class Banco:
         return key
 
     def plot_all_users(self):
-        # prin = list(set(self.new_find_all_users_names()))
-        print(list((i, u["user"]) for i, u in enumerate(self.banco.all()) if u["user"] == "andrija"))
-        self.new_simple_plot("Shaft")
-        return
+        prin = list(set(self.new_find_all_users_names()))
+        # print(list((i, u["user"]) for i, u in enumerate(self.banco.all()) if u["user"] == "andrija"))
+        # self.new_simple_plot("Shaft")
+        # return
         for user in prin:
             self.new_simple_plot(user)
 
