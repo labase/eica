@@ -4,6 +4,8 @@ import os
 from csv import writer
 
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 import pywt
 from tinydb import TinyDB, Query
 from matplotlib import collections as mc
@@ -852,7 +854,11 @@ class MinutiaProfiler(Track):
                                  zip(ubars[0], ubars[1], ubars[2], ubars[3], ubars[4], ubars[5], ubars[6])], color="k", label=legend[7], linewidth=0)
         """        """
 
-        plt.legend(ncol=2, loc="upper left")
+        # plt.legend(ncol=2, loc="upper left")
+        plt.legend(ncol=4, bbox_to_anchor=(0, 1, 1, 3), loc=3, borderaxespad=1.2, mode="expand")
+        plt.subplots_adjust(bottom=0.10, left=.04, right=.98, top=.90, hspace=.35)
+        plt.xlabel("vocabulário")
+        plt.ylabel("contagem de vocábulos total + por classe e jogos")
         plt.show()
         return
 
@@ -967,7 +973,9 @@ class MinutiaProfiler(Track):
         ax.fill_between(x, y_stack[3, :], y_stack[4, :], facecolor="cyan", alpha=.7, label=legend[4])
         [ax.plot([-100]*len(x), color=colour, alpha=.9, label="estado%d" % index, linewidth=2)
          for index, colour in enumerate(color[1:])]
-        ax.legend(ncol=3, loc="upper left")
+        
+
+        ax.legend(ncol=4, bbox_to_anchor=(0, 1, 1, 3), loc=3, borderaxespad=1.2, mode="expand")
         # ax.margins(0.1)  # derivative_data = [d*10+20 for d in derivative_data]
         ax2 = ax.twinx()
         ax2.set_xlim(0, min(500, x[-1]))
@@ -975,7 +983,9 @@ class MinutiaProfiler(Track):
         ax2.set_ylim(-1, 1)        # ax.ylim(-5, 5)
         # ax.set_xlim(0, min(1028, derivative_data[-1][-1][0]))
         ax2.add_collection(lc)
-        ax2.set_ylabel('colored states', color='r')
+        ax.set_ylabel('escolha total de objetos + escolha do mesmo objeto em dois jogos diferentes')
+        ax2.set_ylabel('variação do tempo de permanência com estados eica coloridos')
+
 
         # def make_proxy(zvalue, scalar_mappable, **kwargs):
         #     color = scalar_mappable.cmap(scalar_mappable.norm(zvalue))
@@ -988,7 +998,7 @@ class MinutiaProfiler(Track):
         # plt.legend(["SEG"] + [plot for plot in CARDS], ncol=5, bbox_to_anchor=(0, 1, 1, 3),
         #            loc=3, borderaxespad=1.2, mode="expand")
         plt.subplots_adjust(bottom=0.08, left=.05, right=.96, top=.9, hspace=.35)
-        fig1.savefig("statrans/%s.jpg" % "_".join(u_name.split()))
+        fig1.savefig("statrans1/%s.jpg" % "_".join(u_name.split()))
         # plt.show()
 
 
@@ -1010,10 +1020,10 @@ if __name__ == '__main__':
     # MinutiaConnections().load_from_db().generate_connecion_table_for_user()
     MinutiaProfiler().load_from_db().collect_state_burst_information()
     # MinutiaProfiler().load_from_db().survey_orc_transitivity_in_time()
-    # # MinutiaProfiler().load_from_db().plot_derivative_marked_states()
+    # MinutiaProfiler().load_from_db().plot_derivative_marked_states()
     # # MinutiaProfiler().load_from_db().profile_wave_case_for_all_events()
     # # MinutiaStats().load_from_db().scan_for_minutia_stats_for_each_user()
-    # # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
+    # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)
     # # Learn().load_from_db().replace_resampled_user_deltas_games_cards().write_db()
     # # Learn().load_from_db().build_interpolated_derivative_minutia_as_timeseries(slicer=12, threshold=8)
     # # Learn().load_from_db().resample_user_deltas()

@@ -152,7 +152,11 @@ class Stats:
         plt.bar(
             x, ubars[4], bottom=[i+j+k+l for i, j, k, l in
                                  zip(ubars[0], ubars[1], ubars[2], ubars[3])], color="c", label=legend[4], linewidth=0)
-        plt.legend(ncol=2, loc="upper left")
+        # plt.legend(ncol=2, loc="upper left")
+        plt.legend(ncol=5, bbox_to_anchor=(0, 1, 1, 3), loc=3, borderaxespad=1.2, mode="expand")
+        plt.subplots_adjust(bottom=0.20, left=.04, right=.98, top=.93, hspace=.35)
+        plt.xlabel("participantes")
+        plt.ylabel("contagem de objetos total + uso de mesmo objeto em dois jogos")
         plt.show()
         return
 
@@ -170,8 +174,8 @@ class Stats:
 
 
 if __name__ == '__main__':
-    # Stats().plot_item_use_across_games()
-    Stats().new_delta_plot("Patrick")
+    Stats().plot_item_use_across_games()
+    # Stats().new_delta_plot("Patrick")
     # Stats().report_all_user_data()
     # Stats().new_delta_plot()
     # Stats().delta_given_users()

@@ -434,7 +434,7 @@ class LanguageSurvey(MinutiaProfiler):
         if plot:
             self.plot_burst_usage_and_size(
                 [labels, gcount, c, m, r, v, s, f, e],
-                title="Contagem da transitividade idiomaatica", log=0)
+                title="Contagem da transitividade idiomática", log=0)
             print("plot_burst_usage_and_size labels", labels)
             # print("collect_state_burst_information", len(self.state_burst), len(best_burst), best_burst)
 
