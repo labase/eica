@@ -16,7 +16,8 @@ import numpy as np
 # from datetime import timedelta as td
 # from time import strftime
 # import matplotlib.pyplot as plt
-BTITLE = "Contagem dos casos de uso da máquina EICA"
+# BTITLE = "Contagem dos casos de uso da máquina EICA"
+BTITLE = "EICA demographic word survey"
 NONE = ""
 
 Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
@@ -820,12 +821,14 @@ class MinutiaProfiler(Track):
         labels = [
             " ".join([part.capitalize() if i == 0 else part[:1].capitalize() for i, part in enumerate(name.split())])
             for name in labels]
-        legend = "Contagem global,Contagem no Chaves,Contagem no Mundo,Contagem no Fala," \
-                 "Contagem Verdadeiros,Contagem Sucesso,Contagem Falso,Contagem Expulsão".split(",")
+        # legend = "Contagem global,Contagem no Chaves,Contagem no Mundo,Contagem no Fala," \
+        #          "Contagem Verdadeiros,Contagem Sucesso,Contagem Falso,Contagem Expulsão".split(",")
+        legend = "Global Count,Math Count,Science Count,Language Count," \
+                 "Veritable Count,Success Count,False Count,Exclusion Count".split(",")
         print(legend)
         # cl = "r g b c m y".split()
         plt.grid(True)
-        plt.subplots_adjust(bottom=0.25, left=.05, right=.96, top=0.96, hspace=.35)
+        plt.subplots_adjust(bottom=0.25, left=.15, right=.96, top=0.96, hspace=.35)
         plt.title(title)
 
         x = range(len(ubars[0]))
@@ -855,10 +858,10 @@ class MinutiaProfiler(Track):
         """        """
 
         # plt.legend(ncol=2, loc="upper left")
-        plt.legend(ncol=4, bbox_to_anchor=(0, 1, 1, 3), loc=3, borderaxespad=1.2, mode="expand")
-        plt.subplots_adjust(bottom=0.10, left=.04, right=.98, top=.90, hspace=.35)
-        plt.xlabel("vocabulário")
-        plt.ylabel("contagem de vocábulos total + por classe e jogos")
+        plt.legend(ncol=4, bbox_to_anchor=(0, 1, 1, 3), loc=3, borderaxespad=2.0, mode="expand")
+        plt.subplots_adjust(bottom=0.10, left=.08, right=.98, top=.84, hspace=.35)
+        plt.xlabel("Vocabulary")
+        plt.ylabel("Total word count + cognitive class + game")
         plt.show()
         return
 

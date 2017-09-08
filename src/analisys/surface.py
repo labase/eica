@@ -20,6 +20,7 @@ from math import log, exp
 # import matplotlib.pyplot as plt
 from analisys.learn import Track, User
 from analisys.minutia import MinutiaProfiler
+from analisys.clean import TB
 
 NONE = ""
 BTITLE = "Cognogram|Eica States|State Count".split("|")
@@ -42,6 +43,49 @@ NAMED_GAME = "None _Chaves_ _Mundo_ _FALA_".split()
 WAVELET_MODE = pywt.MODES.sp1
 MACHINE_ORDER = [0, 2, 3, 1, 5, 4, 6, 7]
 CLAZ_INDEX = {key: value + 4 for value, key in enumerate("VSFE")}
+CLAZZ = {x: 5-(CLAZ_INDEX[y[0]]-3) for x, y in zip(TB[::4], TB[3::4])}
+CLZ = {'Jade Feitosa Matias Dos Santos': 1, 'julie brenda santos da silva': 4, 'Giovanna lopes Cunha': 1,
+       'caua verediano ventura': 7, 'Patrick': 5, 'kaue': 4, 'Shaft': 7, 'radames felipe davila': 6, 'LARISSA': 1,
+       'arthu  willian tavares dos santos': 1, 'cassiana ventura': 7, 'Julia Gabrielly Nascimento Marques': 7,
+       'Gabriel Machado de Carvalho': 1, 'Laiza Fernandes De Farias': 4, 'Pitter Guimaraes Correia Goncalves': 4,
+       'andrija': 7, 'Tatiane Monteiro Nascimento': 4, 'wesleyana vitoria aquino de souza': 4, 'Malzamir': 7,
+       'leticia maria': 7, 'kayke juan silva bastos': 6, 'Rodolfo Innocenti Risaliti': 7,
+       'Christian Rodrigues Gago': 6, ' renan   felipe da vila': 4, 'Madson': 1,
+       'manuela nascimento  pires rodrigues': 1, 'thiago souza': 4, 'Thiago Gens Pasche': 4, 'Ana beatriz  ': 1,
+       'maria eduarda alves ': 7, 'Anicoler Evangelista ': 1, 'jhonathan  bordoni teixeira ': 1,
+       'patrick de oliveira nascimento1': 5, 'anderson': 1, 'israel ventura': 1, 'Yarin': 1, 'anna': 1,
+       'caterina frança de assumpção barcellos marinho': 1, 'keyla cardoso de carvalho': 7, 'Leonardo': 1,
+       'Maria Eduarda Da Silva Lima': 7, 'patrick de oliveira nascimento': 5, 'Gabriel Brasil': 1,
+       'Rodolfo Risaliti': 1, 'Rafael Sobreiro Couto': 1, 'toni carlos souza dos prazeres': 6, 'andrew': 1,
+       'Tatiane Monteiro Nascimento1': 4, 'Samuel Gomes': 4, 'Kamille De Oliveira': 4, 'filipe balbino ribeiro': 6,
+       'Cassiana da silva de maria': 1, 'kaikericadoveredimoano': 1, 'Andre vinicius santos pereira ': 1,
+       'carolina': 1, 'Ana Fernanda Dos Santos': 5, 'rafaelly santiago da silva fortes': 1,
+       'linda iasmin de olivera macede ': 4, 'JORGE   FILIPPE   ': 1, 'Ester Helen Rodrigues Cordeiro De Brito': 7,
+       'Evellyn Vitoria Feitosa Araujo': 1, 'Istefane Santos': 1, 'ANTONIOGUILHERME': 6, 'thiagoplacido': 4}
+CLZ = {c: i if i == 1 else 5-(i-3) for c, i in CLZ.items()}
+CLZ.update(CLAZZ)
+NCLZ = {'Laiza Fernandes De Farias': 4, 'kaue': 4, 'patrick de oliveira nascimento': 5, 'kayke juan silva bastos': 6,
+        'andrija': 4, 'israel ventura': 4, 'Tatiane Monteiro Nascimento1': 4, 'leticia maria': 4, 'Malzamir': 4,
+        'caua verediano ventura': 4, 'Julia Gabrielly Nascimento Marques': 7, 'andrew': 4,
+        'caterina frança de assumpção barcellos marinho': 4, 'LARISSA': 4, 'toni carlos souza dos prazeres': 6,
+        'radames felipe davila': 6, 'Rodolfo Innocenti Risaliti': 4, 'Maria Eduarda Da Silva Lima': 7,
+        'kaikericadoveredimoano': 4, 'Ester Helen Rodrigues Cordeiro De Brito': 7, 'Gabriel Machado de Carvalho': 4,
+        'wesleyana vitoria aquino de souza': 4, 'Patrick': 5, 'Giovanna lopes Cunha': 4,
+        'Tatiane Monteiro Nascimento': 4, 'Madson': 4, 'anderson': 4, 'Rafael Sobreiro Couto': 4,
+        'Leonardo': 4, 'filipe balbino ribeiro': 6, 'Evellyn Vitoria Feitosa Araujo': 4, 'Istefane Santos': 4,
+        'Rodolfo Risaliti': 4, 'Pitter Guimaraes Correia Goncalves': 4, 'Thiago Gens Pasche': 4,
+        'arthu  willian tavares dos santos': 4, 'thiago souza': 4, 'Christian Rodrigues Gago': 6,
+        'julie brenda santos da silva': 4, 'Kamille De Oliveira': 4, 'Gabriel Brasil': 4,
+        'Jade Feitosa Matias Dos Santos': 4, 'manuela nascimento  pires rodrigues': 4, 'Samuel Gomes': 4,
+        'Yarin': 4, ' renan   felipe da vila': 4, 'patrick de oliveira nascimento1': 5, 'Shaft': 4, 'anna': 4,
+        'cassiana ventura': 4, 'Cassiana da silva de maria': 4, 'keyla cardoso de carvalho': 7, 'thiagoplacido': 4,
+        'rafaelly santiago da silva fortes': 4, 'carolina': 4, 'Ana Fernanda Dos Santos': 5, 'ANTONIOGUILHERME': 6,
+        'Anicoler Evangelista ': 4, 'linda iasmin de olivera macede ': 4, 'jhonathan  bordoni teixeira ': 4,
+        'maria eduarda alves ': 7, 'JORGE   FILIPPE   ': 4, 'Andre vinicius santos pereira ': 4, 'Ana beatriz  ': 4}
+
+
+print(CLZ)
+
 
 
 class Clazz:
@@ -377,7 +421,7 @@ class LanguageSurvey(MinutiaProfiler):
             # data, _, voc, _ = user_data[]
             print("voc ---> ", list(user_data['stats'].items()))
             for lex, stats in user_data['stats'].items():
-                clz = 0
+                clz = NCLZ[user]
                 print("voc lex, stats---> ", user, lex, stats.count * 1.0)
 
                 if lex not in lex_index:
@@ -387,17 +431,17 @@ class LanguageSurvey(MinutiaProfiler):
                 usr = user_index.index((clz, user))
                 state_use_case[usr] = state_use_case.get(usr, {})
                 state_use_case[usr][lex_index.index(lex)] = stats.count * 1.0 + 1
-                state_use_case[usr][0] = CLAZ_INDEX.get(clz, 1)*10.0  # show cognition class at state zero
-                weight_index[usr] = weight_index.get(usr, 0) + sum(state_use_case[usr].values())
+                state_use_case[usr][0] = (clz-3)*10.0  # show cognition class at state zero
+                weight_index[usr] = (weight_index.get(usr, (0, clz))[0] + sum(state_use_case[usr].values()), clz)
         """
         """
-        weight_index = [(w, i) for i, w in weight_index.items()]
+        weight_index = [(8-c, w, i) for i, (w, c) in weight_index.items()]
         reindex = [(CLAZ_INDEX.get(clz, 0), ind) for ind, (clz, _) in enumerate(user_index)]
         weight_index.sort(reverse=True)  # sort participants by cognition class
         print("weight_index.sort>>>>>>>>>>>", weight_index)
         state_use_case = [list(zip(*[[state, log(state_use_case[user][state])]
                                      for state in state_use_case[user]]))
-                          for clz, user in weight_index]
+                          for clz, w, user in weight_index]
         print(">>>>>>>>>>>", state_use_case)
         if plot:
             self.cognomogram_histogram_user_vs_state(state_use_case,
@@ -769,7 +813,9 @@ class LanguageSurvey(MinutiaProfiler):
             # You can provide either a single color or an array. To demonstrate this,
             # the first bar of each set will be colored cyan.
             cs = [c] * len(xs)
-            cs[0] = "yrgbgmybgbcm"[int((exp(ys[0]))//10)]
+            cs[0] = "yrgmbgmybgbcm"[int((exp(ys[0]+0.1))//10)]
+            print("yrgbgmybgbcm", int((exp(ys[0]+0.1))//10), ys[0])
+            ys = (ys[0]/2, *ys[1:])
             # cs[0] = 'c'
             ax.bar(xs, ys, zs=z, zdir='x', color=cs, alpha=0.5)
         ax.set_xlabel('Participants')
@@ -808,7 +854,24 @@ if __name__ == '__main__':
     # LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=True, filtered=NO_FILTER)
     # [LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=CLZ_FILTER[c]) for c in "VSFE"]
     # LanguageSurvey().load_from_db().survey_vocabulary_use_in_population()
-    LanguageSurvey().load_from_db().mark_state_use_cases_for_users()
-    # LanguageSurvey().load_from_db().mark_lexicon_use_cases_for_users()
+    # LanguageSurvey().load_from_db().mark_state_use_cases_for_users()
+    LanguageSurvey().load_from_db().mark_lexicon_use_cases_for_users()
     # # LanguageSurvey().load_from_db().scan_for_minutia_stats_in_users()
     # # LanguageSurvey().load_from_db().scan_for_minutia_stats_for_each_user()
+    # print({x: y[0] for x, y in zip(TB[::4], TB[3::4])})
+    pass
+
+"""
+import csv
+with open('trans/fullderivativepredict.csv', 'r') as csvfile:
+     spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+     # clazz = {" ".join([a.upper() if i == 0 else a[0] for i, a in enumerate(c.split()) if i < 2]): str(CLAZ_INDEX[t]) for _, c, _, t, *a in spamreader}
+     clazz = {c: CLAZ_INDEX[t] for _, c, _, t, *a in spamreader}
+     # clazy = {c: " ".join([a.upper() if i == 0 else a[0] for i, a in enumerate(c.split()) if i < 2]) for c, _ in CLZ.items()}
+     clazy = {name: ' '.join(n.capitalize() if i == 0 else n.capitalize()[0] + "."
+                            for i, n in enumerate(name.split())) + name[-1] for name in CLZ.keys()}
+     CLZ = {c: clazz[clazy[c]] for c in CLZ.keys() if clazy[c] in clazz}
+     print(CLZ)
+     # for row, rowy in zip(clazz.items(), CLZ.items()):
+     #     print(', '.join(row+rowy))
+"""
