@@ -22,7 +22,7 @@ from analisys.learn import Track, User
 from analisys.minutia import MinutiaProfiler
 
 NONE = ""
-BTITLE = "Cognogram"
+BTITLE = "Cognogram|Eica States|State Count".split("|")
 
 Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
 JSONDB = os.path.dirname(__file__) + '/eica_new.json'
@@ -56,9 +56,9 @@ NO_FILTER = Clazz(' Populacional', None)
 
 class Lexicon:
     lex = {}
-    common_vocabulary = "02 01 021 012 06 05 04 03 016".split()
+    # common_vocabulary = "02 01 021 012 06 05 04 03 016".split()
 
-    # common_vocabulary = "02 01 021 012 06 03 04 05 0212 0121".split()
+    common_vocabulary = "02 01 021 012 06 03 04 05 0212 0121".split()
 
     def __init__(self, headword, start_time, timestamp, user, clazz, game):
 
@@ -357,9 +357,57 @@ class LanguageSurvey(MinutiaProfiler):
         # plt.colorbar()
         # plt.show()
 
+    def mark_lexicon_use_cases_for_users(self, named_user=None, plot=True):
+        self.mark_vocabulary_use_cases()
+        state_use_case = {}
+        user_index = []
+        weight_index = {}
+        stats, _, vox, _ = Lexicon.survey()
+        survey = Lexicon.lex
+        vocabulary = list(zip(*[[sum(list(st)) for st in stats[0]], vox]))
+        vocabulary.sort(reverse=True)
+        vocabulary = [entry for _, entry in vocabulary]
+        print("stats, _, vox >>>>>>>>>>>", vocabulary)
+        print(">>>>>>>>>>>")
+        print(">>>>>>>>>>>", survey)
+        print(">>>>>>>>>>>")
+        lex_index = vocabulary
+        for user, user_data in survey.items():
+            # print(user_data[0][-1])
+            # data, _, voc, _ = user_data[]
+            print("voc ---> ", list(user_data['stats'].items()))
+            for lex, stats in user_data['stats'].items():
+                clz = 0
+                print("voc lex, stats---> ", user, lex, stats.count * 1.0)
+
+                if lex not in lex_index:
+                    lex_index.append(lex)
+                if (clz, user) not in user_index:
+                    user_index.append((clz, user))
+                usr = user_index.index((clz, user))
+                state_use_case[usr] = state_use_case.get(usr, {})
+                state_use_case[usr][lex_index.index(lex)] = stats.count * 1.0 + 1
+                state_use_case[usr][0] = CLAZ_INDEX.get(clz, 1)*10.0  # show cognition class at state zero
+                weight_index[usr] = weight_index.get(usr, 0) + sum(state_use_case[usr].values())
+        """
+        """
+        weight_index = [(w, i) for i, w in weight_index.items()]
+        reindex = [(CLAZ_INDEX.get(clz, 0), ind) for ind, (clz, _) in enumerate(user_index)]
+        weight_index.sort(reverse=True)  # sort participants by cognition class
+        print("weight_index.sort>>>>>>>>>>>", weight_index)
+        state_use_case = [list(zip(*[[state, log(state_use_case[user][state])]
+                                     for state in state_use_case[user]]))
+                          for clz, user in weight_index]
+        print(">>>>>>>>>>>", state_use_case)
+        if plot:
+            self.cognomogram_histogram_user_vs_state(state_use_case,
+                                                     title="Logogram|EICA Lexicon|Lexicon Count".split("|"))
+        return state_use_case
+
     def mark_state_use_cases_for_users(self, named_user=None, plot=True):
         state_use_case = {}
         user_index = []
+        weight_index = {}
         for turn in self.scan_states_in_full_data():
             # print(user_data[0][-1])
             for state, _, _0, clz, _2, user in turn:
@@ -370,10 +418,13 @@ class LanguageSurvey(MinutiaProfiler):
                 state_use_case[user] = state_use_case.get(user, {})
                 state_use_case[user][state] = state_use_case[user].get(state, 0) + 1
                 state_use_case[user][0] = CLAZ_INDEX.get(clz, 1)*10.0  # show cognition class at state zero
-        reindex = [(CLAZ_INDEX.get(clz, 0), ind) for ind, (clz, _) in enumerate(user_index)]
+                weight_index[user] = weight_index.get(user, 0) + sum(state_use_case[user].values())
+        weight_ind = [(w, i) for i, w in weight_index.items()]
+        maxw = max(i for i in weight_index.values())
+        reindex = [(CLAZ_INDEX.get(clz, 0), maxw-weight_ind[ind][0], ind) for ind, (clz, usr) in enumerate(user_index)]
         reindex.sort()  # sort participants by cognition class
         state_use_case = [list(zip(*[[state, log(state_use_case[user][state])] for state in state_use_case[user]]))
-                          for clz, user in reindex]
+                          for clz, wg, user in reindex]
 
         print(state_use_case)
         if plot:
@@ -697,31 +748,36 @@ class LanguageSurvey(MinutiaProfiler):
     @staticmethod
     def cognomogram_histogram_user_vs_state(ubars, title=BTITLE, log=1):
         fig = plt.figure()
+        # ucolor = [(r, g, b) for b in range(50, 250, 50) for g in range(50, 250, 50) for r in range(0, 250, 50)]
         ax = fig.add_subplot(111, projection='3d')
-        ucolor = [(r, g, b) for r in range(50, 250, 50) for g in range(50, 250, 50) for b in range(0, 250, 50)]
+        ucolor = [(r, g, b) for r, g, b in zip(range(250, 250-3*80, -3),
+                                                           [i if i<250 else 500-i for i in range(250-3*80, 500, 6)], range(250-3*80, 250, 3))]
         colors = [["#"+''.join('%02x' % i for i in rgb), usr] for usr, rgb in enumerate(ucolor)]
         print(colors[:9])
         color_index = {usr: "#"+''.join('%02x' % i for i in rgb) for usr, rgb in enumerate(ucolor)}
         # for c, z in zip(['r', 'g', 'b', 'y'], [30, 20, 10, 0]):
         colors = [[color_index[usr], data] for usr, data in enumerate(ubars[:90])]
+        title, ylabel, zlabel = title
+        maxz = 0
 
         for z, (c, d) in enumerate(colors):
             xs = np.arange(8)
             ys = np.random.rand(8)
             xs, ys = d
+            maxz = max(maxz, *ys)
 
             # You can provide either a single color or an array. To demonstrate this,
             # the first bar of each set will be colored cyan.
             cs = [c] * len(xs)
-            cs[0] = "rgbcmrgbcm"[int((exp(ys[0]))//10)]
+            cs[0] = "yrgbgmybgbcm"[int((exp(ys[0]))//10)]
             # cs[0] = 'c'
             ax.bar(xs, ys, zs=z, zdir='x', color=cs, alpha=0.5)
         ax.set_xlabel('Participants')
         # ax.set_xlim3d(0, 7)
-        ax.set_ylabel('EICA States')
+        ax.set_ylabel(ylabel)
         ax.set_ylim3d(0, 9)
-        ax.set_zlabel('States Count')
-        ax.set_zlim3d(0, 7)
+        ax.set_zlabel(zlabel)
+        ax.set_zlim3d(0, maxz)
         # ax.set_zscale("log", nonposy='clip')
 
         plt.title(title)
@@ -753,5 +809,6 @@ if __name__ == '__main__':
     # [LanguageSurvey().load_from_db().survey_idiom_use_in_population(plot=False, filtered=CLZ_FILTER[c]) for c in "VSFE"]
     # LanguageSurvey().load_from_db().survey_vocabulary_use_in_population()
     LanguageSurvey().load_from_db().mark_state_use_cases_for_users()
+    # LanguageSurvey().load_from_db().mark_lexicon_use_cases_for_users()
     # # LanguageSurvey().load_from_db().scan_for_minutia_stats_in_users()
     # # LanguageSurvey().load_from_db().scan_for_minutia_stats_for_each_user()
