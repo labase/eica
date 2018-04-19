@@ -10,8 +10,9 @@ import sys
 here = os.path.dirname(__file__)
 # add your project directory to the sys.path
 project_home = os.path.join(here, "src/")
+project_server = os.path.join(here, "src/server/")
 if project_home not in sys.path:
-    sys.path = [project_home] + sys.path
+    sys.path = [project_home] + [project_server] + sys.path
 
 # make sure the default templates directory is known to Bottle
 templates_dir = os.path.join(project_home, 'server/views/')

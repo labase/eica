@@ -2,7 +2,7 @@
 from braser.vitollino import Vitollino, Actor
 from . import Ponto
 
-IMG = "https://dl.dropboxusercontent.com/u/1751704/igames/img/"
+IMG = "https://s31.postimg.cc/up7cttoln/"
 BALONX, BALONY = 0, 70
 TABUAX, TABUAY, TABUAS = 400, 120, 90
 FALAX, FALAY, FALASEPARA = 100, 550, 100

@@ -26,7 +26,7 @@ import os
 __version__ = "2.1.2"
 
 here = os.path.dirname(__file__)
-IMG = "https://s19.postimg.org/"
+IMG = "https://s19.postimg.cc/"
 LOCAL = os.path.join(here, "../assets/")
 
 
@@ -60,13 +60,13 @@ class Folha:
     sapiens = Recurso("sapiens", LOCAL + "homem01.png")
     itens = Recurso("itens", LOCAL + "spritesheet.png", 200, 200, 6 * 7)
     minitens = Recurso("minitens", LOCAL + "spritesheety.png", 64, 64, 6 * 8)
-    coisa = Recurso("objeto", IMG + "c3lqxpi5fz/acarecos.png", 32, 32, 16 * 16)
-    comida = Recurso("objeto", IMG + "3lqxpi5fz/cacarecos.png", 32, 32, 16 * 16)
-    arma = Recurso("objeto", IMG + "3lqxpi5fz/cacarecos.png", 32, 32, 16 * 16)
-    objeto = Recurso("objeto", IMG + "3lqxpi5fz/cacarecos.png", 32, 32, 16 * 16)
-    fruta = Recurso("fruta", IMG + "4127iirdb/fruit.png", 65, 65, 8 * 8)
+    coisa = Recurso("objeto", IMG + "vymffyr6b/cacarecos.png", 32, 32, 16 * 16)
+    comida = Recurso("objeto", IMG + "vymffyr6b/cacarecos.png", 32, 32, 16 * 16)
+    arma = Recurso("objeto", IMG + "vymffyr6b/cacarecos.png", 32, 32, 16 * 16)
+    objeto = Recurso("objeto", IMG + "vymffyr6b/cacarecos.png", 32, 32, 16 * 16)
+    fruta = Recurso("fruta", IMG + "dllu5egpf/fruit.png", 65, 65, 8 * 8)
     animal = Recurso("animal", IMG + "sk48ztvrj/largeemoji.png", 47.5, 47, 14 * 9)
-    arvore = Recurso("arvore", IMG + "odjekhw5r/ttreesprites1.png", 123.5, 111, 4 * 3)
+    arvore = Recurso("arvore", IMG + "v3zvtxjbn/treesprites1.png", 123.5, 111, 4 * 3)
     homem = Recurso("homem", IMG + "88wzr9ssv/caveman.png", 130, 130, 5 * 2)
     fala = Recurso("chave", IMG + "6ek59j5sf/balooni.png")
     chave = Recurso("fala", IMG + "v062dodu7/jogo_chaves.jpg")
