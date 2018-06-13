@@ -1446,8 +1446,9 @@ def _notmain():
 
 
 if __name__ == '__main__':
+    Learn().build_user_table_for_prog(slicer=128, learn=False, filename="/fullderivative.tab")
     # MinutiaConnections().load_from_db().generate_connecion_table_for_user()
-    MinutiaProfiler().load_from_db().plot_derivative_marked_states()
+    # MinutiaProfiler().load_from_db().plot_derivative_marked_states()
     # MinutiaProfiler().load_from_db().profile_wave_case_for_all_events()
     # MinutiaStats().load_from_db().scan_for_minutia_stats_for_each_user()
     # Track().load_from_db().scan_full_data_for_minutia_count_in_user_and_games(slicer=6, span=1256)

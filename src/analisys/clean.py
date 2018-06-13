@@ -14,6 +14,11 @@ Y_M_D_H_M_S = "%Y-%m-%d %H:%M:%S"
 JSONDB = os.path.dirname(__file__) + '/eica.json'
 JSONDBOUT = os.path.dirname(__file__) + '/eica_new.json'
 
+
+
+
+
+
 DBF = lambda: TinyDB(JSONDBOUT)
 # DBF = lambda: TinyDB(JSONDB)
 __author__ = 'carlo'
@@ -32,7 +37,8 @@ FILTRO = dict(
     sum(int(val) for val in item.split("_")) // 2 if plot == "_FALA_" else -2,
     _Mundo_=lambda item, casa, ponto, valor, plot: item if plot == "_Mundo_" else -2,
 )
-nousers = "carlo,carla,Jonatas,ggggg,,Jonatas Rafael,JonatasRafael,Rafael,teste,Camila (teste)".split(",")
+nousers = "cristiano Aarujo 1,Letícia 1,wesleyana 1,luisa 1,JOAO 1,cristiano Aarujo 1,yure monteiro,kauan monteio,kethellyn 1,Teste Bardok 1".split(",")
+# nousers = "carlo,carla,Jonatas,ggggg,,Jonatas Rafael,JonatasRafael,Rafael,teste,Camila (teste)".split(",")
 
 '''
 db = TinyDB(JSONDB)
@@ -447,7 +453,7 @@ class Banco:
                      for key in value_keys} for j, session in userdata for i, data in enumerate(session)]
         return playdata[1:]
 
-    def new_simple_plot(self, u_name='wesleyana vitoria aquino de souza', u_id=None):
+    def new_simple_plot(self, u_name='Teste', u_id=None):
         data = self.new_list_play_data_with_delta(u_name, u_id)
         fig1 = plt.figure()
         x = [0.] + [float(d["tempo"]) for d in data] + [float(data[-1]["tempo"]) + 1]
@@ -529,24 +535,27 @@ class Banco:
 
 
 if __name__ == '__main__':
-    Banco().plot_all_users()
-    # banco = Banco()
-    # print(len(banco.find_all_users()))
+    # Banco().plot_all_users()
+    banco = Banco()
+    print(len(banco.find_all_users()))
     # banco.script_to_provide_clean_db_from_zero()
     # banco.new_database_report_user_data()
     # banco.script_to_provide_clean_db_from_zero()
-    # prin = list(set(banco.new_find_all_users_names()))
+    prin = list(set(banco.new_find_all_users_names()))
+    print(prin)
     # banco.report_no_user_data()
     # exit()
     # for user in prin:
-    #     banco.new_simple_plot(user)
+    #      banco.new_simple_plot(user)
     #################################################
-    # banco.new_report_user_data()
+    #banco.new_report_user_data()
+    for user in prin:
+        banco.new_simple_plot(user)
     # banco.new_simple_plot()
     # for i in banco.new_list_play_data_with_delta():
     #     print(i)
-    # banco.report_user_data()
-    # banco.report_no_user_data()
-    # banco.rename_user_with_inconsistent_names()
+    # # banco.report_user_data()
+    # # banco.report_no_user_data()
+    # # banco.rename_user_with_inconsistent_names()
 # Banco().parse_prognostics()
 # Banco().new_clean_db_with_merged_sessions_and_prognostics()

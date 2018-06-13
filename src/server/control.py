@@ -25,7 +25,7 @@
 from datetime import datetime
 from bottle import default_app, route, view, get, post, static_file, request, redirect, run, TEMPLATE_PATH
 import os
-import modelo as database
+import server.modelo as database
 import json
 
 __author__ = 'carlo'
@@ -124,15 +124,15 @@ def score():
         record_id = LAST
         if record_id is None:
             raise Exception()
-        # print('resultado', record_id)
-        record = database.DRECORD[record_id]
+        print('resultado', record_id)
+        record = database.DRECORD.get(record_id)
         # record = record[PEC]
         print('record resultado:', record)
         user = record["user"]
         idade = int(record["idade"][4:]) + 5
         ano = record["ano"][3:]
         sexo = record["sexo"]
-        print("score:", dict(user=user, idade=idade, ano=ano, sexo=sexo))
+        print("score:", dict(user=user, idade=idade, ano=ano, sexo=sexo, result=record["jogada"]))
 
         return dict(user=user, idade=idade, ano=ano, sexo=sexo, result=record["jogada"])
     except Exception:
@@ -147,13 +147,13 @@ def store():
     try:
         jsondata = retrieve_params(request.params)
         record_id = list(jsondata.keys())[0]
-        record = database.DRECORD[record_id]
+        record = database.DRECORD.get(record_id)
         score = jsondata[record_id]
         # print('record/store:', score, record)
         score["tempo"] = str(datetime.now())
         record[PEC] += [score]
         # print('record score:', score, record)
-        database.DRECORD[record_id] = record
+        database.DRECORD.set(record_id, record)
         return record
     except Exception:
         return "Movimento de peça não foi gravado %s" % str(request.params.values())

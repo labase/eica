@@ -47,6 +47,12 @@ class Banco:
         self.banco.insert(dict(key=key, value=value))
         return key
 
+    def get(self, key):
+        return self[key]
+
+    def set(self, key, value):
+        self[key] = value
+
 
 def tests():
     from tinydb.storages import MemoryStorage
