@@ -25,7 +25,8 @@
 from datetime import datetime
 from bottle import default_app, route, view, get, post, static_file, request, redirect, run, TEMPLATE_PATH
 import os
-import server.modelo as database
+import server.modelo_redis as database
+# import server.modelo as database
 import json
 
 __author__ = 'carlo'
@@ -145,15 +146,16 @@ def score():
 @post('/record/store')
 def store():
     try:
+        from json import dumps
         jsondata = retrieve_params(request.params)
         record_id = list(jsondata.keys())[0]
         record = database.DRECORD.get(record_id)
         score = jsondata[record_id]
-        # print('record/store:', score, record)
+        print('record/store:', score, record)
         score["tempo"] = str(datetime.now())
         record[PEC] += [score]
-        # print('record score:', score, record)
-        database.DRECORD.set(record_id, record)
+        print('record score:', score, record)
+        database.DRECORD.set(record_id, dumps(record))
         return record
     except Exception:
         return "Movimento de peça não foi gravado %s" % str(request.params.values())

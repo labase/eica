@@ -1,11 +1,11 @@
 __author__ = 'carlo'
-import os
 from redislite import Redis
 # from tinydb.storages import MemoryStorage
 from uuid import uuid1
 # DBM = lambda :TinyDB(storage=MemoryStorage)
 
-JSONDB = os.path.dirname(__file__) + '/eica.json'
+# JSONDB = os.path.dirname(__file__) + '/eica.db'
+JSONDB = '/home/carlo/eica.db'
 
 DBF = lambda: Redis(JSONDB)
 
@@ -20,28 +20,29 @@ class Banco:
         return key
 
     def get(self, key):
-        return self.banco.get(key)
+        return self.banco.get(key).decode('utf8')
 
     def set(self, key, value):
         self.banco.set(key, value)
         return key
 
 
+DBT = lambda: Redis('/tmp/redis.db')
+
+
 def tests():
 
-    b = Banco(lambda: Redis('/tmp/redis.db'))
+    b = Banco(DBT)
     b.set(1, 2)
-    assert b.get(1) == 2, "falhou em recuperar b[1]: %s" % str(b.get(1))
+    assert int(b.get(1)) == 2, "falhou em recuperar b[1]: %s" % str(b.get(1))
     print("assert b.get(1) == 2", str(b.get(1)))
     b.set(1, 3)
-    assert b.get(1) == 3, "falhou em recuperar b[1]: %s" % str(b.get(1))
-    c = b.save(4)
-    assert b.get(c) == 4, "falhou em recuperar b[1]: %s" % str(b.get(c))
+    assert int(b.get(1)) == 3, "falhou em recuperar b[1]: %s" % str(b.get(1))
+    c = b.save('oi maçã')
+    assert b.get(c) == 'oi maçã', "falhou em recuperar b[1]: %s" % str(b.get(c))
 
 
 if __name__ == "__main__":
-    print("TESTS", Banco())
     tests()
 else:
-    print("DRECORD", Banco())
     DRECORD = Banco()
