@@ -146,16 +146,18 @@ def score():
 @post('/record/store')
 def store():
     try:
-        from json import dumps
+        from json import dumps, loads
         jsondata = retrieve_params(request.params)
+        print('record/store jsondata:', jsondata)
         record_id = list(jsondata.keys())[0]
         record = database.DRECORD.get(record_id)
+        record = loads(record.replace("'",'"')) if isinstance(record, str) else record
         score = jsondata[record_id]
-        print('record/store:', score, record)
         score["tempo"] = str(datetime.now())
+        print('record/store:', score, record)
         record[PEC] += [score]
         print('record score:', score, record)
-        database.DRECORD.set(record_id, dumps(record))
+        database.DRECORD.set(record_id, record)
         return record
     except Exception:
         return "Movimento de peça não foi gravado %s" % str(request.params.values())

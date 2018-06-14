@@ -76,18 +76,42 @@ class FunctionalWebTest(unittest.TestCase):
         """test_register  """
         app = TestApp(appbottle)
         response = app.get('/static/register?doc_id="10000001"&module=projeto2222')
+        rec_id = self._get_id('3333')
         self.assertEqual('200 OK', response.status)
         self.assertTrue('be9c-e0cb4e39e071' in response, str(response))
         rec_id = str(response).split('ver = main("')[1].split('e0cb4e39e071")')[0] + 'e0cb4e39e071'
-        assert cs.DRECORD.get(rec_id) == "{'module': 'projeto2222', 'jogada': []}", "{}: {}".format(rec_id, cs.DRECORD.get(rec_id))
+        assert cs.DRECORD.get(rec_id) == "{'module': 'projeto2222', 'jogada': []}",\
+            "{}: {}".format(rec_id, cs.DRECORD.get(rec_id))
+
+    def _get_id(self, ref_id):
+        """test_store  """
+        app = TestApp(appbottle)
+        user, idade, ano, sexo = 'projeto2222-lastcodename', '00015', '0009', 'outro'
+        user_data = dict(doc_id=ref_id, user=user, idade=idade, ano=ano, sexo=sexo)
+        response = app.get('/static/register?doc_id="10000001"&module=projeto2222', params=user_data)
+        return str(response).split('ver = main("')[1].split('e0cb4e39e071")')[0] + 'e0cb4e39e071'
 
     def test_store(self):
         """test_store  """
         app = TestApp(appbottle)
-        response = app.post('/record/store', dict(doc_id="10000001", module="projeto2222"))
+        response = app.get('/static/register?doc_id="10000001"&module=projeto2222')
+        rec_id = str(response).split('ver = main("')[1].split('e0cb4e39e071")')[0] + 'e0cb4e39e071'
+        response = app.post('/record/store', self._pontua(rec_id))
         self.assertEqual('200 OK', response.status)
-        self.assertTrue('projeto2222-lastcodename' in response, str(response))
-        self.assertTrue('"jogada": [{"module": "projeto2222", "tempo": "20' in response, str(response))
+        self.assertTrue('", "tempo": "20' in response, str(response))
+        self.assertTrue('{"module": "projeto2222", "jogada": [{"carta": "2222",' in str(response), str(response))
+
+    def _pontua(self, ref_id):
+        ct.LAST = ref_id
+        jogada = {"doc_id": ref_id,
+                  "carta": 2222,
+                  "casa": 2222,
+                  "move": 2222,
+                  "ponto": 2222,
+                  "tempo": 2222,
+                  "valor": 2222}
+
+        return jogada
 
     def _test_pontos(self):
         ct.LAST = "10000001"
