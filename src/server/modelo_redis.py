@@ -1,13 +1,41 @@
-__author__ = 'carlo'
-from redislite import Redis
-# from tinydb.storages import MemoryStorage
-from uuid import uuid1
-# DBM = lambda :TinyDB(storage=MemoryStorage)
+#! /usr/bin/env python
+# -*- coding: UTF8 -*-
+# Este arquivo é parte do programa EICA
+# Copyright 2014-2017 Carlo Oliveira <carlo@nce.ufrj.br>,
+# `Labase <http://labase.selfip.org/>`__; `GPL <http://j.mp/GNU_GPL3>`__.
+#
+# EICA é um software livre; você pode redistribuí-lo e/ou
+# modificá-lo dentro dos termos da Licença Pública Geral GNU como
+# publicada pela Fundação do Software Livre (FSF); na versão 2 da
+# Licença.
+#
+# Este programa é distribuído na esperança de que possa ser útil,
+# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
+# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
+# Licença Pública Geral GNU para maiores detalhes.
+#
+# Você deve ter recebido uma cópia da Licença Pública Geral GNU
+# junto com este programa, se não, veja em <http://www.gnu.org/licenses/>
 
+"""Redis database Model.
+
+.. moduleauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
+
+"""
+from redislite import Redis
+from uuid import uuid1
+from json import loads
+from json import dumps
+__author__ = 'carlo'
 # JSONDB = os.path.dirname(__file__) + '/eica.db'
 JSONDB = '/home/carlo/eica.db'
 
-DBF = lambda: Redis(JSONDB)
+
+def _get_redis(db=JSONDB):
+    return Redis(db)
+
+
+DBF = _get_redis
 
 
 class Banco:
@@ -16,14 +44,14 @@ class Banco:
 
     def save(self, value):
         key = str(uuid1())
-        self.banco.set(key, value)
+        self.set(key, value)
         return key
 
     def get(self, key):
-        return self.banco.get(key).decode('utf8')
+        return loads(self.banco.get(key).decode('utf8'))
 
     def set(self, key, value):
-        self.banco.set(key, value)
+        self.banco.set(key, dumps(value))
         return key
 
 
